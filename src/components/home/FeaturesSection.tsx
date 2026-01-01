@@ -7,6 +7,7 @@ import {
   Tick02Icon,
   StarIcon,
 } from "@hugeicons/core-free-icons";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 interface Feature {
   id: number;
@@ -18,7 +19,6 @@ interface Feature {
   cardTitle: string;
   cardDescription: string;
   cardIcon: string;
-  reverse?: boolean;
 }
 
 const features: Feature[] = [
@@ -28,14 +28,13 @@ const features: Feature[] = [
     title: "Réservez votre ménage",
     description: "Réservez en quelques clics. Choisissez la date, l'heure et la durée qui vous conviennent le mieux.",
     points: [
-      { icon: SmartPhone01Icon, text: "Réservez en ligne ou avec notre web ou mobile" },
+      { icon: SmartPhone01Icon, text: "Réservez en ligne ou sur notre application" },
       { icon: Clock01Icon, text: "Créneaux disponibles le week-end et le soir" },
     ],
     image: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=800&h=900&fit=crop",
     cardTitle: "Réservation confirmée",
-    cardDescription: "Votre aide-ménagère arrivera à l'heure convenue.",
+    cardDescription: "Votre aide-ménagère arrive à l'heure.",
     cardIcon: "✨",
-    reverse: false,
   },
   {
     id: 2,
@@ -48,9 +47,8 @@ const features: Feature[] = [
     ],
     image: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=800&h=900&fit=crop",
     cardTitle: "Personnel vérifié",
-    cardDescription: "Tous nos intervenants sont formés et assurés.",
+    cardDescription: "Formés et assurés.",
     cardIcon: "🛡️",
-    reverse: true,
   },
   {
     id: 3,
@@ -59,116 +57,127 @@ const features: Feature[] = [
     description: "Détendez-vous pendant que nous prenons soin de votre intérieur. Modifiez ou annulez facilement.",
     points: [
       { icon: Calendar03Icon, text: "Annulation gratuite jusqu'à 24h avant" },
-      { icon: Home01Icon, text: "Même intervenant à chaque visite si vous le souhaitez" },
+      { icon: Home01Icon, text: "Même intervenant à chaque visite" },
     ],
     image: "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=800&h=900&fit=crop",
     cardTitle: "Maison impeccable",
-    cardDescription: "Votre intérieur brille, vous pouvez vous détendre.",
+    cardDescription: "Vous pouvez vous détendre.",
     cardIcon: "🏠",
-    reverse: false,
   },
 ];
 
-export function FeaturesSection() {
+function FeatureBlock({ feature, index }: { feature: Feature; index: number }) {
+  const { ref, isVisible } = useScrollAnimation<HTMLDivElement>();
+  const isReversed = index % 2 === 1;
+  
   return (
-    <section className="py-12 sm:py-16 lg:py-28 bg-white">
+    <div 
+      ref={ref}
+      className={`flex flex-col gap-8 lg:gap-16 lg:items-center ${
+        isReversed ? "lg:flex-row-reverse" : "lg:flex-row"
+      }`}
+    >
+      {/* Text Content */}
+      <div className={`flex-1 lg:max-w-lg scroll-animate scroll-fade-up ${isVisible ? 'animate-in' : ''}`}>
+        {/* Tag */}
+        <p className="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-4">
+          {feature.tag}
+        </p>
+        
+        {/* Title with number */}
+        <div className="flex items-center gap-4 mb-4">
+          <div 
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white font-bold text-lg shadow-lg"
+            style={{ backgroundColor: '#2FCCC0' }}
+          >
+            {feature.id}
+          </div>
+          <h3 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            {feature.title}
+          </h3>
+        </div>
+        
+        {/* Description */}
+        <p className="text-lg text-gray-600 leading-relaxed mb-6">
+          {feature.description}
+        </p>
+
+        {/* Feature points */}
+        <div className="space-y-4">
+          {feature.points.map((point, idx) => (
+            <div key={idx} className="flex items-center gap-4">
+              <div 
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
+                style={{ backgroundColor: 'rgba(47, 204, 192, 0.15)' }}
+              >
+                <HugeiconsIcon 
+                  icon={point.icon} 
+                  strokeWidth={1.5} 
+                  style={{ color: '#2FCCC0' }}
+                  className="h-5 w-5" 
+                />
+              </div>
+              <p className="font-medium text-gray-800">{point.text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Image with floating card */}
+      <div className={`flex-1 relative scroll-animate ${isReversed ? 'scroll-fade-left' : 'scroll-fade-right'} scroll-delay-2 ${isVisible ? 'animate-in' : ''}`}>
+        <div className="relative">
+          {/* Main image */}
+          <div className="overflow-hidden rounded-2xl sm:rounded-3xl shadow-xl">
+            <img
+              src={feature.image}
+              alt={feature.title}
+              className="h-[320px] sm:h-[400px] lg:h-[480px] w-full object-cover"
+            />
+          </div>
+
+          {/* Floating card */}
+          <div className={`absolute bottom-4 sm:bottom-6 ${isReversed ? 'right-4 sm:right-6' : 'left-4 sm:left-6'}`}>
+            <div className="rounded-xl bg-white p-4 shadow-xl ring-1 ring-gray-100 w-[220px] sm:w-[250px]">
+              <div className="flex items-center gap-3">
+                <div 
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+                  style={{ backgroundColor: '#2FCCC0' }}
+                >
+                  <span className="text-lg">{feature.cardIcon}</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900 text-sm">{feature.cardTitle}</p>
+                  <p className="text-xs text-gray-500">{feature.cardDescription}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function FeaturesSection() {
+  const { ref: headerRef, isVisible: headerVisible } = useScrollAnimation<HTMLDivElement>();
+  
+  return (
+    <section className="py-12 sm:py-16 lg:py-24 bg-gray-50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Mobile Title */}
-        <div className="lg:hidden mb-8 sm:mb-12">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+        {/* Section Header */}
+        <div ref={headerRef} className={`mb-10 sm:mb-16 scroll-animate scroll-fade-up ${headerVisible ? 'animate-in' : ''}`}>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 font-bricolage-grotesque">
             Comment ça marche ? 🚀
           </h2>
         </div>
 
-        <div className="space-y-12 sm:space-y-16 lg:space-y-32">
+        {/* Features */}
+        <div className="space-y-16 sm:space-y-20 lg:space-y-28">
           {features.map((feature, index) => (
-            <div 
-              key={feature.id}
-              className={`grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10 lg:gap-16 items-center ${
-                feature.reverse ? "lg:grid-flow-dense" : ""
-              }`}
-            >
-              {/* Section Title - only above first image */}
-              {index === 0 && (
-                <div className="hidden lg:block lg:col-start-2 lg:row-start-1 mb-4">
-                  <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-                    Comment ça marche ? 🚀
-                  </h2>
-                </div>
-              )}
-              {/* Text Content */}
-              <div className={feature.reverse ? "lg:col-start-2" : ""}>
-                <p className="text-sm font-semibold uppercase tracking-wider text-gray-500">
-                  {feature.tag}
-                </p>
-                <div className="mt-3 flex items-center gap-3">
-                  {/* Styled number badge */}
-                  <div 
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white font-bold text-lg shadow-md"
-                    style={{ backgroundColor: '#2FCCC0' }}
-                  >
-                    {feature.id}
-                  </div>
-                  <h2 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl lg:text-4xl">
-                    {feature.title}
-                  </h2>
-                </div>
-                <p className="mt-4 text-lg text-gray-600 leading-relaxed">
-                  {feature.description}
-                </p>
-
-                {/* Feature points */}
-                <div className="mt-6 sm:mt-8 space-y-3 sm:space-y-4">
-                  {feature.points.map((point, idx) => (
-                    <div key={idx} className="flex items-center gap-3 sm:gap-4">
-                      <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: 'rgba(47, 204, 192, 0.15)' }}>
-                        <HugeiconsIcon 
-                          icon={point.icon} 
-                          strokeWidth={1.5} 
-                          style={{ color: '#2FCCC0' }}
-                          className="h-5 w-5 sm:h-6 sm:w-6" 
-                        />
-                      </div>
-                      <p className="font-medium text-gray-900 text-sm sm:text-base">{point.text}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Image with floating card */}
-              <div className={`relative ${feature.reverse ? "lg:col-start-1" : ""}`}>
-                <div className="relative">
-                  {/* Main image */}
-                  <div className="overflow-hidden rounded-2xl sm:rounded-3xl">
-                    <img
-                      src={feature.image}
-                      alt={feature.title}
-                      className="h-[300px] sm:h-[400px] w-full object-cover lg:h-[500px]"
-                    />
-                  </div>
-
-                  {/* Floating card - hidden on small mobile, visible from sm */}
-                  <div className="hidden sm:block absolute bottom-6 left-1/2 -translate-x-1/2 lg:bottom-10 lg:left-auto lg:right-6 lg:translate-x-0">
-                    <div className="rounded-xl sm:rounded-2xl bg-white p-4 sm:p-5 shadow-xl ring-1 ring-gray-100 w-[240px] sm:w-[260px]">
-                      <div className="flex items-start gap-3 sm:gap-4">
-                        {/* Icon circle with turquoise background */}
-                        <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: '#2FCCC0' }}>
-                          <span className="text-xl sm:text-2xl">{feature.cardIcon}</span>
-                        </div>
-                        <div>
-                          <p className="font-semibold text-primary text-sm sm:text-base">{feature.cardTitle}</p>
-                          <p className="mt-1 text-xs sm:text-sm text-gray-500">{feature.cardDescription}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <FeatureBlock key={feature.id} feature={feature} index={index} />
           ))}
         </div>
       </div>
     </section>
   );
 }
-

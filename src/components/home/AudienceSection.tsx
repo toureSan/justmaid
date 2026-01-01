@@ -1,152 +1,108 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { 
-  UserMultiple02Icon,
-  Building02Icon,
-  Briefcase01Icon,
-  FavouriteIcon,
-} from "@hugeicons/core-free-icons";
 import * as React from "react";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
-interface AudienceItem {
-  id: string;
-  icon: typeof UserMultiple02Icon;
-  label: string;
-  title: string;
-  description: string;
-  image: string;
-  color: string;
-  bgColor: string;
-}
-
-const audiences: AudienceItem[] = [
+const audiences = [
   {
-    id: "families",
-    icon: UserMultiple02Icon,
-    label: "Familles",
-    title: "PARFAIT POUR",
-    description: "Passez du temps avec vos proches, pas avec le ménage, et nous prendrons soin de votre maison comme de la nôtre.",
-    image: "https://images.unsplash.com/photo-1536640712-4d4c36ff0e4e?w=800&h=600&fit=crop",
-    color: "text-primary",
-    bgColor: "bg-amber-50",
+    id: "you",
+    emoji: "✨",
+    label: "Vous",
+    description: "Prenez enfin du temps pour vous. Lisez ce livre que vous repoussez depuis des mois, profitez d'une soirée Netflix sans culpabilité, ou simplement savourez le calme d'une maison impeccable. Un intérieur propre, c'est l'esprit libre.",
+    image: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=800&h=600&fit=crop",
   },
   {
     id: "businesses",
-    icon: Building02Icon,
+    emoji: "🏢",
     label: "Entreprises",
-    title: "PARFAIT POUR",
-    description: "Offrez un environnement de travail impeccable à vos équipes. Bureaux propres, productivité accrue.",
+    description: "Offrez à vos équipes un environnement de travail impeccable. Des bureaux propres, des espaces communs accueillants, des sanitaires irréprochables. Résultat : une meilleure productivité et des collaborateurs plus heureux.",
     image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop",
-    color: "text-gray-600",
-    bgColor: "bg-white",
   },
   {
     id: "professionals",
-    icon: Briefcase01Icon,
+    emoji: "💼",
     label: "Professionnels",
-    title: "PARFAIT POUR",
-    description: "Vous êtes débordé ? Laissez-nous gérer le ménage pendant que vous vous concentrez sur votre carrière.",
+    description: "Entre les réunions, les deadlines et les trajets, qui a le temps de passer l'aspirateur ? Laissez-nous gérer votre intérieur pendant que vous vous concentrez sur votre carrière. Rentrez dans une maison propre, l'esprit tranquille.",
     image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&h=600&fit=crop",
-    color: "text-gray-600",
-    bgColor: "bg-white",
-  },
-  {
-    id: "you",
-    icon: FavouriteIcon,
-    label: "Vous",
-    title: "PARFAIT POUR",
-    description: "Prenez du temps pour vous. Un intérieur propre contribue à votre bien-être et votre sérénité.",
-    image: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=800&h=600&fit=crop",
-    color: "text-gray-600",
-    bgColor: "bg-white",
   },
 ];
 
 export function AudienceSection() {
-  const [activeId, setActiveId] = React.useState("families");
-  
+  const [activeId, setActiveId] = React.useState("you");
   const activeAudience = audiences.find(a => a.id === activeId) || audiences[0];
+  const { ref: sectionRef, isVisible } = useScrollAnimation<HTMLDivElement>();
 
   return (
-    <section className="py-10 sm:py-16 lg:py-28 bg-white">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section className="py-12 sm:py-16 lg:py-24 bg-gray-50">
+      <div ref={sectionRef} className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Title */}
-        <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl lg:text-5xl max-w-4xl mx-auto mb-12 lg:mb-16">
-          Profitez d'une vie sans corvée. Concentrez-vous sur ce que vous aimez. 💖
-        </h2>
+        <div className={`mb-12 lg:mb-16 scroll-animate scroll-fade-up ${isVisible ? 'animate-in' : ''}`}>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 font-bricolage-grotesque">
+            Profitez d'une vie sans corvée 💖
+            <br />
+            <span className="text-primary">Concentrez-vous sur ce que vous aimez.</span>
+          </h2>
+        </div>
 
-        {/* Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
-          {/* Left - Accordion */}
-          <div className="space-y-3">
-            {audiences.map((audience) => (
-              <div
-                key={audience.id}
-                className={`rounded-2xl transition-all duration-300 ${
-                  activeId === audience.id 
-                    ? "bg-amber-50 p-6" 
-                    : "bg-white border border-gray-100 p-4 hover:border-gray-200 cursor-pointer"
-                }`}
-                onClick={() => setActiveId(audience.id)}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                    activeId === audience.id ? "bg-primary/10" : "bg-gray-100"
-                  }`}>
-                    <HugeiconsIcon 
-                      icon={audience.icon} 
-                      strokeWidth={1.5} 
-                      className={`h-5 w-5 ${activeId === audience.id ? "text-primary" : "text-gray-500"}`} 
-                    />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                      {audience.title}
-                    </p>
-                    <p className={`font-semibold ${activeId === audience.id ? "text-primary" : "text-gray-900"}`}>
-                      {audience.label}
-                    </p>
-                  </div>
-                </div>
+        {/* Tabs */}
+        <div className="flex flex-wrap gap-2 sm:gap-3 mb-8">
+          {audiences.map((audience) => (
+            <button
+              key={audience.id}
+              onClick={() => setActiveId(audience.id)}
+              className={`flex items-center gap-2 px-4 sm:px-6 py-3 rounded-full font-medium transition-all ${
+                activeId === audience.id
+                  ? "bg-primary text-white shadow-lg shadow-primary/25"
+                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+              }`}
+            >
+              <span className="text-lg">{audience.emoji}</span>
+              <span>{audience.label}</span>
+            </button>
+          ))}
+        </div>
 
-                {/* Expanded content */}
-                {activeId === audience.id && (
-                  <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                      {audience.description}
-                    </p>
-                    <Link to="/booking/cleaning">
-                      <Button className="rounded-full px-6">
-                        Réserver
-                      </Button>
-                    </Link>
-                  </div>
-                )}
-              </div>
-            ))}
+        {/* Content */}
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+          {/* Left - Text */}
+          <div className={`order-2 lg:order-1 scroll-animate scroll-fade-left scroll-delay-2 ${isVisible ? 'animate-in' : ''}`}>
+            <span className="text-5xl mb-6 block">{activeAudience.emoji}</span>
+            <h3 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 font-bricolage-grotesque">
+              Parfait pour les {activeAudience.label.toLowerCase()}
+            </h3>
+            <p className="text-xl text-gray-600 leading-relaxed mb-8">
+              {activeAudience.description}
+            </p>
+            <Link to="/booking/cleaning">
+              <Button size="lg" className="rounded-full px-8 h-14 text-base">
+                Réserver maintenant →
+              </Button>
+            </Link>
           </div>
 
           {/* Right - Image */}
-          <div className="relative h-[400px] lg:h-[500px] rounded-3xl overflow-hidden">
+          <div className={`order-1 lg:order-2 relative h-[300px] sm:h-[400px] lg:h-[450px] rounded-3xl overflow-hidden shadow-xl scroll-animate scroll-fade-right scroll-delay-3 ${isVisible ? 'animate-in' : ''}`}>
             {audiences.map((audience) => (
-              <div
+              <img
                 key={audience.id}
-                className={`absolute inset-0 transition-opacity duration-500 ${
-                  activeId === audience.id ? "opacity-100" : "opacity-0"
+                src={audience.image}
+                alt={audience.label}
+                className={`absolute inset-0 h-full w-full object-cover transition-all duration-500 ${
+                  activeId === audience.id ? "opacity-100 scale-100" : "opacity-0 scale-105"
                 }`}
-              >
-                <img
-                  src={audience.image}
-                  alt={audience.label}
-                  className="h-full w-full object-cover"
-                />
-              </div>
+              />
             ))}
+            
+            {/* Floating badge */}
+            <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6">
+              <div className="bg-white/95 backdrop-blur-sm rounded-xl px-4 py-3 shadow-lg">
+                <p className="text-sm font-semibold text-gray-900">+200 clients satisfaits</p>
+                <p className="text-xs text-gray-500">dans cette catégorie</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
   );
 }
-

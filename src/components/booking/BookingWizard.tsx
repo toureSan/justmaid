@@ -19,8 +19,9 @@ import {
 const steps = [
   { id: 1, title: "Date & Durée", description: "Quand et combien de temps" },
   { id: 2, title: "Détails", description: "Tâches à effectuer" },
-  { id: 3, title: "Paiement", description: "Vérification carte" },
-  { id: 4, title: "Confirmation", description: "Récapitulatif" },
+  { id: 3, title: "Coordonnées", description: "Vos informations" },
+  { id: 4, title: "Paiement", description: "Vérification carte" },
+  { id: 5, title: "Confirmation", description: "Récapitulatif" },
 ];
 
 interface BookingData {
@@ -33,6 +34,11 @@ interface BookingData {
   tasks: string[];
   notes: string;
   coords: { lat: number; lng: number } | null;
+  // Informations personnelles
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
   // Paiement
   cardNumber: string;
   cardExpiry: string;
@@ -50,6 +56,11 @@ const initialBookingData: BookingData = {
   tasks: [],
   notes: "",
   coords: null,
+  // Informations personnelles
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
   // Paiement
   cardNumber: "",
   cardExpiry: "",
@@ -94,6 +105,16 @@ export function BookingWizard() {
       const parsed = JSON.parse(savedUser);
       setUser(parsed);
       setIsAuthenticated(true);
+      // Pré-remplir les infos personnelles si disponibles
+      if (parsed.name || parsed.email) {
+        const nameParts = (parsed.name || "").split(" ");
+        setBookingData(prev => ({
+          ...prev,
+          firstName: prev.firstName || nameParts[0] || "",
+          lastName: prev.lastName || nameParts.slice(1).join(" ") || "",
+          email: prev.email || parsed.email || "",
+        }));
+      }
     }
   }, []);
 
@@ -120,8 +141,18 @@ export function BookingWizard() {
     setIsAuthenticated(true);
     localStorage.setItem("justmaid_user", JSON.stringify(authUser));
     setShowAuthModal(false);
-    // Passer directement à l'étape paiement
+    // Passer à l'étape coordonnées (pré-remplie avec les infos de l'auth)
     setCurrentStep(3);
+    // Pré-remplir les infos si elles viennent de l'auth
+    if (authUser.name || authUser.email) {
+      const nameParts = (authUser.name || "").split(" ");
+      setBookingData(prev => ({
+        ...prev,
+        firstName: prev.firstName || nameParts[0] || "",
+        lastName: prev.lastName || nameParts.slice(1).join(" ") || "",
+        email: prev.email || authUser.email || "",
+      }));
+    }
   };
 
   const updateBookingData = (field: keyof BookingData, value: string | string[]) => {
@@ -144,9 +175,19 @@ export function BookingWizard() {
       case 2:
         return bookingData.tasks.length > 0;
       case 3:
+        // Informations personnelles - vérifier que tous les champs sont remplis
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const phoneRegex = /^[\d\s+()-]{10,}$/;
+        return (
+          bookingData.firstName.trim().length >= 2 &&
+          bookingData.lastName.trim().length >= 2 &&
+          emailRegex.test(bookingData.email) &&
+          phoneRegex.test(bookingData.phone.replace(/\s/g, ""))
+        );
+      case 4:
         // Le paiement gère sa propre navigation
         return false;
-      case 4:
+      case 5:
         return true;
       default:
         return false;
@@ -154,12 +195,12 @@ export function BookingWizard() {
   };
 
   const handleNext = () => {
-    // Si on veut passer à l'étape 3 (paiement) et qu'on n'est pas connecté
+    // Si on veut passer à l'étape 3 (coordonnées) et qu'on n'est pas connecté
     if (currentStep === 2 && !isAuthenticated) {
       setShowAuthModal(true);
       return;
     }
-    if (currentStep < 4) {
+    if (currentStep < 5) {
       setCurrentStep((prev) => prev + 1);
     }
   };
@@ -185,6 +226,13 @@ export function BookingWizard() {
       hours: parseInt(bookingData.duration),
       tasks: bookingData.tasks,
       notes: bookingData.notes,
+      // Informations personnelles
+      customer: {
+        firstName: bookingData.firstName,
+        lastName: bookingData.lastName,
+        email: bookingData.email,
+        phone: bookingData.phone,
+      },
       status: "pending" as const,
       createdAt: new Date().toISOString(),
     };
@@ -279,7 +327,7 @@ export function BookingWizard() {
             </div>
           </div>
           <div className="text-sm text-muted-foreground">
-            {currentStep}/4
+            {currentStep}/5
           </div>
         </div>
         {/* Progress bar */}
@@ -287,7 +335,7 @@ export function BookingWizard() {
           <div 
             className="h-full transition-all duration-300 rounded-full"
             style={{ 
-              width: `${(currentStep / 4) * 100}%`,
+              width: `${(currentStep / 5) * 100}%`,
               backgroundColor: '#2FCCC0'
             }}
           />
@@ -309,13 +357,19 @@ export function BookingWizard() {
             />
           )}
           {currentStep === 3 && (
-            <Step3Payment 
-              onPaymentSuccess={() => setCurrentStep(4)} 
-              calculatePrice={calculatePrice}
+            <Step3PersonalInfo 
+              bookingData={bookingData} 
+              updateBookingData={updateBookingData}
             />
           )}
           {currentStep === 4 && (
-            <Step4Confirmation bookingData={bookingData} calculatePrice={calculatePrice} />
+            <Step4Payment 
+              onPaymentSuccess={() => setCurrentStep(5)} 
+              calculatePrice={calculatePrice}
+            />
+          )}
+          {currentStep === 5 && (
+            <Step5Confirmation bookingData={bookingData} calculatePrice={calculatePrice} />
           )}
 
           {/* Navigation Buttons */}
@@ -329,7 +383,7 @@ export function BookingWizard() {
               <div />
             )}
 
-            {currentStep < 4 ? (
+            {currentStep < 5 ? (
               <Button
                 onClick={handleNext}
                 disabled={!canProceed()}
@@ -817,10 +871,112 @@ function AuthModal({
   );
 }
 
-// Step 3: Paiement
+// Step 3: Informations personnelles
+function Step3PersonalInfo({
+  bookingData,
+  updateBookingData,
+}: {
+  bookingData: BookingData;
+  updateBookingData: (field: keyof BookingData, value: string) => void;
+}) {
+  const formatPhone = (value: string) => {
+    const v = value.replace(/\D/g, "");
+    if (v.length <= 3) return v;
+    if (v.length <= 6) return `${v.slice(0, 3)} ${v.slice(3)}`;
+    if (v.length <= 8) return `${v.slice(0, 3)} ${v.slice(3, 6)} ${v.slice(6)}`;
+    return `${v.slice(0, 3)} ${v.slice(3, 6)} ${v.slice(6, 8)} ${v.slice(8, 10)}`;
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+          <span className="text-2xl">👤</span>
+        </div>
+        <div>
+          <h2 className="text-xl font-bold text-foreground">Vos coordonnées</h2>
+          <p className="text-sm text-muted-foreground">Pour vous contacter et confirmer l'intervention</p>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {/* Nom et Prénom */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Prénom *</label>
+            <Input
+              type="text"
+              placeholder="Jean"
+              value={bookingData.firstName}
+              onChange={(e) => updateBookingData("firstName", e.target.value)}
+              className="h-12"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Nom *</label>
+            <Input
+              type="text"
+              placeholder="Dupont"
+              value={bookingData.lastName}
+              onChange={(e) => updateBookingData("lastName", e.target.value)}
+              className="h-12"
+            />
+          </div>
+        </div>
+
+        {/* Email */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">Email *</label>
+          <Input
+            type="email"
+            placeholder="jean.dupont@exemple.com"
+            value={bookingData.email}
+            onChange={(e) => updateBookingData("email", e.target.value)}
+            className="h-12"
+          />
+          <p className="text-xs text-muted-foreground">
+            Vous recevrez la confirmation de réservation à cette adresse
+          </p>
+        </div>
+
+        {/* Téléphone */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">Téléphone *</label>
+          <Input
+            type="tel"
+            placeholder="079 123 45 67"
+            value={bookingData.phone}
+            onChange={(e) => updateBookingData("phone", formatPhone(e.target.value))}
+            maxLength={14}
+            className="h-12"
+          />
+          <p className="text-xs text-muted-foreground">
+            L'intervenant(e) vous contactera sur ce numéro
+          </p>
+        </div>
+
+        {/* Info */}
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+          <div className="flex items-start gap-3">
+            <span className="text-xl">🔒</span>
+            <div>
+              <p className="font-medium text-foreground text-sm">Vos données sont protégées</p>
+              <p className="text-sm text-muted-foreground">
+                Vos informations personnelles ne seront utilisées que pour la gestion de votre réservation 
+                et ne seront jamais partagées avec des tiers.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Step 4: Paiement
 type PaymentMethod = "card" | "twint" | "apple_pay" | "google_pay";
 
-function Step3Payment({
+function Step4Payment({
   onPaymentSuccess,
   calculatePrice,
 }: {
@@ -1367,8 +1523,8 @@ function StripePaymentFormComponent({
   );
 }
 
-// Step 4: Confirmation
-function Step4Confirmation({
+// Step 5: Confirmation
+function Step5Confirmation({
   bookingData,
   calculatePrice,
 }: {
@@ -1423,6 +1579,25 @@ function Step4Confirmation({
             </p>
             <p className="text-sm text-muted-foreground">
               {getHomeTypeLabel(bookingData.homeType)}
+            </p>
+          </div>
+        </div>
+
+        {/* Coordonnées */}
+        <div className="flex items-start gap-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+            <span className="text-lg">👤</span>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Vos coordonnées</p>
+            <p className="font-medium text-foreground">
+              {bookingData.firstName} {bookingData.lastName}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {bookingData.email}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {bookingData.phone}
             </p>
           </div>
         </div>

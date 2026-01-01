@@ -408,30 +408,47 @@ function QuickBookingCard() {
             </div>
           </div>
 
-          {/* Available providers preview */}
-          <div className="rounded-lg bg-muted/50 p-3">
+          {/* Social proof */}
+          <div className="rounded-xl bg-gradient-to-r from-justmaid-turquoise/10 to-primary/10 p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="flex -space-x-2">
+              <div className="flex items-center gap-3">
+                {/* Avatars */}
+                <div className="flex -space-x-3">
                   <img
                     src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=40&h=40&fit=crop&crop=face"
-                    alt="Intervenante"
-                    className="h-8 w-8 rounded-full border-2 border-white object-cover"
+                    alt="Client"
+                    className="h-9 w-9 rounded-full border-2 border-white object-cover shadow-sm"
                   />
                   <img
                     src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=40&h=40&fit=crop&crop=face"
-                    alt="Intervenante"
-                    className="h-8 w-8 rounded-full border-2 border-white object-cover"
+                    alt="Client"
+                    className="h-9 w-9 rounded-full border-2 border-white object-cover shadow-sm"
                   />
                   <img
                     src="https://images.unsplash.com/photo-1589156280159-27698a70f29e?w=40&h=40&fit=crop&crop=face"
-                    alt="Intervenant"
-                    className="h-8 w-8 rounded-full border-2 border-white object-cover"
+                    alt="Client"
+                    className="h-9 w-9 rounded-full border-2 border-white object-cover shadow-sm"
                   />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-justmaid-turquoise text-xs font-bold text-white shadow-sm">
+                    +200
+                  </div>
                 </div>
-                <span className="text-xs text-muted-foreground">+12 disponibles</span>
+                {/* Text */}
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Clients satisfaits</p>
+                  <div className="flex items-center gap-1">
+                    <span className="text-amber-500">★★★★★</span>
+                    <span className="text-xs text-muted-foreground">4.9/5</span>
+                  </div>
+                </div>
               </div>
-              <Badge className="bg-green-100 text-green-700 text-xs">En ligne</Badge>
+            </div>
+            {/* Cities */}
+            <div className="flex flex-wrap items-center gap-2 pt-3 mt-2 border-t border-gray-300">
+              <span className="text-sm text-muted-foreground">📍 Disponible à</span>
+              <span className="bg-white px-2 py-0.5 rounded-full text-sm font-semibold text-foreground shadow-sm">Genève</span>
+              <span className="bg-white px-2 py-0.5 rounded-full text-sm font-semibold text-foreground shadow-sm">Nyon</span>
+              <span className="text-sm text-justmaid-turquoise font-medium">+ bientôt d'autres villes</span>
             </div>
           </div>
         </form>

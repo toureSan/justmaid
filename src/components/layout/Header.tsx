@@ -5,13 +5,10 @@ import {
   Menu01Icon, 
   Cancel01Icon,
   Tick02Icon,
-  Invoice02Icon,
   Tag01Icon,
   RepeatIcon,
   Wallet01Icon,
   StarIcon,
-  PackageIcon,
-  PercentIcon,
   GiftIcon,
   UserIcon,
   HelpCircleIcon,
@@ -20,68 +17,194 @@ import {
   ArrowLeft01Icon,
 } from "@hugeicons/core-free-icons";
 import * as React from "react";
-import { Copy01Icon, Share01Icon } from "@hugeicons/core-free-icons";
+import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 
-interface UserAuth {
+// Type pour l'utilisateur local
+interface LocalUser {
   id: string;
   email: string;
-  name: string;
-  provider: "google" | "apple" | "email";
-  avatar?: string;
+  fullName: string;
+  avatarUrl?: string | null;
 }
 
 export function Header() {
   const navigate = useNavigate();
+  
+  // État local pour l'authentification (fonctionne en SSR)
+  const [user, setUser] = React.useState<LocalUser | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+  const [isClient, setIsClient] = React.useState(false);
+
+  // Charger l'utilisateur uniquement côté client
+  React.useEffect(() => {
+    setIsClient(true);
+    
+    const loadUser = async () => {
+      if (isSupabaseConfigured()) {
+        // Utiliser Supabase
+        const supabase = getSupabase();
+        const { data: { user: supaUser } } = await supabase.auth.getUser();
+        if (supaUser) {
+          setUser({
+            id: supaUser.id,
+            email: supaUser.email || "",
+            fullName: supaUser.user_metadata?.full_name || supaUser.user_metadata?.name || supaUser.email?.split("@")[0] || "Utilisateur",
+            avatarUrl: supaUser.user_metadata?.avatar_url || supaUser.user_metadata?.picture,
+          });
+          setIsAuthenticated(true);
+        }
+        
+        // Écouter les changements d'auth
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+          if (session?.user) {
+            setUser({
+              id: session.user.id,
+              email: session.user.email || "",
+              fullName: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Utilisateur",
+              avatarUrl: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture,
+            });
+            setIsAuthenticated(true);
+          } else {
+            setUser(null);
+            setIsAuthenticated(false);
+          }
+        });
+        
+        return () => subscription.unsubscribe();
+      } else {
+        // Mode démo - fallback localStorage
+        const savedUser = localStorage.getItem("justmaid_user");
+        if (savedUser) {
+          try {
+            const parsed = JSON.parse(savedUser);
+            setUser({
+              id: parsed.id,
+              email: parsed.email,
+              fullName: parsed.name || parsed.email,
+              avatarUrl: parsed.avatar,
+            });
+            setIsAuthenticated(true);
+          } catch {
+            // Ignore parsing errors
+          }
+        }
+      }
+    };
+    
+    loadUser();
+  }, []);
+
+  const signOut = async () => {
+    if (isSupabaseConfigured()) {
+      const supabase = getSupabase();
+      await supabase.auth.signOut();
+    }
+    localStorage.removeItem("justmaid_user");
+    setUser(null);
+    setIsAuthenticated(false);
+  };
+
+  const signInWithGoogle = async (): Promise<{ error: string | null }> => {
+    if (isSupabaseConfigured()) {
+      const supabase = getSupabase();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        },
+      });
+      if (error) return { error: error.message };
+      return { error: null };
+    }
+    // Mode démo fallback
+    const demoUser = {
+      id: `google_${Date.now()}`,
+      email: "demo@gmail.com",
+      name: "Jean Dupont",
+      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop",
+      provider: "google",
+    };
+    localStorage.setItem("justmaid_user", JSON.stringify(demoUser));
+    setUser({ id: demoUser.id, email: demoUser.email, fullName: demoUser.name, avatarUrl: demoUser.avatar });
+    setIsAuthenticated(true);
+    return { error: null };
+  };
+
+  const signInWithApple = async (): Promise<{ error: string | null }> => {
+    if (isSupabaseConfigured()) {
+      const supabase = getSupabase();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "apple",
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        },
+      });
+      if (error) return { error: error.message };
+      return { error: null };
+    }
+    // Mode démo fallback
+    const demoUser = {
+      id: `apple_${Date.now()}`,
+      email: "demo@icloud.com",
+      name: "Marie Martin",
+      provider: "apple",
+    };
+    localStorage.setItem("justmaid_user", JSON.stringify(demoUser));
+    setUser({ id: demoUser.id, email: demoUser.email, fullName: demoUser.name, avatarUrl: null });
+    setIsAuthenticated(true);
+    return { error: null };
+  };
+
+  const signIn = async (email: string, password: string): Promise<{ error: string | null }> => {
+    if (!email || !password) return { error: "Email et mot de passe requis" };
+    
+    if (isSupabaseConfigured()) {
+      const supabase = getSupabase();
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) return { error: error.message };
+      return { error: null };
+    }
+    // Mode démo fallback
+    const demoUser = { id: `email_${Date.now()}`, email, name: email.split("@")[0], provider: "email" };
+    localStorage.setItem("justmaid_user", JSON.stringify(demoUser));
+    setUser({ id: demoUser.id, email: demoUser.email, fullName: demoUser.name, avatarUrl: null });
+    setIsAuthenticated(true);
+    return { error: null };
+  };
+
+  const signUp = async (email: string, password: string, metadata?: { firstName?: string; lastName?: string }): Promise<{ error: string | null }> => {
+    if (!email || !password) return { error: "Email et mot de passe requis" };
+    const fullName = [metadata?.firstName, metadata?.lastName].filter(Boolean).join(" ") || email.split("@")[0];
+    
+    if (isSupabaseConfigured()) {
+      const supabase = getSupabase();
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            first_name: metadata?.firstName,
+            last_name: metadata?.lastName,
+          },
+        },
+      });
+      if (error) return { error: error.message };
+      return { error: null };
+    }
+    // Mode démo fallback
+    const demoUser = { id: `email_${Date.now()}`, email, name: fullName, provider: "email" };
+    localStorage.setItem("justmaid_user", JSON.stringify(demoUser));
+    setUser({ id: demoUser.id, email: demoUser.email, fullName: demoUser.name, avatarUrl: null });
+    setIsAuthenticated(true);
+    return { error: null };
+  };
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [showAuthModal, setShowAuthModal] = React.useState(false);
-  const [user, setUser] = React.useState<UserAuth | null>(null);
 
-  // Callback pour la connexion réussie
-  const handleAuthSuccess = (authUser: UserAuth) => {
-    setUser(authUser);
-    localStorage.setItem("justmaid_user", JSON.stringify(authUser));
-    setShowAuthModal(false);
-  };
-
-  // Vérifier si l'utilisateur est connecté
-  React.useEffect(() => {
-    const savedUser = localStorage.getItem("justmaid_user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-
-    // Écouter les changements de localStorage
-    const handleStorageChange = () => {
-      const updatedUser = localStorage.getItem("justmaid_user");
-      if (updatedUser) {
-        setUser(JSON.parse(updatedUser));
-      } else {
-        setUser(null);
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    
-    // Vérifier périodiquement (pour les changements dans le même onglet)
-    const interval = setInterval(() => {
-      const updatedUser = localStorage.getItem("justmaid_user");
-      if (updatedUser && !user) {
-        setUser(JSON.parse(updatedUser));
-      } else if (!updatedUser && user) {
-        setUser(null);
-      }
-    }, 1000);
-
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      clearInterval(interval);
-    };
-  }, [user]);
-
-  const handleLogout = () => {
-    localStorage.removeItem("justmaid_user");
-    setUser(null);
+  const handleLogout = async () => {
+    await signOut();
     setSidebarOpen(false);
     navigate({ to: "/" });
   };
@@ -145,7 +268,7 @@ export function Header() {
 
           {/* Desktop CTA / User Menu */}
           <div className="hidden items-center gap-3 md:flex">
-            {user ? (
+            {isAuthenticated && user ? (
               <>
                 <Link to="/booking/cleaning">
                   <Button size="sm" className="rounded-full px-5">
@@ -158,11 +281,11 @@ export function Header() {
                 >
                   <HugeiconsIcon icon={Menu01Icon} strokeWidth={2} className="h-4 w-4 text-muted-foreground" />
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary overflow-hidden">
-                    {user.avatar ? (
-                      <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
+                    {user.avatarUrl ? (
+                      <img src={user.avatarUrl} alt={user.fullName} className="h-full w-full object-cover" />
                     ) : (
                       <span className="text-sm font-bold text-primary-foreground">
-                        {user.name.charAt(0).toUpperCase()}
+                        {user.fullName.charAt(0).toUpperCase()}
                       </span>
                     )}
                   </div>
@@ -188,16 +311,16 @@ export function Header() {
 
           {/* Mobile menu button */}
           <div className="flex items-center gap-2 md:hidden">
-            {user && (
+            {isAuthenticated && user && (
               <button
                 onClick={() => setSidebarOpen(true)}
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-primary overflow-hidden"
               >
-                {user.avatar ? (
-                  <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
+                {user.avatarUrl ? (
+                  <img src={user.avatarUrl} alt={user.fullName} className="h-full w-full object-cover" />
                 ) : (
                   <span className="text-sm font-bold text-primary-foreground">
-                    {user.name.charAt(0).toUpperCase()}
+                    {user.fullName.charAt(0).toUpperCase()}
                   </span>
                 )}
               </button>
@@ -249,7 +372,7 @@ export function Header() {
               >
                 Aide
               </Link>
-              {!user && (
+              {!isAuthenticated && (
                 <div className="mt-4 flex flex-col gap-2 border-t border-border/40 pt-4">
                   <Button 
                     variant="outline" 
@@ -288,7 +411,7 @@ export function Header() {
             <div className="flex items-start justify-between border-b border-border p-6">
               <div>
                 <p className="text-sm text-muted-foreground">Salut,</p>
-                <p className="text-xl font-bold text-foreground">{user?.name}</p>
+                <p className="text-xl font-bold text-foreground">{user?.fullName}</p>
               </div>
               <button
                 onClick={() => setSidebarOpen(false)}
@@ -394,8 +517,11 @@ export function Header() {
       {/* Modal d'authentification */}
       {showAuthModal && (
         <AuthModal 
-          onClose={() => setShowAuthModal(false)} 
-          onAuthSuccess={handleAuthSuccess}
+          onClose={() => setShowAuthModal(false)}
+          onGoogleAuth={signInWithGoogle}
+          onAppleAuth={signInWithApple}
+          onEmailSignIn={signIn}
+          onEmailSignUp={signUp}
         />
       )}
     </>
@@ -405,38 +531,46 @@ export function Header() {
 // Modal d'authentification
 function AuthModal({
   onClose,
-  onAuthSuccess,
+  onGoogleAuth,
+  onAppleAuth,
+  onEmailSignIn,
+  onEmailSignUp,
 }: {
   onClose: () => void;
-  onAuthSuccess: (user: UserAuth) => void;
+  onGoogleAuth: () => Promise<{ error: string | null }>;
+  onAppleAuth: () => Promise<{ error: string | null }>;
+  onEmailSignIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  onEmailSignUp: (email: string, password: string, metadata?: { firstName?: string; lastName?: string; phone?: string }) => Promise<{ error: string | null }>;
 }) {
   const [authMode, setAuthMode] = React.useState<"choose" | "email_login" | "email_register">("choose");
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [name, setName] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
   const handleGoogleAuth = async () => {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    onAuthSuccess({
-      id: `google_${Date.now()}`,
-      email: "utilisateur@gmail.com",
-      name: "Jean Dupont",
-      provider: "google",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-    });
+    setError(null);
+    const result = await onGoogleAuth();
+    if (result.error) {
+      setError(result.error);
+    } else {
+      onClose();
+    }
+    setIsLoading(false);
   };
 
   const handleAppleAuth = async () => {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    onAuthSuccess({
-      id: `apple_${Date.now()}`,
-      email: "utilisateur@icloud.com",
-      name: "Marie Martin",
-      provider: "apple",
-    });
+    setError(null);
+    const result = await onAppleAuth();
+    if (result.error) {
+      setError(result.error);
+    } else {
+      onClose();
+    }
+    setIsLoading(false);
   };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
@@ -444,13 +578,25 @@ function AuthModal({
     if (!email || !password) return;
     
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    onAuthSuccess({
-      id: `email_${Date.now()}`,
-      email: email,
-      name: authMode === "email_register" ? name : email.split("@")[0],
-      provider: "email",
-    });
+    setError(null);
+    
+    let result: { error: string | null };
+    if (authMode === "email_register") {
+      const [firstName, ...lastNameParts] = name.split(' ');
+      result = await onEmailSignUp(email, password, { 
+        firstName, 
+        lastName: lastNameParts.join(' ') || undefined 
+      });
+    } else {
+      result = await onEmailSignIn(email, password);
+    }
+    
+    if (result.error) {
+      setError(result.error);
+    } else {
+      onClose();
+    }
+    setIsLoading(false);
   };
 
   return (
@@ -485,6 +631,13 @@ function AuthModal({
                 Connectez-vous ou créez un compte pour continuer
               </p>
             </div>
+
+            {/* Error message */}
+            {error && (
+              <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-600">
+                {error}
+              </div>
+            )}
 
             {/* Social Auth Buttons */}
             <div className="space-y-3">

@@ -7,6 +7,7 @@ import {
   MissionSection,
   BookingCTASection,
   TestimonialsSection,
+  CitiesSection,
   CTASection,
 } from "@/components/home";
 
@@ -22,6 +23,7 @@ function HomePage() {
       <MissionSection />
       <BookingCTASection />
       <TestimonialsSection />
+      <CitiesSection />
       <CTASection />
     </>
   );

@@ -1,5 +1,6 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import { StarIcon } from "@hugeicons/core-free-icons";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const testimonials = [
   {
@@ -125,11 +126,13 @@ const testimonials = [
 ];
 
 export function TestimonialsSection() {
+  const { ref: sectionRef, isVisible } = useScrollAnimation<HTMLDivElement>();
+  
   return (
     <section className="bg-gray-50 py-10 sm:py-16 lg:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div ref={sectionRef} className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mx-auto max-w-2xl text-center">
+        <div className={`mx-auto max-w-2xl text-center scroll-animate scroll-fade-up ${isVisible ? 'animate-in' : ''}`}>
           <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Ils nous font confiance 💬
           </h2>
@@ -153,11 +156,11 @@ export function TestimonialsSection() {
         </div>
 
         {/* Testimonials Masonry Grid */}
-        <div className="mt-12 columns-1 gap-5 sm:columns-2 lg:columns-3 xl:columns-4">
+        <div className={`mt-12 columns-1 gap-5 sm:columns-2 lg:columns-3 xl:columns-4 scroll-animate scroll-fade-up scroll-delay-2 ${isVisible ? 'animate-in' : ''}`}>
           {testimonials.map((testimonial, index) => (
             <div
               key={testimonial.id}
-              className="animate-fade-in-up mb-5 break-inside-avoid"
+              className="mb-5 break-inside-avoid"
               style={{ animationDelay: `${index * 50}ms` }}
             >
               <div 

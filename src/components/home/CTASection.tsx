@@ -2,18 +2,21 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowRight01Icon, Clock01Icon, ShieldIcon } from "@hugeicons/core-free-icons";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 export function CTASection() {
+  const { ref: sectionRef, isVisible } = useScrollAnimation<HTMLDivElement>();
+  
   return (
-    <section className="relative overflow-hidden bg-primary py-10 sm:py-16 lg:py-24">
+    <section className="relative overflow-hidden bg-justmaid-turquoise py-10 sm:py-16 lg:py-24">
       {/* Background decoration */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute -left-20 -top-20 h-96 w-96 rounded-full bg-white blur-3xl" />
         <div className="absolute -bottom-20 -right-20 h-96 w-96 rounded-full bg-white blur-3xl" />
       </div>
 
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center">
+      <div ref={sectionRef} className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className={`mx-auto max-w-3xl text-center scroll-animate scroll-fade-up ${isVisible ? 'animate-in' : ''}`}>
           <h2 className="text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl lg:text-5xl">
             Prêt à avoir un intérieur impeccable ? ✨
           </h2>

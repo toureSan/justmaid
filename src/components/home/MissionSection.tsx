@@ -6,8 +6,11 @@ import {
   ShieldIcon,
   Clock01Icon,
 } from "@hugeicons/core-free-icons";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 export function MissionSection() {
+  const { ref: sectionRef, isVisible } = useScrollAnimation<HTMLDivElement>();
+  
   const features = [
     {
       icon: Leaf01Icon,
@@ -29,12 +32,12 @@ export function MissionSection() {
       <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/5 rounded-full translate-x-1/3 translate-y-1/3" />
       
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
+      <div ref={sectionRef} className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-8 items-center">
           {/* Left - Heart Shape with Image */}
-          <div className="relative flex justify-center lg:justify-start order-2 lg:order-1">
+          <div className={`relative flex justify-center lg:justify-end order-2 lg:order-1 scroll-animate scroll-scale ${isVisible ? 'animate-in' : ''}`}>
             {/* Heart SVG Shape with Image */}
-            <div className="relative w-[200px] h-[200px] sm:w-[300px] sm:h-[300px] lg:w-[400px] lg:h-[400px]">
+            <div className="relative w-[350px] h-[350px] sm:w-[480px] sm:h-[480px] lg:w-[650px] lg:h-[650px]">
               <svg 
                 viewBox="0 0 100 100" 
                 className="w-full h-full drop-shadow-2xl"
@@ -68,7 +71,7 @@ export function MissionSection() {
           </div>
 
           {/* Right - Content */}
-          <div className="text-white text-center lg:text-left order-1 lg:order-2">
+          <div className={`text-white text-center lg:text-left order-1 lg:order-2 scroll-animate scroll-fade-up scroll-delay-2 ${isVisible ? 'animate-in' : ''}`}>
             <h2 className="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
               Réinventer l'avenir du ménage à domicile. 🌟
             </h2>
