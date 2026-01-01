@@ -9,38 +9,121 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ServicesRouteImport } from './routes/services'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BookingLaundryRouteImport } from './routes/booking/laundry'
+import { Route as BookingCleaningRouteImport } from './routes/booking/cleaning'
+import { Route as AuthLoginRouteImport } from './routes/auth/login'
 
+const ServicesRoute = ServicesRouteImport.update({
+  id: '/services',
+  path: '/services',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BookingLaundryRoute = BookingLaundryRouteImport.update({
+  id: '/booking/laundry',
+  path: '/booking/laundry',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookingCleaningRoute = BookingCleaningRouteImport.update({
+  id: '/booking/cleaning',
+  path: '/booking/cleaning',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/auth/login',
+  path: '/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
+  '/services': typeof ServicesRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/booking/cleaning': typeof BookingCleaningRoute
+  '/booking/laundry': typeof BookingLaundryRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
+  '/services': typeof ServicesRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/booking/cleaning': typeof BookingCleaningRoute
+  '/booking/laundry': typeof BookingLaundryRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
+  '/services': typeof ServicesRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/booking/cleaning': typeof BookingCleaningRoute
+  '/booking/laundry': typeof BookingLaundryRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/services'
+    | '/auth/login'
+    | '/booking/cleaning'
+    | '/booking/laundry'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/services'
+    | '/auth/login'
+    | '/booking/cleaning'
+    | '/booking/laundry'
+  id:
+    | '__root__'
+    | '/'
+    | '/dashboard'
+    | '/services'
+    | '/auth/login'
+    | '/booking/cleaning'
+    | '/booking/laundry'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRoute: typeof DashboardRoute
+  ServicesRoute: typeof ServicesRoute
+  AuthLoginRoute: typeof AuthLoginRoute
+  BookingCleaningRoute: typeof BookingCleaningRoute
+  BookingLaundryRoute: typeof BookingLaundryRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/services': {
+      id: '/services'
+      path: '/services'
+      fullPath: '/services'
+      preLoaderRoute: typeof ServicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +131,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/booking/laundry': {
+      id: '/booking/laundry'
+      path: '/booking/laundry'
+      fullPath: '/booking/laundry'
+      preLoaderRoute: typeof BookingLaundryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/booking/cleaning': {
+      id: '/booking/cleaning'
+      path: '/booking/cleaning'
+      fullPath: '/booking/cleaning'
+      preLoaderRoute: typeof BookingCleaningRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRoute: DashboardRoute,
+  ServicesRoute: ServicesRoute,
+  AuthLoginRoute: AuthLoginRoute,
+  BookingCleaningRoute: BookingCleaningRoute,
+  BookingLaundryRoute: BookingLaundryRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
