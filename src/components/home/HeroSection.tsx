@@ -1,22 +1,15 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Tick02Icon,
   StarIcon,
   Clock01Icon,
   ShieldIcon,
-  SearchIcon,
-  PinLocation01Icon,
 } from "@hugeicons/core-free-icons";
 import * as React from "react";
-
-interface SearchResult {
-  display_name: string;
-  lat: string;
-  lon: string;
-}
 
 export function HeroSection() {
   return (
@@ -128,6 +121,85 @@ export function HeroSection() {
   );
 }
 
+// Villes disponibles par code postal
+const AVAILABLE_CITIES: Record<string, { name: string; canton: string; available: boolean }[]> = {
+  "1200": [{ name: "Genève", canton: "GE", available: true }],
+  "1201": [{ name: "Genève", canton: "GE", available: true }],
+  "1202": [{ name: "Genève", canton: "GE", available: true }],
+  "1203": [{ name: "Genève", canton: "GE", available: true }],
+  "1204": [{ name: "Genève", canton: "GE", available: true }],
+  "1205": [{ name: "Genève", canton: "GE", available: true }],
+  "1206": [{ name: "Genève", canton: "GE", available: true }],
+  "1207": [{ name: "Genève", canton: "GE", available: true }],
+  "1208": [{ name: "Genève", canton: "GE", available: true }],
+  "1209": [{ name: "Genève", canton: "GE", available: true }],
+  "1212": [{ name: "Grand-Lancy", canton: "GE", available: true }],
+  "1213": [{ name: "Petit-Lancy", canton: "GE", available: true }],
+  "1214": [{ name: "Vernier", canton: "GE", available: true }],
+  "1215": [{ name: "Genève Aéroport", canton: "GE", available: true }],
+  "1216": [{ name: "Cointrin", canton: "GE", available: true }],
+  "1217": [{ name: "Meyrin", canton: "GE", available: true }],
+  "1218": [{ name: "Le Grand-Saconnex", canton: "GE", available: true }],
+  "1219": [{ name: "Châtelaine", canton: "GE", available: true }],
+  "1220": [{ name: "Les Avanchets", canton: "GE", available: true }],
+  "1222": [{ name: "Vésenaz", canton: "GE", available: true }],
+  "1223": [{ name: "Cologny", canton: "GE", available: true }],
+  "1224": [{ name: "Chêne-Bougeries", canton: "GE", available: true }],
+  "1225": [{ name: "Chêne-Bourg", canton: "GE", available: true }],
+  "1226": [{ name: "Thônex", canton: "GE", available: true }],
+  "1227": [{ name: "Carouge", canton: "GE", available: true }],
+  "1228": [{ name: "Plan-les-Ouates", canton: "GE", available: true }],
+  "1231": [{ name: "Conches", canton: "GE", available: true }],
+  "1232": [{ name: "Confignon", canton: "GE", available: true }],
+  "1233": [{ name: "Bernex", canton: "GE", available: true }],
+  "1234": [{ name: "Vessy", canton: "GE", available: true }],
+  "1236": [{ name: "Cartigny", canton: "GE", available: true }],
+  "1237": [{ name: "Avully", canton: "GE", available: true }],
+  "1239": [{ name: "Collex-Bossy", canton: "GE", available: true }],
+  "1241": [{ name: "Puplinge", canton: "GE", available: true }],
+  "1242": [{ name: "Satigny", canton: "GE", available: true }],
+  "1243": [{ name: "Presinge", canton: "GE", available: true }],
+  "1244": [{ name: "Choulex", canton: "GE", available: true }],
+  "1245": [{ name: "Collonge-Bellerive", canton: "GE", available: true }],
+  "1246": [{ name: "Corsier", canton: "GE", available: true }],
+  "1247": [{ name: "Anières", canton: "GE", available: true }],
+  "1248": [{ name: "Hermance", canton: "GE", available: true }],
+  "1260": [{ name: "Nyon", canton: "VD", available: true }],
+  "1261": [{ name: "Longirod", canton: "VD", available: true }],
+  "1262": [{ name: "Eysins", canton: "VD", available: true }],
+  "1263": [{ name: "Crassier", canton: "VD", available: true }],
+  "1264": [{ name: "St-Cergue", canton: "VD", available: true }],
+  "1266": [{ name: "Duillier", canton: "VD", available: true }],
+  "1267": [{ name: "Coinsins", canton: "VD", available: true }],
+  "1268": [{ name: "Begnins", canton: "VD", available: true }],
+  "1269": [{ name: "Bassins", canton: "VD", available: true }],
+  "1270": [{ name: "Trélex", canton: "VD", available: true }],
+  "1271": [{ name: "Givrins", canton: "VD", available: true }],
+  "1272": [{ name: "Genolier", canton: "VD", available: true }],
+  "1273": [{ name: "Arzier-Le Muids", canton: "VD", available: true }],
+  "1274": [{ name: "Grens", canton: "VD", available: true }],
+  "1275": [{ name: "Chéserex", canton: "VD", available: true }],
+  "1276": [{ name: "Gingins", canton: "VD", available: true }],
+  "1277": [{ name: "Borex", canton: "VD", available: true }],
+  "1278": [{ name: "La Rippe", canton: "VD", available: true }],
+  "1279": [{ name: "Chavannes-de-Bogis", canton: "VD", available: true }],
+  "1290": [{ name: "Versoix", canton: "GE", available: true }],
+  // Villes bientôt disponibles
+  "1000": [{ name: "Lausanne", canton: "VD", available: false }],
+  "1003": [{ name: "Lausanne", canton: "VD", available: false }],
+  "1004": [{ name: "Lausanne", canton: "VD", available: false }],
+  "1005": [{ name: "Lausanne", canton: "VD", available: false }],
+  "1006": [{ name: "Lausanne", canton: "VD", available: false }],
+  "1007": [{ name: "Lausanne", canton: "VD", available: false }],
+  "1010": [{ name: "Lausanne", canton: "VD", available: false }],
+  "1012": [{ name: "Lausanne", canton: "VD", available: false }],
+  "1018": [{ name: "Lausanne", canton: "VD", available: false }],
+  "1820": [{ name: "Montreux", canton: "VD", available: false }],
+  "1800": [{ name: "Vevey", canton: "VD", available: false }],
+  "2000": [{ name: "Neuchâtel", canton: "NE", available: false }],
+  "1950": [{ name: "Sion", canton: "VS", available: false }],
+};
+
 function QuickBookingCard() {
   const navigate = useNavigate();
   const [formData, setFormData] = React.useState({
@@ -135,113 +207,57 @@ function QuickBookingCard() {
     homeType: "apartment",
     duration: "3",
     coords: null as { lat: number; lng: number } | null,
+    postalCode: "",
+    city: "",
   });
-  const [searchQuery, setSearchQuery] = React.useState("");
-  const [suggestions, setSuggestions] = React.useState<SearchResult[]>([]);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [isGeolocating, setIsGeolocating] = React.useState(false);
-  const debounceRef = React.useRef<NodeJS.Timeout | null>(null);
+  const [matchedCities, setMatchedCities] = React.useState<{ name: string; canton: string; available: boolean }[]>([]);
 
-  // Search for addresses using Nominatim
-  const searchAddress = async (query: string) => {
-    if (query.length < 3) {
-      setSuggestions([]);
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=fr&addressdetails=1&limit=5`,
-        { headers: { "Accept-Language": "fr" } }
-      );
-      const data: SearchResult[] = await response.json();
-      setSuggestions(data);
-    } catch (error) {
-      console.error("Error searching address:", error);
-    }
-    setIsLoading(false);
-  };
-
-  // Reverse geocoding
-  const reverseGeocode = async (lat: number, lng: number) => {
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`,
-        { headers: { "Accept-Language": "fr" } }
-      );
-      const data = await response.json();
-      return data.display_name;
-    } catch (error) {
-      console.error("Error reverse geocoding:", error);
-      return null;
-    }
-  };
-
-  // Handle input change
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => searchAddress(query), 300);
-  };
-
-  // Handle suggestion selection
-  const handleSelectSuggestion = (suggestion: SearchResult) => {
-    setFormData({
-      ...formData,
-      address: suggestion.display_name,
-      coords: { lat: parseFloat(suggestion.lat), lng: parseFloat(suggestion.lon) },
-    });
-    setSearchQuery(suggestion.display_name);
-    setSuggestions([]);
-  };
-
-  // Handle geolocation
-  const handleGeolocation = () => {
-    if (!navigator.geolocation) {
-      alert("La géolocalisation n'est pas supportée par votre navigateur");
-      return;
-    }
-
-    setIsGeolocating(true);
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        const address = await reverseGeocode(latitude, longitude);
-        if (address) {
-          setFormData({
-            ...formData,
-            address,
-            coords: { lat: latitude, lng: longitude },
-          });
-          setSearchQuery(address);
+  // Rechercher les villes par code postal
+  React.useEffect(() => {
+    if (formData.postalCode.length === 4) {
+      const cities = AVAILABLE_CITIES[formData.postalCode];
+      if (cities) {
+        setMatchedCities(cities);
+        // Si une seule ville, la sélectionner automatiquement
+        if (cities.length === 1) {
+          setFormData(prev => ({ ...prev, city: cities[0].name }));
         }
-        setIsGeolocating(false);
-      },
-      (error) => {
-        console.error("Geolocation error:", error);
-        alert("Impossible d'obtenir votre position");
-        setIsGeolocating(false);
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
-  };
+      } else {
+        setMatchedCities([]);
+        setFormData(prev => ({ ...prev, city: "" }));
+      }
+    } else {
+      setMatchedCities([]);
+      setFormData(prev => ({ ...prev, city: "" }));
+    }
+  }, [formData.postalCode]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Vérifier que la ville est disponible
+    const selectedCity = matchedCities.find(c => c.name === formData.city);
+    if (!selectedCity?.available) {
+      return;
+    }
+    
     const bookingDraft = {
-      address: formData.address,
+      address: `${formData.city}, Suisse`,
       homeType: formData.homeType,
       duration: formData.duration,
       coords: formData.coords,
+      postalCode: formData.postalCode,
+      city: formData.city,
       fromHome: true,
     };
     localStorage.setItem("bookingDraft", JSON.stringify(bookingDraft));
     navigate({ to: "/booking/cleaning" });
   };
+  
+  // Vérifier si on peut soumettre le formulaire
+  const canSubmit = formData.postalCode.length === 4 && 
+    formData.city && 
+    matchedCities.some(c => c.name === formData.city && c.available);
 
   return (
     <div className="relative">
@@ -285,73 +301,76 @@ function QuickBookingCard() {
 
           {/* Form fields */}
           <div className="space-y-4">
-            {/* Address search with geolocation */}
+            {/* Postal code search */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">
-                Votre adresse
-              </label>
+              <Label className="text-sm font-medium text-foreground">
+                Code postal
+              </Label>
               <div className="relative">
-                <div className="relative">
-                  <HugeiconsIcon
-                    icon={SearchIcon}
-                    strokeWidth={2}
-                    className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Rechercher votre adresse..."
-                    value={searchQuery}
-                    onChange={handleInputChange}
-                    className="w-full rounded-lg border border-input bg-background py-3 pl-10 pr-10 text-sm outline-none focus:ring-2 focus:ring-primary/20"
-                    required
-                  />
-                  {isLoading ? (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={handleGeolocation}
-                      disabled={isGeolocating}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
-                      title="Me localiser"
-                    >
-                      {isGeolocating ? (
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                      ) : (
-                        <HugeiconsIcon icon={PinLocation01Icon} strokeWidth={2} className="h-5 w-5" />
-                      )}
-                    </button>
-                  )}
-                </div>
-
-                {/* Suggestions dropdown */}
-                {suggestions.length > 0 && (
-                  <div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-card shadow-lg">
-                    {suggestions.map((suggestion, index) => (
-                      <button
-                        key={index}
-                        type="button"
-                        onClick={() => handleSelectSuggestion(suggestion)}
-                        className="w-full px-4 py-3 text-left text-sm hover:bg-muted transition-colors first:rounded-t-lg last:rounded-b-lg"
-                      >
-                        <div className="flex items-start gap-2">
-                          <span className="text-muted-foreground mt-0.5">📍</span>
-                          <span className="line-clamp-2">{suggestion.display_name}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg">🇨🇭</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={4}
+                  placeholder="1200"
+                  value={formData.postalCode}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, "").slice(0, 4);
+                    setFormData({ ...formData, postalCode: value });
+                  }}
+                  className="w-full rounded-lg border border-input bg-background py-3 pl-12 pr-4 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                  required
+                />
               </div>
               
-              {/* Address selected indicator */}
-              {formData.address && (
-                <div className="flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
-                  <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} className="h-4 w-4" />
-                  <span className="line-clamp-1">{formData.address}</span>
+              {/* City selection based on postal code */}
+              {matchedCities.length > 0 && (
+                <div className="space-y-2">
+                  {matchedCities.map((city, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, city: city.name })}
+                      className={`flex w-full items-center justify-between rounded-lg border-2 p-3 transition-all ${
+                        formData.city === city.name
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span>🏠</span>
+                        <span className="font-medium">{city.name}</span>
+                        <span className="text-xs text-muted-foreground">({city.canton})</span>
+                      </div>
+                      {city.available ? (
+                        <span className="flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-500" />
+                          Disponible
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                          ⏳ Bientôt
+                        </span>
+                      )}
+                    </button>
+                  ))}
                 </div>
+              )}
+
+              {/* Not available message */}
+              {formData.postalCode.length === 4 && matchedCities.length === 0 && (
+                <div className="rounded-lg bg-amber-50 p-3 text-sm text-amber-700">
+                  <p className="font-medium">🔔 Zone non couverte</p>
+                  <p className="text-xs mt-1">Nous arrivons bientôt ! Laissez votre email pour être notifié.</p>
+                </div>
+              )}
+
+              {/* Available zones hint */}
+              {formData.postalCode.length < 4 && (
+                <p className="text-xs text-muted-foreground">
+                  📍 Disponible à <strong>Genève</strong> et <strong>Nyon</strong> • Bientôt d'autres villes
+                </p>
               )}
             </div>
 
@@ -390,7 +409,7 @@ function QuickBookingCard() {
             <Button 
               type="submit" 
               className="w-full rounded-full py-6 text-base font-semibold"
-              disabled={!formData.address}
+              disabled={!canSubmit}
             >
               Continuer la réservation →
             </Button>

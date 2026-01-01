@@ -25,6 +25,9 @@ import {
   SmartPhone01Icon,
 } from "@hugeicons/core-free-icons";
 import * as React from "react";
+import { listBookings, cancelBooking as cancelBookingService } from "@/services/bookingService";
+import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
+import type { Booking as SupabaseBooking } from "@/types/database";
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardPage,
@@ -33,18 +36,8 @@ export const Route = createFileRoute("/dashboard")({
   }),
 });
 
-interface Booking {
-  id: string;
-  type: "cleaning" | "laundry";
-  address: string;
-  date: string;
-  time: string;
-  hours: number;
-  tasks: string[];
-  notes: string;
-  status: "pending" | "confirmed" | "completed" | "cancelled";
-  createdAt: string;
-}
+// Utiliser le type Supabase directement
+type Booking = SupabaseBooking;
 
 interface UserAuth {
   id: string;
@@ -79,28 +72,69 @@ function DashboardPage() {
   }, [tab, activeTab]);
 
   React.useEffect(() => {
-    // Vérifier si l'utilisateur est connecté
-    const savedUser = localStorage.getItem("justmaid_user");
-    if (!savedUser) {
-      navigate({ to: "/" });
-      return;
-    }
-    setUser(JSON.parse(savedUser));
+    const loadData = async () => {
+      let currentUser: UserAuth | null = null;
 
-    // Charger les réservations depuis localStorage
-    const storedBookings = JSON.parse(localStorage.getItem("bookings") || "[]");
-    setBookings(storedBookings);
+      if (isSupabaseConfigured()) {
+        // Charger l'utilisateur depuis Supabase
+        const supabase = getSupabase();
+        const { data: { user: supaUser } } = await supabase.auth.getUser();
+        
+        if (!supaUser) {
+          navigate({ to: "/" });
+          return;
+        }
 
-    // Afficher le toast si nouvelle réservation
-    if (storedBookings.length > 0) {
-      const lastBooking = storedBookings[storedBookings.length - 1];
-      const lastBookingTime = new Date(lastBooking.createdAt).getTime();
-      const now = Date.now();
-      if (now - lastBookingTime < 5000) {
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 5000);
+        currentUser = {
+          id: supaUser.id,
+          email: supaUser.email || "",
+          name: supaUser.user_metadata?.full_name || supaUser.user_metadata?.name || supaUser.email?.split("@")[0] || "Utilisateur",
+          provider: "google",
+          avatar: supaUser.user_metadata?.avatar_url || supaUser.user_metadata?.picture,
+        };
+        setUser(currentUser);
+
+        // Charger les réservations depuis Supabase
+        const { bookings: userBookings } = await listBookings(supaUser.id);
+        setBookings(userBookings);
+
+        // Afficher le toast si nouvelle réservation
+        if (userBookings.length > 0) {
+          const lastBooking = userBookings[0]; // Déjà trié par date décroissante
+          const lastBookingTime = new Date(lastBooking.created_at).getTime();
+          const now = Date.now();
+          if (now - lastBookingTime < 5000) {
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 5000);
+          }
+        }
+      } else {
+        // Fallback localStorage
+        const savedUser = localStorage.getItem("justmaid_user");
+        if (!savedUser) {
+          navigate({ to: "/" });
+          return;
+        }
+        currentUser = JSON.parse(savedUser);
+        setUser(currentUser);
+
+        // Charger les réservations depuis localStorage
+        const storedBookings = JSON.parse(localStorage.getItem("bookings") || "[]");
+        setBookings(storedBookings);
+
+        if (storedBookings.length > 0) {
+          const lastBooking = storedBookings[storedBookings.length - 1];
+          const lastBookingTime = new Date(lastBooking.created_at || lastBooking.createdAt).getTime();
+          const now = Date.now();
+          if (now - lastBookingTime < 5000) {
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 5000);
+          }
+        }
       }
-    }
+    };
+
+    loadData();
   }, [navigate]);
 
   const menuItems = [
@@ -108,30 +142,34 @@ function DashboardPage() {
     { id: "recurring" as TabId, icon: RepeatIcon, label: "Commandes répétées" },
   ];
 
-  const economyItems = [
-    { id: "subscriptions" as TabId, icon: StarIcon, label: "Abonnements" },
-    { id: "referral" as TabId, icon: GiftIcon, label: "Parrainer un ami" },
-  ];
+  // Masqué pour l'instant
+  // const economyItems = [
+  //   { id: "subscriptions" as TabId, icon: StarIcon, label: "Abonnements" },
+  //   { id: "referral" as TabId, icon: GiftIcon, label: "Parrainer un ami" },
+  // ];
 
   const infoItems = [
     { id: "account" as TabId, icon: UserIcon, label: "Compte" },
     { id: "help" as TabId, icon: HelpCircleIcon, label: "Centre d'aide" },
   ];
 
-  const cancelBooking = (bookingId: string) => {
-    const updatedBookings = bookings.map((b) =>
-      b.id === bookingId ? { ...b, status: "cancelled" as const } : b
-    );
-    setBookings(updatedBookings);
-    localStorage.setItem("bookings", JSON.stringify(updatedBookings));
+  const handleCancelBooking = async (bookingId: string) => {
+    const { success, error } = await cancelBookingService(bookingId);
+    if (success) {
+      // Mettre à jour l'état local
+      setBookings(prev => prev.map(b => 
+        b.id === bookingId ? { ...b, status: "cancelled" as const } : b
+      ));
+    } else {
+      console.error("Error cancelling booking:", error);
+      alert("Erreur lors de l'annulation: " + error);
+    }
   };
-
-  const referralCode = user?.id.slice(-6).toUpperCase() || "XXXXXX";
 
   const renderContent = () => {
     switch (activeTab) {
       case "home":
-        return <HomeTab bookings={bookings} cancelBooking={cancelBooking} user={user} referralCode={referralCode} />;
+        return <HomeTab bookings={bookings} cancelBooking={handleCancelBooking} user={user} />;
       case "prices":
         return <PricesTab />;
       case "recurring":
@@ -160,7 +198,7 @@ function DashboardPage() {
             </div>
             <div>
               <p className="font-semibold text-green-800">Réservation enregistrée !</p>
-              <p className="text-sm text-green-600">Mode démo - données sauvegardées localement</p>
+              <p className="text-sm text-green-600">Votre réservation a été confirmée</p>
             </div>
           </div>
         </div>
@@ -172,10 +210,10 @@ function DashboardPage() {
           <div className="flex items-center gap-2 border-b border-gray-200 pb-4">
             <button
               onClick={() => setActiveTab("home")}
-              className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+              className={`cursor-pointer whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all ${
                 activeTab === "home"
-                  ? "bg-primary text-white"
-                  : "bg-white text-gray-600 hover:bg-gray-100"
+                  ? "bg-primary text-white shadow-md"
+                  : "bg-white text-gray-600 hover:bg-gray-100 hover:shadow-sm"
               }`}
             >
               Accueil
@@ -184,26 +222,10 @@ function DashboardPage() {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                className={`cursor-pointer flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all ${
                   activeTab === item.id
-                    ? "bg-primary text-white"
-                    : "bg-white text-gray-600 hover:bg-gray-100"
-                }`}
-              >
-                <HugeiconsIcon icon={item.icon} strokeWidth={1.5} className="h-4 w-4" />
-                {item.label}
-              </button>
-            ))}
-            {economyItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                  activeTab === item.id
-                    ? "bg-primary text-white"
-                    : item.highlight
-                    ? "bg-amber-100 text-amber-800 hover:bg-amber-200"
-                    : "bg-white text-gray-600 hover:bg-gray-100"
+                    ? "bg-primary text-white shadow-md"
+                    : "bg-white text-gray-600 hover:bg-gray-100 hover:shadow-sm"
                 }`}
               >
                 <HugeiconsIcon icon={item.icon} strokeWidth={1.5} className="h-4 w-4" />
@@ -214,10 +236,10 @@ function DashboardPage() {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                className={`cursor-pointer flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all ${
                   activeTab === item.id
-                    ? "bg-primary text-white"
-                    : "bg-white text-gray-600 hover:bg-gray-100"
+                    ? "bg-primary text-white shadow-md"
+                    : "bg-white text-gray-600 hover:bg-gray-100 hover:shadow-sm"
                 }`}
               >
                 <HugeiconsIcon icon={item.icon} strokeWidth={1.5} className="h-4 w-4" />
@@ -242,12 +264,10 @@ function HomeTab({
   bookings, 
   cancelBooking,
   user,
-  referralCode,
 }: { 
   bookings: Booking[]; 
   cancelBooking: (id: string) => void;
   user: UserAuth | null;
-  referralCode: string;
 }) {
   const activeBookings = bookings.filter(b => b.status !== "cancelled" && b.status !== "completed");
 
@@ -335,44 +355,6 @@ function HomeTab({
 
       {/* Right Column - Widgets */}
       <div className="space-y-6">
-        {/* Parrainer un ami */}
-        <div className="rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 p-6 relative overflow-hidden">
-          {/* Cadeau illustration */}
-          <div className="absolute right-4 top-4">
-            <div className="relative">
-              <div className="w-20 h-20 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-lg transform rotate-3 shadow-lg flex items-center justify-center">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-full h-3 bg-yellow-400 absolute" />
-                  <div className="h-full w-3 bg-yellow-400 absolute" />
-                </div>
-                <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                  <div className="w-8 h-4 bg-yellow-400 rounded-t-full" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="pr-24">
-            <h3 className="text-lg font-bold text-gray-900">Parrainer un ami</h3>
-            <p className="mt-2 text-sm text-gray-600">
-              Votre ami bénéficie d'une réduction de 15% avec le code{" "}
-              <span className="font-bold text-gray-900">{referralCode}</span>{" "}
-              et vous gagnez 15 CHF dès sa première commande !
-            </p>
-          </div>
-          <div className="mt-4 flex items-center gap-3">
-            <div className="flex-1 rounded-lg bg-white/80 px-3 py-2 text-center">
-              <span className="font-bold tracking-wider text-gray-900">{referralCode}</span>
-            </div>
-            <Button variant="outline" size="icon" className="rounded-full bg-white">
-              <HugeiconsIcon icon={Copy01Icon} strokeWidth={2} className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="icon" className="rounded-full bg-white">
-              <HugeiconsIcon icon={Share01Icon} strokeWidth={2} className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
         {/* Téléchargez l'application */}
         <div className="rounded-2xl bg-gradient-to-br from-cyan-100 to-blue-100 p-6 text-center">
           <div className="flex justify-center mb-4">
@@ -449,6 +431,8 @@ function BookingCard({
         return <Badge className="bg-yellow-100 text-yellow-700">En attente</Badge>;
       case "confirmed":
         return <Badge className="bg-green-100 text-green-700">Confirmé</Badge>;
+      case "in_progress":
+        return <Badge className="bg-blue-100 text-blue-700">En cours</Badge>;
       default:
         return null;
     }
@@ -464,6 +448,11 @@ function BookingCard({
     ironing: "Repassage",
     bedmaking: "Lits",
   };
+
+  // Compatibilité avec les deux formats (Supabase et localStorage legacy)
+  const hours = booking.duration || (booking as any).hours || 0;
+  const tasks = booking.tasks || [];
+  const notes = booking.notes || "";
 
   return (
     <div className="rounded-2xl bg-white p-5">
@@ -486,19 +475,19 @@ function BookingCard({
             </div>
             <div className="flex items-center gap-2 text-gray-500">
               <HugeiconsIcon icon={Clock01Icon} strokeWidth={2} className="h-4 w-4" />
-              <span>{booking.time} • {booking.hours}h</span>
+              <span>{booking.time} • {hours}h</span>
             </div>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {booking.tasks.slice(0, 4).map((task) => (
+            {tasks.slice(0, 4).map((task) => (
               <Badge key={task} variant="secondary" className="text-xs bg-gray-100 text-gray-600">
                 {taskLabels[task] || task}
               </Badge>
             ))}
-            {booking.tasks.length > 4 && (
+            {tasks.length > 4 && (
               <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600">
-                +{booking.tasks.length - 4}
+                +{tasks.length - 4}
               </Badge>
             )}
           </div>
