@@ -69,7 +69,7 @@ export function AudienceSection() {
   const activeAudience = audiences.find(a => a.id === activeId) || audiences[0];
 
   return (
-    <section className="py-20 lg:py-28 bg-white">
+    <section className="py-10 sm:py-16 lg:py-28 bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Title */}
         <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl lg:text-5xl max-w-4xl mx-auto mb-12 lg:mb-16">

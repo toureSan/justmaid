@@ -5,7 +5,7 @@ import { ArrowRight01Icon, Clock01Icon, ShieldIcon } from "@hugeicons/core-free-
 
 export function CTASection() {
   return (
-    <section className="relative overflow-hidden bg-primary py-16 sm:py-24">
+    <section className="relative overflow-hidden bg-primary py-10 sm:py-16 lg:py-24">
       {/* Background decoration */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute -left-20 -top-20 h-96 w-96 rounded-full bg-white blur-3xl" />

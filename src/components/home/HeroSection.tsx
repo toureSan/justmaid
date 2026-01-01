@@ -248,8 +248,8 @@ function QuickBookingCard() {
       {/* Glow effect */}
       <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-primary/20 to-accent/20 blur-xl" />
       
-      <div className="relative rounded-2xl border border-border/50 bg-card p-6 shadow-2xl sm:p-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="relative rounded-2xl border border-border/50 bg-card p-4 shadow-2xl sm:p-6 lg:p-8">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           {/* Header with image */}
           <div className="flex items-start gap-4">
             <img
@@ -269,14 +269,14 @@ function QuickBookingCard() {
 
           {/* Service tabs */}
           <div className="flex gap-2">
-            <button type="button" className="flex-1 rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition-all">
-              Ménage à domicile
+            <button type="button" className="flex-1 rounded-lg bg-primary px-3 py-2.5 text-xs sm:text-sm font-medium text-primary-foreground transition-all sm:px-4 sm:py-3">
+              🧹 Ménage
             </button>
-            <button type="button" className="relative flex-1 rounded-lg bg-muted px-4 py-3 text-sm font-medium text-muted-foreground transition-all hover:bg-muted/80">
-              Pressing
+            <button type="button" className="relative flex-1 rounded-lg bg-muted px-3 py-2.5 text-xs sm:text-sm font-medium text-muted-foreground transition-all hover:bg-muted/80 sm:px-4 sm:py-3">
+              👔 Pressing
               <Badge
                 variant="secondary"
-                className="absolute -right-2 -top-2 border border-primary/20 bg-secondary text-xs"
+                className="absolute -right-1 -top-1 border border-primary/20 bg-secondary text-[10px] sm:text-xs sm:-right-2 sm:-top-2"
               >
                 Bientôt
               </Badge>

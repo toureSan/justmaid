@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 
 export function BookingCTASection() {
   return (
-    <section className="relative py-16 lg:py-20 bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-400 overflow-hidden">
+    <section className="relative py-10 sm:py-14 lg:py-20 bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-400 overflow-hidden">
       {/* Decorative elements */}
       <div className="absolute top-0 left-1/4 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
       <div className="absolute bottom-0 right-1/4 w-48 h-48 bg-white/10 rounded-full blur-3xl" />

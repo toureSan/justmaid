@@ -59,7 +59,7 @@ const services = [
 
 export function ServicesSection() {
   return (
-    <section className="py-16 sm:py-24">
+    <section className="py-10 sm:py-16 lg:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mx-auto max-w-2xl text-center">
@@ -121,10 +121,10 @@ function ServiceCard({ service, index }: ServiceCardProps) {
       </div>
 
       {/* Content */}
-      <div className="space-y-4 p-6">
+      <div className="space-y-3 sm:space-y-4 p-4 sm:p-6">
         <div>
-          <h3 className="text-xl font-bold text-foreground">{service.title}</h3>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <h3 className="text-lg sm:text-xl font-bold text-foreground">{service.title}</h3>
+          <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-muted-foreground">
             {service.description}
           </p>
         </div>

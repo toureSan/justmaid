@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Stepper } from "./Stepper";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -264,10 +263,41 @@ export function BookingWizard() {
         </div>
       )}
 
+      {/* Mobile Step Indicator */}
+      <div className="lg:hidden mb-6">
+        <div className="flex items-center justify-between bg-card rounded-xl p-4 shadow-sm border border-border/50">
+          <div className="flex items-center gap-3">
+            <div 
+              className="flex h-10 w-10 items-center justify-center rounded-full text-white font-bold"
+              style={{ backgroundColor: '#2FCCC0' }}
+            >
+              {currentStep}
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">{steps[currentStep - 1].title}</p>
+              <p className="text-xs text-muted-foreground">{steps[currentStep - 1].description}</p>
+            </div>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {currentStep}/4
+          </div>
+        </div>
+        {/* Progress bar */}
+        <div className="mt-3 h-1 bg-gray-200 rounded-full overflow-hidden">
+          <div 
+            className="h-full transition-all duration-300 rounded-full"
+            style={{ 
+              width: `${(currentStep / 4) * 100}%`,
+              backgroundColor: '#2FCCC0'
+            }}
+          />
+        </div>
+      </div>
+
       {/* Layout: Content + Sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8 items-start">
         {/* Main Content - Left */}
-        <div className="rounded-2xl border border-border/50 bg-card p-6 shadow-lg sm:p-8">
+        <div className="rounded-2xl border border-border/50 bg-card p-4 shadow-lg sm:p-6 lg:p-8">
           {currentStep === 1 && (
             <Step1DateTime bookingData={bookingData} updateBookingData={updateBookingData} />
           )}
@@ -327,8 +357,8 @@ export function BookingWizard() {
           </div>
         </div>
 
-        {/* Sidebar - Right */}
-        <div className="sticky top-24 rounded-2xl border border-border/50 bg-card p-6 shadow-lg">
+        {/* Sidebar - Right (hidden on mobile) */}
+        <div className="hidden lg:block sticky top-24 rounded-2xl border border-border/50 bg-card p-6 shadow-lg">
           <h3 className="mb-6 text-sm font-semibold text-muted-foreground uppercase tracking-wide">Étapes</h3>
           <VerticalStepper steps={steps} currentStep={currentStep} />
           

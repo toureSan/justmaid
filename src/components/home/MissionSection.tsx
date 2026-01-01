@@ -24,17 +24,17 @@ export function MissionSection() {
   ];
 
   return (
-    <section className="relative py-20 lg:py-28 bg-gradient-to-br from-primary via-primary to-blue-600 overflow-hidden">
+    <section className="relative py-10 sm:py-16 lg:py-28 bg-gradient-to-br from-primary via-primary to-blue-600 overflow-hidden">
       {/* Decorative circles */}
       <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/5 rounded-full translate-x-1/3 translate-y-1/3" />
       
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
           {/* Left - Heart Shape with Image */}
-          <div className="relative flex justify-center lg:justify-start">
+          <div className="relative flex justify-center lg:justify-start order-2 lg:order-1">
             {/* Heart SVG Shape with Image */}
-            <div className="relative w-[350px] h-[350px] sm:w-[400px] sm:h-[400px] lg:w-[450px] lg:h-[450px]">
+            <div className="relative w-[200px] h-[200px] sm:w-[300px] sm:h-[300px] lg:w-[400px] lg:h-[400px]">
               <svg 
                 viewBox="0 0 100 100" 
                 className="w-full h-full drop-shadow-2xl"
@@ -68,18 +68,18 @@ export function MissionSection() {
           </div>
 
           {/* Right - Content */}
-          <div className="text-white">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
+          <div className="text-white text-center lg:text-left order-1 lg:order-2">
+            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
               Réinventer l'avenir du ménage à domicile. 🌟
             </h2>
 
-            <div className="mt-8 space-y-5">
+            <div className="mt-6 sm:mt-8 space-y-4 sm:space-y-5">
               {features.map((feature, index) => (
-                <div key={index} className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: '#2FCCC0' }}>
-                    <HugeiconsIcon icon={feature.icon} strokeWidth={1.5} className="h-5 w-5 text-white" />
+                <div key={index} className="flex items-center gap-3 sm:gap-4 justify-center lg:justify-start">
+                  <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: '#2FCCC0' }}>
+                    <HugeiconsIcon icon={feature.icon} strokeWidth={1.5} className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                   </div>
-                  <p className="text-lg font-medium">{feature.text}</p>
+                  <p className="text-sm sm:text-base lg:text-lg font-medium">{feature.text}</p>
                 </div>
               ))}
             </div>

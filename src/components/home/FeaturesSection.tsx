@@ -71,20 +71,20 @@ const features: Feature[] = [
 
 export function FeaturesSection() {
   return (
-    <section className="py-20 lg:py-28 bg-white">
+    <section className="py-12 sm:py-16 lg:py-28 bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Mobile Title */}
-        <div className="lg:hidden mb-12">
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
+        <div className="lg:hidden mb-8 sm:mb-12">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
             Comment ça marche ? 🚀
           </h2>
         </div>
 
-        <div className="space-y-24 lg:space-y-32">
+        <div className="space-y-12 sm:space-y-16 lg:space-y-32">
           {features.map((feature, index) => (
             <div 
               key={feature.id}
-              className={`grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center ${
+              className={`grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10 lg:gap-16 items-center ${
                 feature.reverse ? "lg:grid-flow-dense" : ""
               }`}
             >
@@ -118,18 +118,18 @@ export function FeaturesSection() {
                 </p>
 
                 {/* Feature points */}
-                <div className="mt-8 space-y-4">
+                <div className="mt-6 sm:mt-8 space-y-3 sm:space-y-4">
                   {feature.points.map((point, idx) => (
-                    <div key={idx} className="flex items-center gap-4">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: 'rgba(47, 204, 192, 0.15)' }}>
+                    <div key={idx} className="flex items-center gap-3 sm:gap-4">
+                      <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: 'rgba(47, 204, 192, 0.15)' }}>
                         <HugeiconsIcon 
                           icon={point.icon} 
                           strokeWidth={1.5} 
                           style={{ color: '#2FCCC0' }}
-                          className="h-6 w-6" 
+                          className="h-5 w-5 sm:h-6 sm:w-6" 
                         />
                       </div>
-                      <p className="font-medium text-gray-900">{point.text}</p>
+                      <p className="font-medium text-gray-900 text-sm sm:text-base">{point.text}</p>
                     </div>
                   ))}
                 </div>
@@ -139,25 +139,25 @@ export function FeaturesSection() {
               <div className={`relative ${feature.reverse ? "lg:col-start-1" : ""}`}>
                 <div className="relative">
                   {/* Main image */}
-                  <div className="overflow-hidden rounded-3xl">
+                  <div className="overflow-hidden rounded-2xl sm:rounded-3xl">
                     <img
                       src={feature.image}
                       alt={feature.title}
-                      className="h-[500px] w-full object-cover lg:h-[600px]"
+                      className="h-[300px] sm:h-[400px] w-full object-cover lg:h-[500px]"
                     />
                   </div>
 
-                  {/* Floating card */}
-                  <div className="absolute bottom-8 left-1/2 -translate-x-1/2 lg:bottom-12 lg:left-auto lg:right-8 lg:translate-x-0">
-                    <div className="rounded-2xl bg-white p-5 shadow-xl ring-1 ring-gray-100 w-[280px]">
-                      <div className="flex items-start gap-4">
+                  {/* Floating card - hidden on small mobile, visible from sm */}
+                  <div className="hidden sm:block absolute bottom-6 left-1/2 -translate-x-1/2 lg:bottom-10 lg:left-auto lg:right-6 lg:translate-x-0">
+                    <div className="rounded-xl sm:rounded-2xl bg-white p-4 sm:p-5 shadow-xl ring-1 ring-gray-100 w-[240px] sm:w-[260px]">
+                      <div className="flex items-start gap-3 sm:gap-4">
                         {/* Icon circle with turquoise background */}
-                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: '#2FCCC0' }}>
-                          <span className="text-2xl">{feature.cardIcon}</span>
+                        <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: '#2FCCC0' }}>
+                          <span className="text-xl sm:text-2xl">{feature.cardIcon}</span>
                         </div>
                         <div>
-                          <p className="font-semibold text-primary">{feature.cardTitle}</p>
-                          <p className="mt-1 text-sm text-gray-500">{feature.cardDescription}</p>
+                          <p className="font-semibold text-primary text-sm sm:text-base">{feature.cardTitle}</p>
+                          <p className="mt-1 text-xs sm:text-sm text-gray-500">{feature.cardDescription}</p>
                         </div>
                       </div>
                     </div>
