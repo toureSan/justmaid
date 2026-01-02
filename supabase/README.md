@@ -57,7 +57,46 @@ VITE_SUPABASE_URL=https://xxxxx.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
-### 6. Tester
+### 6. Configurer Stripe (Paiements)
+
+#### A. Créer un compte Stripe
+1. Allez sur [stripe.com](https://stripe.com) et créez un compte
+2. Activez le mode test pour le développement
+
+#### B. Récupérer les clés API Stripe
+1. Dashboard Stripe > **Developers** > **API keys**
+2. Copiez :
+   - **Publishable key** (pk_test_...) → `VITE_STRIPE_PUBLISHABLE_KEY`
+   - **Secret key** (sk_test_...) → Pour la Supabase Edge Function
+
+#### C. Déployer la Edge Function
+1. Installez le CLI Supabase si pas déjà fait :
+```bash
+npm install -g supabase
+```
+
+2. Connectez-vous à votre projet :
+```bash
+supabase login
+supabase link --project-ref votre-project-ref
+```
+
+3. Ajoutez la clé secrète Stripe :
+```bash
+supabase secrets set STRIPE_SECRET_KEY=sk_test_votre_cle_secrete
+```
+
+4. Déployez la fonction :
+```bash
+supabase functions deploy create-checkout-session
+```
+
+5. Ajoutez l'URL de la fonction dans `.env` :
+```env
+VITE_STRIPE_CHECKOUT_API=https://votre-projet.supabase.co/functions/v1/create-checkout-session
+```
+
+### 7. Tester
 
 ```bash
 npm run dev
@@ -68,6 +107,7 @@ L'application devrait maintenant utiliser Supabase pour :
 - ✅ Stockage des profils utilisateurs
 - ✅ Gestion des réservations
 - ✅ Liste des services et villes
+- ✅ Paiements sécurisés via Stripe Checkout
 
 ---
 
