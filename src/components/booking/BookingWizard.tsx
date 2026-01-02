@@ -1823,11 +1823,11 @@ function Step6Confirmation({
         </div>
       </div>
 
-      {/* Info */}
-      <div className="rounded-lg bg-blue-50 p-4 text-sm text-blue-700">
+      {/* Info confirmation */}
+      <div className="rounded-lg bg-green-50 p-4 text-sm text-green-700">
         <p>
-          <strong>Mode démo :</strong> Cette réservation sera enregistrée localement. 
-          Dans la version finale, vous recevrez une confirmation par email.
+          <strong>✅ Réservation confirmée !</strong> Vous recevrez un email de confirmation 
+          avec tous les détails de votre intervention. Merci de votre confiance !
         </p>
       </div>
     </div>

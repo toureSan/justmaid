@@ -341,11 +341,11 @@ function HomeTab({
                         <HugeiconsIcon icon={Home01Icon} strokeWidth={1.5} className="h-5 w-5 text-gray-600" />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900">Ménage - {booking.hours}h</p>
+                        <p className="font-medium text-gray-900">Ménage - {booking.duration || 3}h</p>
                         <p className="text-sm text-gray-500">{new Date(booking.date).toLocaleDateString("fr-FR")}</p>
                       </div>
                     </div>
-                    <p className="font-semibold text-gray-900">{booking.hours * 25} CHF</p>
+                    <p className="font-semibold text-gray-900">{booking.total_price || (booking.duration || 3) * 25} CHF</p>
                   </div>
                 ))}
             </div>
@@ -447,12 +447,21 @@ function BookingCard({
     windows: "Vitres",
     ironing: "Repassage",
     bedmaking: "Lits",
+    fridge: "Réfrigérateur",
+    oven: "Four",
+    laundry: "Lessive",
+    organization: "Rangement",
+    balcony: "Balcon/Terrasse",
+    general: "Nettoyage général",
   };
 
   // Compatibilité avec les deux formats (Supabase et localStorage legacy)
-  const hours = booking.duration || (booking as any).hours || 0;
+  const hours = booking.duration || (booking as any).hours || 3;
   const tasks = booking.tasks || [];
   const notes = booking.notes || "";
+  
+  // Calcul du prix: utiliser total_price si disponible, sinon calculer
+  const price = booking.total_price || hours * 25;
 
   return (
     <div className="rounded-2xl bg-white p-5">
@@ -496,7 +505,7 @@ function BookingCard({
         <div className="flex flex-col items-end gap-3">
           {getStatusBadge(booking.status)}
           <p className="text-xl font-bold text-gray-900">
-            {booking.hours * 25} CHF
+            {price} CHF
           </p>
           {booking.status === "pending" && (
             <Button
