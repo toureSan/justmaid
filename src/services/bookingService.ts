@@ -6,6 +6,7 @@ import type {
   BookingStatus,
   ServiceType 
 } from '@/types/database';
+import { sendConfirmationEmail, sendCancellationEmail } from './emailService';
 
 // =====================================================
 // TYPES
@@ -104,6 +105,49 @@ export async function createBooking(
   }
 
   return { booking, error: null };
+}
+
+// =====================================================
+// CRÉER UNE RÉSERVATION AVEC EMAIL DE CONFIRMATION
+// =====================================================
+
+export interface CreateBookingWithEmailData extends CreateBookingData {
+  userEmail: string;
+  userName: string;
+}
+
+export async function createBookingWithEmail(
+  userId: string,
+  data: CreateBookingWithEmailData
+): Promise<{ booking: Booking | null; error: string | null; emailSent: boolean }> {
+  // Créer la réservation
+  const { booking, error } = await createBooking(userId, data);
+
+  if (error || !booking) {
+    return { booking: null, error, emailSent: false };
+  }
+
+  // Envoyer l'email de confirmation
+  const emailResult = await sendConfirmationEmail(
+    data.userEmail,
+    data.userName,
+    {
+      scheduled_date: data.date,
+      scheduled_time: data.time,
+      duration: data.duration,
+      total_price: data.totalPrice,
+      address: data.address,
+      tasks: data.tasks,
+      service_type: data.serviceType,
+    },
+    booking.id
+  );
+
+  if (!emailResult.success) {
+    console.warn('Booking created but email failed:', emailResult.error);
+  }
+
+  return { booking, error: null, emailSent: emailResult.success };
 }
 
 // =====================================================
@@ -241,6 +285,52 @@ export async function cancelBooking(
 ): Promise<{ success: boolean; error: string | null }> {
   const result = await updateBooking(bookingId, { status: 'cancelled' });
   return { success: !!result.booking, error: result.error };
+}
+
+// =====================================================
+// ANNULER UNE RÉSERVATION AVEC EMAIL
+// =====================================================
+
+export async function cancelBookingWithEmail(
+  bookingId: string,
+  userEmail: string,
+  userName: string
+): Promise<{ success: boolean; error: string | null; emailSent: boolean }> {
+  // Récupérer les détails de la réservation avant annulation
+  const { booking: existingBooking } = await getBooking(bookingId);
+  
+  if (!existingBooking) {
+    return { success: false, error: 'Réservation non trouvée', emailSent: false };
+  }
+
+  // Annuler la réservation
+  const { success, error } = await cancelBooking(bookingId);
+
+  if (!success) {
+    return { success: false, error, emailSent: false };
+  }
+
+  // Envoyer l'email d'annulation
+  const emailResult = await sendCancellationEmail(
+    userEmail,
+    userName,
+    {
+      scheduled_date: existingBooking.date,
+      scheduled_time: existingBooking.time,
+      duration: existingBooking.duration,
+      total_price: existingBooking.total_price || 0,
+      address: existingBooking.address,
+      tasks: existingBooking.tasks || [],
+      service_type: existingBooking.service_type,
+    },
+    bookingId
+  );
+
+  if (!emailResult.success) {
+    console.warn('Booking cancelled but email failed:', emailResult.error);
+  }
+
+  return { success: true, error: null, emailSent: emailResult.success };
 }
 
 // =====================================================

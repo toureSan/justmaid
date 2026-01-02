@@ -16,7 +16,7 @@ import {
   CreditCardIcon,
   SecurityLockIcon,
 } from "@hugeicons/core-free-icons";
-import { createBooking } from "@/services/bookingService";
+import { createBookingWithEmail } from "@/services/bookingService";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { StripePaymentForm } from "./StripePaymentForm";
 
@@ -350,8 +350,8 @@ export function BookingWizard() {
     ].filter(Boolean).join(" | ");
 
     try {
-      // Créer la réservation avec le service
-      const { booking, error } = await createBooking(user.id, {
+      // Créer la réservation avec envoi d'email de confirmation
+      const { booking, error, emailSent } = await createBookingWithEmail(user.id, {
         serviceType: "cleaning",
         address: fullAddress,
         addressDetails: addressDetails,
@@ -365,6 +365,8 @@ export function BookingWizard() {
         tasks: bookingData.tasks,
         notes: bookingData.notes || undefined,
         totalPrice: calculatePrice(),
+        userEmail: user.email,
+        userName: user.name,
       });
 
       if (error) {
@@ -374,7 +376,7 @@ export function BookingWizard() {
         return;
       }
 
-      console.log("Booking created:", booking);
+      console.log("Booking created:", booking, "Email sent:", emailSent);
       setIsSubmitting(false);
 
       // Rediriger vers le dashboard
