@@ -183,6 +183,12 @@ export function StripePaymentForm({
       {/* Moyens de paiement acceptés */}
       <PaymentIcons />
 
+      {/* Explication pré-autorisation */}
+      <p className="text-xs text-center text-muted-foreground">
+        💡 Ce montant sera pré-autorisé mais <strong>non débité</strong> immédiatement.<br />
+        Le paiement sera effectué uniquement après l'intervention.
+      </p>
+
       {/* Sécurité */}
       <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
         <HugeiconsIcon icon={SecurityLockIcon} strokeWidth={2} className="h-4 w-4" />
