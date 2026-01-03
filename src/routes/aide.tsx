@@ -21,6 +21,31 @@ import { useState } from "react";
 
 export const Route = createFileRoute("/aide")({
   component: AidePage,
+  head: () => ({
+    meta: [
+      {
+        title: "Aide & FAQ | Questions fréquentes | justmaid",
+      },
+      {
+        name: "description",
+        content: "Trouvez les réponses à vos questions sur justmaid : réservation, paiement, annulation, intervention. Contactez notre équipe par email ou téléphone.",
+      },
+      {
+        property: "og:title",
+        content: "Aide & FAQ | Questions fréquentes | justmaid",
+      },
+      {
+        property: "og:description",
+        content: "Trouvez les réponses à vos questions sur justmaid. Contactez notre équipe.",
+      },
+    ],
+    links: [
+      {
+        rel: "canonical",
+        href: "https://justmaid.ch/aide",
+      },
+    ],
+  }),
 });
 
 const categories = [
@@ -60,7 +85,7 @@ const categories = [
     questions: [
       {
         question: "Quels moyens de paiement acceptez-vous ?",
-        answer: "Nous acceptons Visa, Mastercard, Twint, Apple Pay et Google Pay. Le paiement est sécurisé via Stripe.",
+        answer: "Nous acceptons Visa, Mastercard, Apple Pay et Google Pay. Twint sera bientôt disponible. Le paiement est sécurisé via Stripe.",
       },
       {
         question: "Quand suis-je débité ?",

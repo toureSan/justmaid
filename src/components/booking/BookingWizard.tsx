@@ -10,7 +10,6 @@ import {
   ArrowRight01Icon,
   ArrowLeft01Icon,
   Tick02Icon,
-  Clock01Icon,
   Home01Icon,
   Calendar03Icon,
   CreditCardIcon,
@@ -23,11 +22,17 @@ import { StripePaymentForm } from "./StripePaymentForm";
 const steps = [
   { id: 1, title: "Adresse", description: "Lieu d'intervention" },
   { id: 2, title: "Date & Durée", description: "Quand et combien de temps" },
-  { id: 3, title: "Détails", description: "Tâches à effectuer" },
-  { id: 4, title: "Coordonnées", description: "Vos informations" },
-  { id: 5, title: "Paiement", description: "Vérification carte" },
-  { id: 6, title: "Confirmation", description: "Récapitulatif" },
+  { id: 3, title: "Coordonnées", description: "Vos informations" },
+  { id: 4, title: "Paiement", description: "Vérification carte" },
+  { id: 5, title: "Confirmation", description: "Récapitulatif" },
 ];
+
+interface ExtraService {
+  id: string;
+  label: string;
+  price: number;
+  details?: string;
+}
 
 interface BookingData {
   // Adresse détaillée
@@ -47,6 +52,10 @@ interface BookingData {
   tasks: string[];
   notes: string;
   coords: { lat: number; lng: number } | null;
+  // Services supplémentaires
+  extras: ExtraService[];
+  hasPets: boolean;
+  hasEquipment: boolean;
   // Informations personnelles
   firstName: string;
   lastName: string;
@@ -73,10 +82,14 @@ const initialBookingData: BookingData = {
   homeSize: "medium",
   date: "",
   time: "",
-  duration: "3",
+  duration: "2",
   tasks: [],
   notes: "",
   coords: null,
+  // Services supplémentaires
+  extras: [],
+  hasPets: false,
+  hasEquipment: false,
   // Informations personnelles
   firstName: "",
   lastName: "",
@@ -88,16 +101,6 @@ const initialBookingData: BookingData = {
   cardCvc: "",
   cardName: "",
 };
-
-const taskOptions = [
-  { id: "dusting", label: "Dépoussiérage", icon: "🧹" },
-  { id: "vacuuming", label: "Aspirateur", icon: "🔌" },
-  { id: "mopping", label: "Lavage des sols", icon: "🧽" },
-  { id: "bathroom", label: "Salle de bain", icon: "🚿" },
-  { id: "kitchen", label: "Cuisine", icon: "🍳" },
-  { id: "windows", label: "Vitres intérieures", icon: "🪟" },
-  { id: "bedmaking", label: "Lits", icon: "🛏️" },
-];
 
 interface UserAuth {
   id: string;
@@ -117,6 +120,9 @@ export function BookingWizard() {
   const [showAuthModal, setShowAuthModal] = React.useState(false);
   const [user, setUser] = React.useState<UserAuth | null>(null);
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+  
+  // Mobile price details modal
+  const [showMobilePriceDetails, setShowMobilePriceDetails] = React.useState(false);
 
   // Charger l'utilisateur au montage (Supabase ou localStorage)
   React.useEffect(() => {
@@ -267,13 +273,16 @@ export function BookingWizard() {
     setBookingData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const toggleTask = (taskId: string) => {
-    setBookingData((prev) => ({
-      ...prev,
-      tasks: prev.tasks.includes(taskId)
-        ? prev.tasks.filter((t) => t !== taskId)
-        : [...prev.tasks, taskId],
-    }));
+  const updateExtras = (extras: ExtraService[]) => {
+    setBookingData((prev) => ({ ...prev, extras }));
+  };
+
+  const updateHasPets = (hasPets: boolean) => {
+    setBookingData((prev) => ({ ...prev, hasPets }));
+  };
+
+  const updateHasEquipment = (hasEquipment: boolean) => {
+    setBookingData((prev) => ({ ...prev, hasEquipment }));
   };
 
   const canProceed = () => {
@@ -282,10 +291,8 @@ export function BookingWizard() {
         // Étape adresse : code postal + ville requis
         return bookingData.postalCode.trim().length === 4 && bookingData.city.trim().length >= 2;
       case 2:
-        return bookingData.date && bookingData.time && bookingData.duration;
+        return bookingData.date && bookingData.time && bookingData.duration && bookingData.hasEquipment;
       case 3:
-        return bookingData.tasks.length > 0;
-      case 4:
         // Informations personnelles + adresse complète
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const phoneRegex = /^[\d\s+()-]{10,}$/;
@@ -300,10 +307,10 @@ export function BookingWizard() {
           bookingData.streetNumber.trim().length >= 1
         );
         return hasPersonalInfo && hasAddress;
-      case 5:
+      case 4:
         // Le paiement gère sa propre navigation
         return false;
-      case 6:
+      case 5:
         return true;
       default:
         return false;
@@ -311,12 +318,12 @@ export function BookingWizard() {
   };
 
   const handleNext = () => {
-    // Si on veut passer à l'étape 4 (coordonnées) et qu'on n'est pas connecté
-    if (currentStep === 3 && !isAuthenticated) {
+    // Si on veut passer à l'étape 3 (coordonnées) et qu'on n'est pas connecté
+    if (currentStep === 2 && !isAuthenticated) {
       setShowAuthModal(true);
       return;
     }
-    if (currentStep < 6) {
+    if (currentStep < 5) {
       setCurrentStep((prev) => prev + 1);
     }
   };
@@ -361,10 +368,12 @@ export function BookingWizard() {
         homeSize: bookingData.homeSize || undefined,
         date: bookingData.date,
         time: bookingData.time,
-        duration: parseInt(bookingData.duration) || 3,
-        tasks: bookingData.tasks,
+        duration: parseInt(bookingData.duration) || 2,
+        tasks: [], // Plus de tâches à sélectionner - inclus dans le ménage standard
         notes: bookingData.notes || undefined,
         totalPrice: calculatePrice(),
+        extras: bookingData.extras,
+        hasPets: bookingData.hasPets,
         userEmail: user.email,
         userName: user.name,
       });
@@ -388,13 +397,24 @@ export function BookingWizard() {
   };
 
   const calculatePrice = () => {
-    const hours = parseInt(bookingData.duration) || 0;
-    const basePrice = 25;
-    return hours * basePrice;
+    const hours = parseInt(bookingData.duration) || 2;
+    const basePrice = 40; // 40 CHF/heure
+    const baseTotal = hours * basePrice;
+    const extrasTotal = bookingData.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0;
+    return baseTotal + extrasTotal;
+  };
+  
+  const getBasePrice = () => {
+    const hours = parseInt(bookingData.duration) || 2;
+    return hours * 40;
+  };
+  
+  const getExtrasTotal = () => {
+    return bookingData.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0;
   };
 
   return (
-    <div className="mx-auto max-w-12xl px-0">
+    <div className="mx-auto max-w-12xl px-0 pb-20 lg:pb-0">
       {/* Modal d'authentification */}
       {showAuthModal && (
         <AuthModal 
@@ -485,28 +505,27 @@ export function BookingWizard() {
             />
           )}
           {currentStep === 2 && (
-            <Step2DateTime bookingData={bookingData} updateBookingData={updateBookingData} />
-          )}
-          {currentStep === 3 && (
-            <Step3Tasks
-              bookingData={bookingData}
+            <Step2DateTime 
+              bookingData={bookingData} 
               updateBookingData={updateBookingData}
-              toggleTask={toggleTask}
+              updateExtras={updateExtras}
+              updateHasPets={updateHasPets}
+              updateHasEquipment={updateHasEquipment}
             />
           )}
-          {currentStep === 4 && (
+          {currentStep === 3 && (
             <Step4PersonalInfo 
               bookingData={bookingData} 
               updateBookingData={updateBookingData}
             />
           )}
-          {currentStep === 5 && (
+          {currentStep === 4 && (
             <Step5Payment 
-              onPaymentSuccess={() => setCurrentStep(6)} 
+              onPaymentSuccess={() => setCurrentStep(5)} 
               calculatePrice={calculatePrice}
             />
           )}
-          {currentStep === 6 && (
+          {currentStep === 5 && (
             <Step6Confirmation bookingData={bookingData} calculatePrice={calculatePrice} />
           )}
 
@@ -521,7 +540,7 @@ export function BookingWizard() {
               <div />
             )}
 
-            {currentStep < 6 ? (
+            {currentStep < 5 ? (
               <Button
                 onClick={handleNext}
                 disabled={!canProceed()}
@@ -556,17 +575,222 @@ export function BookingWizard() {
           <VerticalStepper steps={steps} currentStep={currentStep} />
           
           {/* Price Preview */}
-          <div className="mt-8 border-t border-border/50 pt-6">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Estimation</span>
-              <span className="text-2xl font-bold text-primary">{calculatePrice()} CHF</span>
+          <div className="mt-8 border-t border-border/50 pt-6 space-y-2">
+            {/* Ménage de base */}
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">🧹 Ménage</span>
+              <span className="font-medium">{getBasePrice()} CHF</span>
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {bookingData.duration || 3}h × 25 CHF/h
+            <p className="text-xs text-muted-foreground pl-5">
+              {bookingData.duration || 2}h × 40 CHF/h
             </p>
+            
+            {/* Services supplémentaires */}
+            {bookingData.extras && bookingData.extras.length > 0 && (
+              <>
+                <div className="border-t border-border/30 my-2" />
+                {bookingData.extras.map((extra, index) => (
+                  <div key={index} className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground text-xs">{extra.label}</span>
+                    <span className="font-medium text-xs">+{extra.price} CHF</span>
+                  </div>
+                ))}
+              </>
+            )}
+            
+            {/* Animaux */}
+            {bookingData.hasPets && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground text-xs">🐾 Animaux</span>
+                <span className="text-xs text-muted-foreground">Noté</span>
+              </div>
+            )}
+            
+            {/* Date et heure */}
+            {(bookingData.date || bookingData.time) && (
+              <div className="border-t border-border/30 my-2" />
+            )}
+            
+            {bookingData.date && (
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">📅 Date</span>
+                <span className="font-medium">
+                  {new Date(bookingData.date).toLocaleDateString("fr-FR", { 
+                    weekday: "short", 
+                    day: "numeric", 
+                    month: "short" 
+                  })}
+                </span>
+              </div>
+            )}
+            
+            {bookingData.time && (
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">🕐 Heure</span>
+                <span className="font-medium">{bookingData.time}</span>
+              </div>
+            )}
+            
+            {/* Total */}
+            <div className="border-t border-border/50 pt-3 mt-3">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-foreground">Total</span>
+                <span className="text-2xl font-bold text-primary">{calculatePrice()} CHF</span>
+              </div>
+              {getExtrasTotal() > 0 && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Base: {getBasePrice()} CHF + Extras: {getExtrasTotal()} CHF
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                💳 Paiement après l'intervention
+              </p>
+            </div>
           </div>
         </div>
       </div>
+      
+      {/* Mobile Price Bar - Swipeable */}
+      <div 
+        className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] z-40 cursor-pointer"
+        onClick={() => setShowMobilePriceDetails(true)}
+        onTouchStart={(e) => {
+          const touch = e.touches[0];
+          (e.currentTarget as HTMLElement).dataset.startY = String(touch.clientY);
+        }}
+        onTouchEnd={(e) => {
+          const startY = Number((e.currentTarget as HTMLElement).dataset.startY);
+          const endY = e.changedTouches[0].clientY;
+          // Si swipe vers le haut (au moins 30px)
+          if (startY - endY > 30) {
+            setShowMobilePriceDetails(true);
+          }
+        }}
+      >
+        {/* Pull indicator */}
+        <div className="flex justify-center pt-2 pb-1">
+          <div className="w-10 h-1 bg-gray-300 rounded-full" />
+        </div>
+        <div className="max-w-md mx-auto px-4 pb-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground">TOTAL <span className="text-gray-400">(par ménage)</span></p>
+              <p className="text-[10px] text-primary">↑ Glissez pour voir les détails</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xl font-bold text-foreground">{calculatePrice()} CHF</span>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setShowMobilePriceDetails(true); }}
+                className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white text-xs font-bold"
+              >
+                i
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Mobile Price Details Modal */}
+      {showMobilePriceDetails && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center lg:hidden">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowMobilePriceDetails(false)} />
+          <div 
+            className="relative bg-white rounded-t-2xl w-full shadow-xl max-h-[70vh] overflow-hidden"
+            onTouchStart={(e) => {
+              const touch = e.touches[0];
+              (e.currentTarget as HTMLElement).dataset.startY = String(touch.clientY);
+            }}
+            onTouchEnd={(e) => {
+              const startY = Number((e.currentTarget as HTMLElement).dataset.startY);
+              const endY = e.changedTouches[0].clientY;
+              // Si swipe vers le bas (au moins 50px)
+              if (endY - startY > 50) {
+                setShowMobilePriceDetails(false);
+              }
+            }}
+          >
+            {/* Handle bar - glissez vers le bas pour fermer */}
+            <div className="flex justify-center py-3 cursor-pointer" onClick={() => setShowMobilePriceDetails(false)}>
+              <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
+            </div>
+            
+            {/* Content */}
+            <div className="px-4 pb-6 pt-2">
+              <h3 className="text-lg font-bold mb-4">Détail de votre réservation</h3>
+              
+              <div className="space-y-3">
+                {/* Ménage de base */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">🧹 Ménage à domicile</p>
+                    <p className="text-xs text-muted-foreground">{bookingData.duration || 2}h × 40 CHF/h</p>
+                  </div>
+                  <span className="font-semibold">{getBasePrice()} CHF</span>
+                </div>
+                
+                {/* Services supplémentaires */}
+                {bookingData.extras && bookingData.extras.length > 0 && (
+                  <>
+                    <div className="border-t border-border/50 pt-3">
+                      <p className="text-xs text-muted-foreground mb-2">Services supplémentaires</p>
+                      {bookingData.extras.map((extra, index) => (
+                        <div key={index} className="flex items-center justify-between py-1">
+                          <span className="text-sm">{extra.label}</span>
+                          <span className="font-medium text-sm">+{extra.price} CHF</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+                
+                {/* Date et heure */}
+                {(bookingData.date || bookingData.time) && (
+                  <div className="border-t border-border/50 pt-3">
+                    {bookingData.date && (
+                      <div className="flex items-center justify-between py-1">
+                        <span className="text-sm text-muted-foreground">📅 Date</span>
+                        <span className="font-medium text-sm">
+                          {new Date(bookingData.date).toLocaleDateString("fr-FR", { 
+                            weekday: "long", 
+                            day: "numeric", 
+                            month: "long" 
+                          })}
+                        </span>
+                      </div>
+                    )}
+                    {bookingData.time && (
+                      <div className="flex items-center justify-between py-1">
+                        <span className="text-sm text-muted-foreground">🕐 Heure</span>
+                        <span className="font-medium text-sm">{bookingData.time}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Total */}
+                <div className="border-t-2 border-primary/20 pt-3 mt-4">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-lg">Total</span>
+                    <span className="text-2xl font-bold text-primary">{calculatePrice()} CHF</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    💳 Paiement après l'intervention
+                  </p>
+                </div>
+              </div>
+              
+              <button
+                type="button"
+                onClick={() => setShowMobilePriceDetails(false)}
+                className="w-full mt-4 py-3 bg-primary text-white rounded-xl font-semibold"
+              >
+                Compris !
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -842,207 +1066,887 @@ function Step1Address({
   );
 }
 
-// Step 2: Date & Durée
+// Prix constants
+const HOURLY_RATE = 40; // CHF par heure de ménage
+const IRONING_RATE = 45; // CHF par heure de repassage
+const WINDOWS_RATE = 25; // CHF par heure de nettoyage fenêtres
+const CUPBOARDS_PRICE = 30; // CHF pour 30min de placards
+const FRIDGE_PRICE = 30; // CHF pour 30min de frigidaire
+const OVEN_PRICE = 30; // CHF pour 30min de four
+const LAUNDRY_PRICE = 40; // CHF pour 1h de lessive
+
+// Step 2: Date & Durée avec services supplémentaires
 function Step2DateTime({
   bookingData,
   updateBookingData,
+  updateExtras,
+  updateHasPets,
+  updateHasEquipment,
 }: {
   bookingData: BookingData;
-  updateBookingData: (field: keyof BookingData, value: string) => void;
+  updateBookingData: (field: keyof BookingData, value: string | string[]) => void;
+  updateExtras: (extras: ExtraService[]) => void;
+  updateHasPets: (hasPets: boolean) => void;
+  updateHasEquipment: (hasEquipment: boolean) => void;
 }) {
-  const now = new Date();
-  const currentHour = now.getHours();
+  // Modals state
+  const [showTimeCalculator, setShowTimeCalculator] = React.useState(false);
+  const [showIncludedModal, setShowIncludedModal] = React.useState(false);
+  const [showWindowsModal, setShowWindowsModal] = React.useState(false);
+  const [showIroningModal, setShowIroningModal] = React.useState(false);
+  const [showEquipmentModal, setShowEquipmentModal] = React.useState(false);
   
-  // Si après 19h, on ne peut plus réserver pour aujourd'hui
-  const isTooLateToday = currentHour >= 19;
+  // Equipment confirmation - use bookingData
+  const hasEquipment = bookingData.hasEquipment || false;
+  const setHasEquipment = (value: boolean) => updateHasEquipment(value);
   
-  // Générer les dates des 7 prochains jours
-  const dates = Array.from({ length: 7 }, (_, i) => {
-    // Si après 19h, commencer à partir de demain
-    const offset = isTooLateToday ? i + 1 : i;
-    const date = new Date();
-    date.setDate(date.getDate() + offset);
+  // Calculator state
+  const [bedrooms, setBedrooms] = React.useState(1);
+  const [bathrooms, setBathrooms] = React.useState(1);
+  
+  // Windows state
+  const [standardWindows, setStandardWindows] = React.useState(0);
+  const [largeWindows, setLargeWindows] = React.useState(0);
+  
+  // Ironing state
+  const [ironingMinutes, setIroningMinutes] = React.useState(30);
+  
+  // Services supplémentaires - utiliser bookingData.extras
+  const extraServices = bookingData.extras || [];
+  const setExtraServices = (newExtras: ExtraService[] | ((prev: ExtraService[]) => ExtraService[])) => {
+    if (typeof newExtras === 'function') {
+      updateExtras(newExtras(extraServices));
+    } else {
+      updateExtras(newExtras);
+    }
+  };
+  
+  // Animaux
+  const hasPets = bookingData.hasPets || false;
+  const setHasPets = (value: boolean) => updateHasPets(value);
+  
+  // Calculer la durée recommandée
+  const calculateRecommendedHours = () => {
+    return Math.max(2, Math.ceil(1.5 + (bedrooms * 0.5) + (bathrooms * 0.5)));
+  };
+  
+  // Calculer le temps pour les fenêtres (30min par fenêtre)
+  const calculateWindowsTime = () => {
+    return ((standardWindows + largeWindows) * 30) / 60;
+  };
+  
+  // Calculer le prix des fenêtres
+  const calculateWindowsPrice = () => {
+    const hours = calculateWindowsTime();
+    return Math.ceil(hours * WINDOWS_RATE);
+  };
+  
+  // Calculer le prix du repassage
+  const calculateIroningPrice = () => {
+    return Math.ceil((ironingMinutes / 60) * IRONING_RATE);
+  };
+  
+  // Durée actuelle (minimum 2h)
+  const duration = Math.max(2, parseInt(bookingData.duration) || 2);
+  
+  // Prix du ménage de base
+  const basePrice = duration * HOURLY_RATE;
+  
+  // Prix total des suppléments
+  const extrasTotal = extraServices.reduce((sum, s) => sum + s.price, 0);
+  
+  // Navigation de la semaine
+  const [weekOffset, setWeekOffset] = React.useState(0);
+  const [timeAlert, setTimeAlert] = React.useState<string | null>(null);
+  
+  // On ne peut réserver que pour le lendemain minimum
+  const getFirstAvailableDate = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow;
+  };
+  
+  // Générer les dates de la semaine courante
+  const getWeekDates = () => {
+    const firstAvailable = getFirstAvailableDate();
+    const startOfWeek = new Date(firstAvailable);
+    startOfWeek.setDate(startOfWeek.getDate() + (weekOffset * 7));
     
-    const isToday = offset === 0;
-    const isTomorrow = offset === 1;
-    
-    return {
-      value: date.toISOString().split("T")[0],
-      label: isToday ? "Aujourd'hui" : isTomorrow ? "Demain" : date.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" }),
-      isDisabled: false,
-    };
-  });
+    return Array.from({ length: 7 }, (_, i) => {
+      const date = new Date(startOfWeek);
+      date.setDate(startOfWeek.getDate() + i);
+      
+      const dayOfWeek = date.getDay(); // 0 = dimanche
+      const isSunday = dayOfWeek === 0;
+      const isPast = date < getFirstAvailableDate();
+      
+      return {
+        value: date.toISOString().split("T")[0],
+        day: date.getDate(),
+        weekday: date.toLocaleDateString("fr-FR", { weekday: "short" }).replace(".", ""),
+        isSunday,
+        isDisabled: isSunday || isPast,
+        fullDate: date,
+      };
+    });
+  };
+  
+  const weekDates = getWeekDates();
+  const currentMonth = weekDates[3]?.fullDate.toLocaleDateString("fr-FR", { month: "long" }) || "";
+  const currentMonthCapitalized = currentMonth.charAt(0).toUpperCase() + currentMonth.slice(1);
 
-  // Créneaux horaires de 6h à 19h
+  // Créneaux horaires de 7h à 20h par 30 minutes
   const allTimeSlots = [
-    "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", 
-    "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"
+    "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30",
+    "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30",
+    "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30",
+    "19:00", "19:30", "20:00"
   ];
   
-  // Filtrer les créneaux passés si c'est aujourd'hui
-  const selectedDate = bookingData.date;
-  const today = new Date().toISOString().split("T")[0];
-  const isSelectedDateToday = selectedDate === today;
+  // Vérifier si le créneau est valide avec la durée
+  const isTimeSlotValid = (time: string) => {
+    const [hour, minutes] = time.split(":").map(Number);
+    const startTime = hour + minutes / 60;
+    const endTime = startTime + duration;
+    
+    // La fin ne peut pas dépasser 22h
+    if (endTime > 22) {
+      return false;
+    }
+    
+    return true;
+  };
+  
+  // Vérifier et afficher une alerte si nécessaire
+  const handleTimeSelect = (time: string) => {
+    const [hour, minutes] = time.split(":").map(Number);
+    const startTime = hour + minutes / 60;
+    const endTime = startTime + duration;
+    
+    if (endTime > 22) {
+      setTimeAlert(`Ce créneau n'est pas disponible car le ménage se terminerait après 22h. Veuillez choisir un créneau plus tôt ou réduire la durée.`);
+      return;
+    }
+    
+    setTimeAlert(null);
+    updateBookingData("time", time);
+  };
   
   const timeSlots = allTimeSlots.map(time => {
-    const [hour] = time.split(":").map(Number);
-    // Si c'est aujourd'hui, désactiver les créneaux passés (avec 1h de marge)
-    const isDisabled = isSelectedDateToday && hour <= currentHour;
-    return { time, isDisabled };
+    const isValid = isTimeSlotValid(time);
+    return { time, isDisabled: !isValid };
   });
+
+  // Services supplémentaires
+  const supplementaryServices = [
+    { id: "windows", label: "Fenêtres", icon: "🪟", hasModal: true, priceLabel: "25 CHF/h" },
+    { id: "ironing", label: "Repassage", icon: "👔", hasModal: true, priceLabel: "45 CHF/h" },
+    { id: "laundry", label: "Lessive & séchage", icon: "🧺", time: "+1h", price: LAUNDRY_PRICE },
+    { id: "oven", label: "Intérieur du four", icon: "🔥", time: "+30min", price: OVEN_PRICE },
+    { id: "cupboards", label: "Placards de cuisine", icon: "🗄️", time: "+30min", price: CUPBOARDS_PRICE },
+    { id: "fridge", label: "Intérieur du frigidaire", icon: "❄️", time: "+30min", price: FRIDGE_PRICE },
+  ];
+
+  const toggleExtraService = (serviceId: string) => {
+    if (serviceId === "windows") {
+      setShowWindowsModal(true);
+    } else if (serviceId === "ironing") {
+      setShowIroningModal(true);
+    } else {
+      const service = supplementaryServices.find(s => s.id === serviceId);
+      const isSelected = extraServices.some(s => s.id === serviceId);
+      
+      if (isSelected) {
+        setExtraServices(prev => prev.filter(s => s.id !== serviceId));
+      } else if (service && service.price) {
+        setExtraServices(prev => [...prev, { 
+          id: serviceId, 
+          label: `${service.icon} ${service.label}`,
+          price: service.price,
+          details: service.time
+        }]);
+      }
+    }
+  };
+  
+  const isServiceSelected = (serviceId: string) => {
+    return extraServices.some(s => s.id === serviceId);
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-          <HugeiconsIcon icon={Calendar03Icon} strokeWidth={1.5} className="h-6 w-6 text-primary" />
+      {/* Duration with +/- - EN PREMIER */}
+      <div className="rounded-2xl border border-border bg-white p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+          <h3 className="text-base sm:text-lg font-semibold">⏱️ Combien de temps auriez-vous besoin ?</h3>
+          <button
+            type="button"
+            onClick={() => setShowTimeCalculator(true)}
+            className="text-primary font-medium hover:underline text-sm"
+          >
+            Calculer le temps
+          </button>
         </div>
-        <div>
-          <h2 className="text-xl font-bold text-foreground">Quand souhaitez-vous le ménage ?</h2>
-          <p className="text-sm text-muted-foreground">Choisissez une date et une heure</p>
+        
+        <div className="flex items-center justify-center gap-4 sm:gap-6">
+          <button
+            type="button"
+            onClick={() => duration > 2 && updateBookingData("duration", String(duration - 1))}
+            className={`flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full border-2 transition-colors ${
+              duration <= 2 ? "border-gray-200 opacity-50" : "border-border hover:border-primary"
+            }`}
+            disabled={duration <= 2}
+          >
+            <span className="text-xl sm:text-2xl text-gray-400">−</span>
+          </button>
+          <div className="text-center">
+            <span className="text-xl sm:text-2xl font-bold">{duration} heures</span>
+            <p className="text-sm text-primary font-medium">{basePrice} CHF</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => duration < 8 && updateBookingData("duration", String(duration + 1))}
+            className={`flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full border-2 transition-colors ${
+              duration >= 8 ? "border-gray-200 opacity-50" : "border-border hover:border-primary"
+            }`}
+            disabled={duration >= 8}
+          >
+            <span className="text-xl sm:text-2xl text-gray-400">+</span>
+          </button>
+        </div>
+        
+        <p className="text-xs sm:text-sm text-muted-foreground mt-4 text-center">
+          Recommandé pour: {bedrooms} chambre{bedrooms > 1 ? "s" : ""}, {bathrooms} salle{bathrooms > 1 ? "s" : ""} de bain
+          <button
+            type="button"
+            onClick={() => setShowTimeCalculator(true)}
+            className="ml-1 text-gray-400 hover:text-gray-600"
+          >
+            ⓘ
+          </button>
+        </p>
+        <p className="text-xs text-muted-foreground text-center mt-1">
+          Minimum 2 heures • {HOURLY_RATE} CHF/heure
+        </p>
+      </div>
+
+      {/* Card pour date et heure */}
+      <div className="rounded-2xl border border-border bg-white p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4">
+          📅 Sélectionnez une date et une heure
+        </h2>
+        
+        {/* Checkbox animaux */}
+        <div className="flex items-center gap-2 mb-6">
+          <input
+            type="checkbox"
+            id="hasPets"
+            checked={hasPets}
+            onChange={(e) => setHasPets(e.target.checked)}
+            className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
+          />
+          <label htmlFor="hasPets" className="text-sm text-foreground">
+            J'ai des animaux 🐾
+          </label>
+        </div>
+        
+        {/* Calendrier semaine */}
+        <div className="mb-6">
+          {/* Header avec mois et navigation */}
+          <div className="flex items-center justify-between mb-4">
+            <button
+              type="button"
+              onClick={() => weekOffset > 0 && setWeekOffset(weekOffset - 1)}
+              disabled={weekOffset === 0}
+              className={`flex h-10 w-10 items-center justify-center rounded-full transition-all shrink-0 ${
+                weekOffset === 0 
+                  ? "text-gray-300 cursor-not-allowed" 
+                  : "text-foreground hover:bg-primary/10 active:bg-primary/20"
+              }`}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            
+            <div className="text-center">
+              <p className="font-bold text-base sm:text-lg">{currentMonthCapitalized}</p>
+              <p className="text-xs text-muted-foreground">Semaine {weekOffset + 1}</p>
+            </div>
+            
+            <button
+              type="button"
+              onClick={() => weekOffset < 4 && setWeekOffset(weekOffset + 1)}
+              disabled={weekOffset >= 4}
+              className={`flex h-10 w-10 items-center justify-center rounded-full transition-all shrink-0 ${
+                weekOffset >= 4 
+                  ? "text-gray-300 cursor-not-allowed" 
+                  : "text-foreground hover:bg-primary/10 active:bg-primary/20"
+              }`}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+          
+          {/* Jours de la semaine - grille mobile optimisée */}
+          <div className="grid grid-cols-7 gap-1 sm:gap-2">
+            {weekDates.map((date) => {
+              const isSelected = bookingData.date === date.value;
+              return (
+                <button
+                  key={date.value}
+                  type="button"
+                  disabled={date.isDisabled}
+                  onClick={() => !date.isDisabled && updateBookingData("date", date.value)}
+                  className={`relative flex flex-col items-center py-2 sm:py-3 rounded-xl transition-all ${
+                    date.isDisabled
+                      ? "text-gray-300 cursor-not-allowed"
+                      : isSelected
+                      ? "bg-primary text-white shadow-lg shadow-primary/30 scale-105"
+                      : "hover:bg-gray-100 active:bg-gray-200"
+                  }`}
+                >
+                  <span className={`text-[10px] sm:text-xs font-medium uppercase mb-0.5 ${
+                    date.isDisabled ? "text-gray-300" : isSelected ? "text-white/80" : "text-gray-500"
+                  }`}>
+                    {date.weekday.substring(0, 2)}
+                  </span>
+                  <span className={`text-base sm:text-xl font-bold ${
+                    date.isDisabled ? "text-gray-300" : isSelected ? "text-white" : "text-foreground"
+                  }`}>
+                    {date.day}
+                  </span>
+                  {date.isSunday && !isSelected && (
+                    <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 text-[8px] text-gray-400">fermé</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        
+        {/* Alerte dimanche */}
+        {weekDates.some(d => d.isSunday && bookingData.date === d.value) && (
+          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800">
+            ⚠️ Le dimanche n'est pas disponible pour les réservations.
+          </div>
+        )}
+        
+        {/* Créneaux horaires */}
+        <div className="border-t pt-4">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="font-medium text-sm sm:text-base">Choisissez l'heure</h4>
+            {bookingData.time && (
+              <span className="text-xs sm:text-sm text-primary font-medium bg-primary/10 px-2 py-1 rounded-full">
+                ✓ {bookingData.time}
+              </span>
+            )}
+          </div>
+          
+          {timeAlert && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+              ⚠️ {timeAlert}
+            </div>
+          )}
+          
+          {/* Groupes d'heures */}
+          <div className="space-y-3">
+            {/* Matin */}
+            <div>
+              <p className="text-xs text-gray-500 mb-1.5 font-medium">🌅 Matin</p>
+              <div className="grid grid-cols-4 sm:grid-cols-6 gap-1.5">
+                {timeSlots.filter(t => parseInt(t.time) < 12).map(({ time, isDisabled }) => (
+                  <button
+                    key={time}
+                    type="button"
+                    disabled={isDisabled}
+                    onClick={() => !isDisabled && handleTimeSelect(time)}
+                    className={`rounded-lg py-2.5 sm:py-2 text-center transition-all text-xs sm:text-sm font-medium ${
+                      isDisabled
+                        ? "bg-gray-50 text-gray-300 cursor-not-allowed"
+                        : bookingData.time === time
+                        ? "bg-primary text-white shadow-md shadow-primary/20"
+                        : "bg-gray-50 text-foreground hover:bg-gray-100 active:bg-primary/10"
+                    }`}
+                  >
+                    {time}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Après-midi */}
+            <div>
+              <p className="text-xs text-gray-500 mb-1.5 font-medium">☀️ Après-midi</p>
+              <div className="grid grid-cols-4 sm:grid-cols-6 gap-1.5">
+                {timeSlots.filter(t => parseInt(t.time) >= 12 && parseInt(t.time) < 18).map(({ time, isDisabled }) => (
+                  <button
+                    key={time}
+                    type="button"
+                    disabled={isDisabled}
+                    onClick={() => !isDisabled && handleTimeSelect(time)}
+                    className={`rounded-lg py-2.5 sm:py-2 text-center transition-all text-xs sm:text-sm font-medium ${
+                      isDisabled
+                        ? "bg-gray-50 text-gray-300 cursor-not-allowed"
+                        : bookingData.time === time
+                        ? "bg-primary text-white shadow-md shadow-primary/20"
+                        : "bg-gray-50 text-foreground hover:bg-gray-100 active:bg-primary/10"
+                    }`}
+                  >
+                    {time}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Soir */}
+            <div>
+              <p className="text-xs text-gray-500 mb-1.5 font-medium">🌙 Soir</p>
+              <div className="grid grid-cols-4 sm:grid-cols-6 gap-1.5">
+                {timeSlots.filter(t => parseInt(t.time) >= 18).map(({ time, isDisabled }) => (
+                  <button
+                    key={time}
+                    type="button"
+                    disabled={isDisabled}
+                    onClick={() => !isDisabled && handleTimeSelect(time)}
+                    className={`rounded-lg py-2.5 sm:py-2 text-center transition-all text-xs sm:text-sm font-medium ${
+                      isDisabled
+                        ? "bg-gray-50 text-gray-300 cursor-not-allowed"
+                        : bookingData.time === time
+                        ? "bg-primary text-white shadow-md shadow-primary/20"
+                        : "bg-gray-50 text-foreground hover:bg-gray-100 active:bg-primary/10"
+                    }`}
+                  >
+                    {time}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          <p className="mt-4 text-xs text-muted-foreground text-center">
+            Créneau indisponible ?{" "}
+            <a href="/aide" className="text-primary hover:underline">Contactez-nous</a>
+          </p>
         </div>
       </div>
 
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Date</label>
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-7">
-            {dates.map((date) => (
+      <div className="space-y-6">
+        {/* Supplementary Services */}
+        <div className="rounded-2xl border border-border bg-white p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold mb-4">Ajouter des services supplémentaires</h3>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            {supplementaryServices.map((service) => (
               <button
-                key={date.value}
+                key={service.id}
                 type="button"
-                onClick={() => updateBookingData("date", date.value)}
-                className={`rounded-lg border-2 p-3 text-center transition-all ${
-                  bookingData.date === date.value
-                    ? "border-primary bg-primary/5 text-primary"
-                    : "border-border hover:border-primary/50"
-                }`}
-              >
-                <span className="text-xs font-medium">{date.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Heure de début</label>
-          <p className="text-xs text-muted-foreground">Créneaux disponibles de 6h à 19h</p>
-          <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
-            {timeSlots.map(({ time, isDisabled }) => (
-              <button
-                key={time}
-                type="button"
-                disabled={isDisabled}
-                onClick={() => !isDisabled && updateBookingData("time", time)}
-                className={`rounded-lg border-2 p-3 text-center transition-all ${
-                  isDisabled
-                    ? "border-border/50 bg-muted/50 text-muted-foreground cursor-not-allowed opacity-50"
-                    : bookingData.time === time
-                    ? "border-primary bg-primary/5 text-primary"
-                    : "border-border hover:border-primary/50"
-                }`}
-              >
-                <span className="text-sm font-medium">{time}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Durée de l'intervention</label>
-          <div className="grid grid-cols-4 gap-3">
-            {[
-              { hours: "2", price: "50 CHF" },
-              { hours: "3", price: "75 CHF" },
-              { hours: "4", price: "100 CHF" },
-              { hours: "5", price: "125 CHF" },
-            ].map((option) => (
-              <button
-                key={option.hours}
-                type="button"
-                onClick={() => updateBookingData("duration", option.hours)}
-                className={`rounded-lg border-2 p-4 text-center transition-all ${
-                  bookingData.duration === option.hours
+                onClick={() => toggleExtraService(service.id)}
+                className={`flex flex-col items-center p-3 sm:p-4 rounded-xl border-2 transition-all ${
+                  isServiceSelected(service.id)
                     ? "border-primary bg-primary/5"
                     : "border-border hover:border-primary/50"
                 }`}
               >
-                <div className="flex items-center justify-center gap-1">
-                  <HugeiconsIcon icon={Clock01Icon} strokeWidth={2} className="h-4 w-4 text-muted-foreground" />
-                  <span className={`text-lg font-bold ${bookingData.duration === option.hours ? "text-primary" : "text-foreground"}`}>
-                    {option.hours}h
-                  </span>
-                </div>
-                <span className="text-xs text-muted-foreground">{option.price}</span>
+                <span className="text-xl sm:text-2xl mb-1 sm:mb-2">{service.icon}</span>
+                <span className="text-xs font-medium text-center leading-tight">{service.label}</span>
+                <span className="text-xs text-muted-foreground mt-1">
+                  {service.hasModal ? service.priceLabel : `+${service.price} CHF`}
+                </span>
               </button>
             ))}
           </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Step 3: Tâches
-function Step3Tasks({
-  bookingData,
-  updateBookingData,
-  toggleTask,
-}: {
-  bookingData: BookingData;
-  updateBookingData: (field: keyof BookingData, value: string) => void;
-  toggleTask: (taskId: string) => void;
-}) {
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-          <span className="text-2xl">✨</span>
-        </div>
-        <div>
-          <h2 className="text-xl font-bold text-foreground">Que devons-nous faire ?</h2>
-          <p className="text-sm text-muted-foreground">Sélectionnez les tâches à effectuer</p>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {taskOptions.map((task) => (
-            <button
-              key={task.id}
-              type="button"
-              onClick={() => toggleTask(task.id)}
-              className={`flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all ${
-                bookingData.tasks.includes(task.id)
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-primary/50"
-              }`}
-            >
-              <span className="text-2xl">{task.icon}</span>
-              <span className={`text-sm font-medium text-center ${
-                bookingData.tasks.includes(task.id) ? "text-primary" : "text-foreground"
-              }`}>
-                {task.label}
-              </span>
-              {bookingData.tasks.includes(task.id) && (
-                <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} className="h-4 w-4 text-primary" />
-              )}
-            </button>
-          ))}
+          
+          {/* Résumé des extras sélectionnés */}
+          {extraServices.length > 0 && (
+            <div className="mt-4 pt-4 border-t">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">Suppléments ({extraServices.length})</span>
+                <span className="font-semibold text-primary">+{extrasTotal} CHF</span>
+              </div>
+            </div>
+          )}
         </div>
 
+        {/* Instructions particulières */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-foreground">
-            Instructions particulières (optionnel)
+            📝 Instructions particulières (optionnel)
           </label>
           <Textarea
             placeholder="Ex: Ne pas utiliser de javel, clés sous le paillasson, attention au chat..."
             value={bookingData.notes}
             onChange={(e) => updateBookingData("notes", e.target.value)}
-            rows={4}
+            rows={3}
+            className="resize-none"
           />
         </div>
+
+        {/* Equipment Confirmation */}
+        <div className="rounded-xl border border-border bg-gray-50 p-4">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={hasEquipment}
+              onChange={(e) => setHasEquipment(e.target.checked)}
+              className="h-5 w-5 mt-0.5 rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            <span className="text-sm text-foreground">
+              Je confirme avoir tout le{" "}
+              <button
+                type="button"
+                onClick={(e) => { e.preventDefault(); setShowEquipmentModal(true); }}
+                className="text-primary font-semibold hover:underline"
+              >
+                matériel de ménage nécessaire
+              </button>
+              {" "}à mon domicile.
+            </span>
+          </label>
+        </div>
+
+        {/* What's Included Link */}
+        <button
+          type="button"
+          onClick={() => setShowIncludedModal(true)}
+          className="w-full text-center text-primary font-semibold hover:underline py-3"
+        >
+          Ce qui est inclus dans votre ménage
+        </button>
       </div>
+
+      {/* Time Calculator Modal */}
+      {showTimeCalculator && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowTimeCalculator(false)} />
+          <div className="relative bg-white rounded-t-2xl sm:rounded-2xl p-5 w-full sm:max-w-sm shadow-xl max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4 border-b pb-3">
+              <h3 className="text-lg font-bold">Calculateur de temps</h3>
+              <button onClick={() => setShowTimeCalculator(false)} className="p-1 text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+            
+            <p className="text-sm text-gray-600 mb-4">
+              Ajoutez le nombre de chambres et salles de bains.
+            </p>
+            
+            <div className="space-y-3">
+              <div className="flex items-center justify-between py-2">
+                <span className="font-medium text-sm">Chambres</span>
+                <div className="flex items-center gap-3">
+                  <button type="button" onClick={() => bedrooms > 1 && setBedrooms(bedrooms - 1)}
+                    className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-border">−</button>
+                  <span className="text-lg font-bold w-6 text-center">{bedrooms}</span>
+                  <button type="button" onClick={() => setBedrooms(bedrooms + 1)}
+                    className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-border">+</button>
+                </div>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="font-medium text-sm">Salles de bain</span>
+                <div className="flex items-center gap-3">
+                  <button type="button" onClick={() => bathrooms > 1 && setBathrooms(bathrooms - 1)}
+                    className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-border">−</button>
+                  <span className="text-lg font-bold w-6 text-center">{bathrooms}</span>
+                  <button type="button" onClick={() => setBathrooms(bathrooms + 1)}
+                    className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-border">+</button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-4 p-3 bg-primary/5 rounded-xl">
+              <p className="text-sm">Recommandation: <strong>{calculateRecommendedHours()}h</strong> ({calculateRecommendedHours() * HOURLY_RATE} CHF)</p>
+              <p className="text-xs text-gray-500 mt-1">Salon, cuisine et espaces communs inclus</p>
+            </div>
+            
+            <div className="flex gap-3 mt-4 pt-3 border-t">
+              <button type="button" onClick={() => setShowTimeCalculator(false)}
+                className="flex-1 py-2.5 text-primary font-semibold text-sm">Annuler</button>
+              <button type="button" onClick={() => { updateBookingData("duration", String(calculateRecommendedHours())); setShowTimeCalculator(false); }}
+                className="flex-1 py-2.5 bg-primary text-white rounded-xl font-semibold text-sm">Appliquer</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Windows Modal */}
+      {showWindowsModal && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowWindowsModal(false)} />
+          <div className="relative bg-white rounded-t-2xl sm:rounded-2xl p-5 w-full sm:max-w-sm shadow-xl max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4 border-b pb-3">
+              <h3 className="text-lg font-bold">🪟 Fenêtres</h3>
+              <button onClick={() => setShowWindowsModal(false)} className="p-1 text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+            
+            <p className="text-sm text-gray-600 mb-4">
+              Nombre de fenêtres à nettoyer. <span className="text-primary font-medium">{WINDOWS_RATE} CHF/h</span>
+            </p>
+            
+            <div className="space-y-3">
+              <div className="flex items-center justify-between py-2">
+                <div>
+                  <span className="font-medium text-sm">Fenêtres standard</span>
+                  <p className="text-xs text-gray-400">~30 min/fenêtre</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button type="button" onClick={() => standardWindows > 0 && setStandardWindows(standardWindows - 1)}
+                    className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-border">−</button>
+                  <span className="text-lg font-bold w-6 text-center">{standardWindows}</span>
+                  <button type="button" onClick={() => setStandardWindows(standardWindows + 1)}
+                    className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-border">+</button>
+                </div>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <div>
+                  <span className="font-medium text-sm">Grandes fenêtres</span>
+                  <p className="text-xs text-gray-400">~30 min/fenêtre</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button type="button" onClick={() => largeWindows > 0 && setLargeWindows(largeWindows - 1)}
+                    className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-border">−</button>
+                  <span className="text-lg font-bold w-6 text-center">{largeWindows}</span>
+                  <button type="button" onClick={() => setLargeWindows(largeWindows + 1)}
+                    className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-border">+</button>
+                </div>
+              </div>
+            </div>
+            
+            {(standardWindows > 0 || largeWindows > 0) && (
+              <div className="mt-4 p-3 bg-primary/5 rounded-xl flex justify-between items-center">
+                <span className="text-sm">Temps: <strong>{calculateWindowsTime().toFixed(1)}h</strong></span>
+                <span className="text-lg font-bold text-primary">+{calculateWindowsPrice()} CHF</span>
+              </div>
+            )}
+            
+            <div className="flex gap-3 mt-4 pt-3 border-t">
+              <button type="button" onClick={() => { setStandardWindows(0); setLargeWindows(0); setExtraServices(prev => prev.filter(s => s.id !== "windows")); setShowWindowsModal(false); }}
+                className="flex-1 py-2.5 text-primary font-semibold text-sm">Annuler</button>
+              <button type="button" onClick={() => {
+                if (standardWindows > 0 || largeWindows > 0) {
+                  const totalWindows = standardWindows + largeWindows;
+                  setExtraServices(prev => [...prev.filter(s => s.id !== "windows"), { 
+                    id: "windows", 
+                    label: `🪟 Fenêtres (${totalWindows})`,
+                    price: calculateWindowsPrice(), 
+                    details: `${calculateWindowsTime().toFixed(1)}h` 
+                  }]);
+                } else { setExtraServices(prev => prev.filter(s => s.id !== "windows")); }
+                setShowWindowsModal(false);
+              }} className="flex-1 py-2.5 bg-primary text-white rounded-xl font-semibold text-sm">Appliquer</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Ironing Modal */}
+      {showIroningModal && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowIroningModal(false)} />
+          <div className="relative bg-white rounded-t-2xl sm:rounded-2xl p-5 w-full sm:max-w-sm shadow-xl max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4 border-b pb-3">
+              <h3 className="text-lg font-bold">👔 Repassage</h3>
+              <button onClick={() => setShowIroningModal(false)} className="p-1 text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+            
+            <p className="text-sm text-gray-600 mb-4 text-center">
+              Durée de repassage. <span className="text-primary font-medium">{IRONING_RATE} CHF/h</span>
+            </p>
+            
+            <div className="flex items-center justify-center gap-4 py-3">
+              <button type="button" onClick={() => ironingMinutes > 30 && setIroningMinutes(ironingMinutes - 30)}
+                className={`flex h-11 w-11 items-center justify-center rounded-full border-2 ${ironingMinutes <= 30 ? "border-gray-200 opacity-50" : "border-border"}`}
+                disabled={ironingMinutes <= 30}>−</button>
+              <div className="text-center">
+                <span className="text-xl font-bold">{ironingMinutes}min</span>
+                <p className="text-sm text-primary font-medium">+{calculateIroningPrice()} CHF</p>
+              </div>
+              <button type="button" onClick={() => ironingMinutes < 120 && setIroningMinutes(ironingMinutes + 30)}
+                className={`flex h-11 w-11 items-center justify-center rounded-full border-2 ${ironingMinutes >= 120 ? "border-gray-200 opacity-50" : "border-border"}`}
+                disabled={ironingMinutes >= 120}>+</button>
+            </div>
+            
+            <p className="text-xs text-gray-500 text-center mt-2">
+              Assurez-vous que fer et table sont accessibles.
+            </p>
+            
+            <div className="flex gap-3 mt-4 pt-3 border-t">
+              <button type="button" onClick={() => { setIroningMinutes(30); setExtraServices(prev => prev.filter(s => s.id !== "ironing")); setShowIroningModal(false); }}
+                className="flex-1 py-2.5 text-primary font-semibold text-sm">Annuler</button>
+              <button type="button" onClick={() => {
+                setExtraServices(prev => [...prev.filter(s => s.id !== "ironing"), { 
+                  id: "ironing", 
+                  label: `👔 Repassage (${ironingMinutes}min)`,
+                  price: calculateIroningPrice(), 
+                  details: `${ironingMinutes}min` 
+                }]);
+                setShowIroningModal(false);
+              }} className="flex-1 py-2.5 bg-primary text-white rounded-xl font-semibold text-sm">Appliquer</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* What's Included Modal */}
+      {showIncludedModal && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowIncludedModal(false)} />
+          <div className="relative bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg shadow-xl max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b shrink-0">
+              <h3 className="text-lg font-bold">Ce qui est inclus</h3>
+              <button onClick={() => setShowIncludedModal(false)} className="p-1 text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+            
+            {/* Scrollable Content */}
+            <div className="overflow-y-auto flex-1 p-4">
+              <div className="space-y-6">
+                {/* Chambre, salon */}
+                <div>
+                  <div className="rounded-xl overflow-hidden h-32 sm:h-40 mb-3">
+                    <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=300&fit=crop" alt="Chambre" className="w-full h-full object-cover" />
+                  </div>
+                  <h4 className="font-bold text-sm mb-2">🛏️ Chambre & salon</h4>
+                  <ul className="grid grid-cols-2 gap-1 text-xs text-gray-600">
+                    <li className="flex items-start gap-1"><span className="text-green-500">✓</span>Aspirateur et sols</li>
+                    <li className="flex items-start gap-1"><span className="text-green-500">✓</span>Dépoussiérage</li>
+                    <li className="flex items-start gap-1"><span className="text-green-500">✓</span>Miroirs et vitres</li>
+                    <li className="flex items-start gap-1"><span className="text-green-500">✓</span>Poubelles</li>
+                    <li className="flex items-start gap-1"><span className="text-green-500">✓</span>Faire les lits</li>
+                  </ul>
+                </div>
+
+                {/* Salle de bain */}
+                <div>
+                  <div className="rounded-xl overflow-hidden h-32 sm:h-40 mb-3">
+                    <img src="https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=600&h=300&fit=crop" alt="Salle de bain" className="w-full h-full object-cover" />
+                  </div>
+                  <h4 className="font-bold text-sm mb-2">🚿 Salle de bain</h4>
+                  <ul className="grid grid-cols-2 gap-1 text-xs text-gray-600">
+                    <li className="flex items-start gap-1"><span className="text-green-500">✓</span>Nettoyage sols</li>
+                    <li className="flex items-start gap-1"><span className="text-green-500">✓</span>Miroirs</li>
+                    <li className="flex items-start gap-1"><span className="text-green-500">✓</span>Désinfection WC/douche</li>
+                    <li className="flex items-start gap-1"><span className="text-green-500">✓</span>Dépoussiérage</li>
+                  </ul>
+                </div>
+
+                {/* Cuisine */}
+                <div>
+                  <div className="rounded-xl overflow-hidden h-32 sm:h-40 mb-3">
+                    <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=300&fit=crop" alt="Cuisine" className="w-full h-full object-cover" />
+                  </div>
+                  <h4 className="font-bold text-sm mb-2">🍳 Cuisine</h4>
+                  <ul className="grid grid-cols-2 gap-1 text-xs text-gray-600">
+                    <li className="flex items-start gap-1"><span className="text-green-500">✓</span>Nettoyage sols</li>
+                    <li className="flex items-start gap-1"><span className="text-green-500">✓</span>Vaisselle</li>
+                    <li className="flex items-start gap-1"><span className="text-green-500">✓</span>Évier et surfaces</li>
+                    <li className="flex items-start gap-1"><span className="text-green-500">✓</span>Électroménager</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            {/* Footer */}
+            <div className="p-4 border-t shrink-0">
+              <button type="button" onClick={() => setShowIncludedModal(false)}
+                className="w-full py-2.5 bg-primary text-white rounded-xl font-semibold text-sm">
+                Compris !
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Equipment Modal */}
+      {showEquipmentModal && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowEquipmentModal(false)} />
+          <div className="relative bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md shadow-xl max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b shrink-0">
+              <h3 className="text-lg font-bold">Équipement requis chez vous</h3>
+              <button onClick={() => setShowEquipmentModal(false)} className="p-1 text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+            
+            {/* Scrollable Content */}
+            <div className="overflow-y-auto flex-1 p-4">
+              <p className="text-sm text-gray-600 mb-5">
+                Pour garantir un ménage efficace, merci de vous assurer d'avoir les éléments suivants à disposition. 
+                N'oubliez pas de ranger un minimum avant l'arrivée de notre aide-ménagère — cela optimise le temps de nettoyage !
+              </p>
+              
+              <div className="space-y-4">
+                {/* Produits de nettoyage */}
+                <div className="flex items-start gap-3">
+                  <span className="text-xl">🧴</span>
+                  <div>
+                    <h4 className="font-bold text-sm">Produits de nettoyage</h4>
+                    <p className="text-xs text-gray-500">Nettoyant multi-surfaces, produit WC, dégraissant cuisine</p>
+                  </div>
+                </div>
+                
+                {/* Aspirateur */}
+                <div className="flex items-start gap-3">
+                  <span className="text-xl">🔌</span>
+                  <div>
+                    <h4 className="font-bold text-sm">Un aspirateur fonctionnel</h4>
+                    <p className="text-xs text-gray-500">Pour tous types de sols (parquet, carrelage, moquette)</p>
+                  </div>
+                </div>
+                
+                {/* Kit sols */}
+                <div className="flex items-start gap-3">
+                  <span className="text-xl">🧹</span>
+                  <div>
+                    <h4 className="font-bold text-sm">Kit d'entretien des sols</h4>
+                    <p className="text-xs text-gray-500">Balai, serpillère ou balai-vapeur, seau</p>
+                  </div>
+                </div>
+                
+                {/* Accessoires */}
+                <div className="flex items-start gap-3">
+                  <span className="text-xl">🧤</span>
+                  <div>
+                    <h4 className="font-bold text-sm">Accessoires de base</h4>
+                    <p className="text-xs text-gray-500">Chiffons microfibres, éponges, gants de ménage, plumeau</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Si extras sélectionnés */}
+              {extraServices.length > 0 && (
+                <div className="mt-6 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                  <h4 className="font-bold text-sm text-amber-800 mb-2">📋 Pour vos services supplémentaires :</h4>
+                  <ul className="space-y-1 text-xs text-amber-700">
+                    {extraServices.some(s => s.id === "oven") && (
+                      <li>— Produit décapant four (pour le nettoyage du four)</li>
+                    )}
+                    {extraServices.some(s => s.id === "laundry") && (
+                      <li>— Lessive et adoucissant (pour le linge)</li>
+                    )}
+                    {extraServices.some(s => s.id === "windows") && (
+                      <li>— Produit lave-vitres et chiffons microfibres</li>
+                    )}
+                    {extraServices.some(s => s.id === "ironing") && (
+                      <li>— Fer à repasser et table à repasser</li>
+                    )}
+                  </ul>
+                </div>
+              )}
+            </div>
+            
+            {/* Footer */}
+            <div className="p-4 border-t shrink-0">
+              <button 
+                type="button" 
+                onClick={() => { setHasEquipment(true); setShowEquipmentModal(false); }}
+                className="w-full py-2.5 bg-primary text-white rounded-xl font-semibold text-sm"
+              >
+                J'ai tout le nécessaire ✓
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1689,10 +2593,6 @@ function Step6Confirmation({
     });
   };
 
-  const getTaskLabel = (taskId: string) => {
-    return taskOptions.find((t) => t.id === taskId)?.label || taskId;
-  };
-
   const getHomeTypeLabel = (type: string) => {
     const types: Record<string, string> = {
       studio: "Studio",
@@ -1776,22 +2676,37 @@ function Step6Confirmation({
           </div>
         </div>
 
-        {/* Tâches */}
-        <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-            <span className="text-lg">✨</span>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Tâches à effectuer</p>
-            <div className="mt-1 flex flex-wrap gap-2">
-              {bookingData.tasks.map((taskId) => (
-                <Badge key={taskId} variant="secondary">
-                  {getTaskLabel(taskId)}
-                </Badge>
-              ))}
+        {/* Services supplémentaires */}
+        {bookingData.extras && bookingData.extras.length > 0 && (
+          <div className="flex items-start gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+              <span className="text-lg">✨</span>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Services supplémentaires</p>
+              <div className="mt-1 flex flex-wrap gap-2">
+                {bookingData.extras.map((extra, index) => (
+                  <Badge key={index} variant="secondary">
+                    {extra.label} (+{extra.price} CHF)
+                  </Badge>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        )}
+        
+        {/* Animaux */}
+        {bookingData.hasPets && (
+          <div className="flex items-start gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100">
+              <span className="text-lg">🐾</span>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Information importante</p>
+              <p className="text-foreground">Présence d'animaux dans le logement</p>
+            </div>
+          </div>
+        )}
 
         {/* Notes */}
         {bookingData.notes && (

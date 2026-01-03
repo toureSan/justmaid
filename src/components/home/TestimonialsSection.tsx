@@ -6,121 +6,97 @@ const testimonials = [
   {
     id: 1,
     name: "Marie L.",
-    location: "Genève",
     rating: 5,
-    text: "Service impeccable ! J'ai réservé le matin et l'intervenante était là l'après-midi même. Mon appartement n'a jamais été aussi propre.",
+    text: "Service impeccable ! La réservation était simple et l'intervenante très professionnelle. Mon appartement n'a jamais été aussi propre.",
     date: "Il y a 2 jours",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face",
     size: "normal",
   },
   {
     id: 2,
     name: "Thomas B.",
-    location: "Lausanne",
     rating: 5,
-    text: "Je suis très satisfait de la qualité du ménage. L'application est simple à utiliser et le personnel est très professionnel. Je recommande sans hésitation ! C'est vraiment un service qui change la vie quand on travaille beaucoup.",
+    text: "Je suis très satisfait de la qualité du ménage. Le site est simple à utiliser et le personnel est très professionnel. Je recommande sans hésitation ! C'est vraiment un service qui change la vie quand on travaille beaucoup.",
     date: "Il y a 1 semaine",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
     size: "large",
   },
   {
     id: 3,
     name: "Sophie M.",
-    location: "Zurich",
-    rating: 5,
-    text: "Enfin un service fiable !",
+    rating: 4,
+    text: "Bon service, je recommande !",
     date: "Il y a 2 semaines",
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
     size: "small",
   },
   {
     id: 4,
     name: "Pierre D.",
-    location: "Berne",
     rating: 5,
-    text: "Très pratique pour les personnes occupées comme moi. Je peux réserver en 2 minutes et tout est géré. Top !",
+    text: "Très pratique pour les personnes occupées comme moi. La réservation prend 2 minutes et tout est géré. Top !",
     date: "Il y a 3 jours",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
     size: "normal",
   },
   {
     id: 5,
     name: "Julie R.",
-    location: "Neuchâtel",
     rating: 5,
-    text: "Ma maison est toujours impeccable depuis que j'utilise justmaid. L'équipe est ponctuelle, professionnelle et très agréable. Les produits utilisés sont écologiques et sentent bon. Je ne peux plus m'en passer, c'est devenu indispensable dans mon quotidien !",
+    text: "Ma maison est toujours impeccable depuis que j'utilise justmaid. L'intervenante est ponctuelle, professionnelle et très agréable. Je ne peux plus m'en passer, c'est devenu indispensable dans mon quotidien !",
     date: "Il y a 5 jours",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=face",
     size: "large",
   },
   {
     id: 6,
     name: "Marc V.",
-    location: "Fribourg",
-    rating: 5,
-    text: "Service client au top !",
+    rating: 4,
+    text: "Équipe réactive et pro !",
     date: "Il y a 1 semaine",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face",
     size: "small",
   },
   {
     id: 7,
     name: "Léa P.",
-    location: "Montreux",
     rating: 5,
-    text: "J'adore pouvoir choisir la même intervenante. Elle connaît ma maison par cœur maintenant ! Un vrai plus pour la qualité du service.",
+    text: "L'intervenante a fait un travail remarquable. Cuisine, salle de bain, tout était nickel. Je referai appel à justmaid sans hésiter.",
     date: "Il y a 4 jours",
-    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face",
     size: "normal",
   },
   {
     id: 8,
     name: "Nicolas G.",
-    location: "Sion",
-    rating: 5,
-    text: "Parfait pour mon Airbnb !",
+    rating: 4,
+    text: "Idéal pour mon logement !",
     date: "Il y a 6 jours",
-    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop&crop=face",
     size: "small",
   },
   {
     id: 9,
     name: "Emma C.",
-    location: "Bâle",
     rating: 5,
-    text: "Les produits écologiques utilisés sont un vrai plus. Ma famille et moi sommes très satisfaits du résultat. L'intervenante prend vraiment soin de notre maison comme si c'était la sienne. Nous avons essayé plusieurs services avant et justmaid est de loin le meilleur !",
+    text: "L'intervenante prend vraiment soin de notre maison. Ma famille et moi sommes très satisfaits du résultat. Nous avons essayé plusieurs services avant et justmaid est de loin le meilleur !",
     date: "Il y a 2 semaines",
-    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop&crop=face",
     size: "large",
   },
   {
     id: 10,
     name: "Antoine F.",
-    location: "Lugano",
     rating: 5,
     text: "Rapide, efficace, professionnel. Que demander de plus ? Je recommande à 100%.",
     date: "Il y a 3 jours",
-    avatar: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=100&h=100&fit=crop&crop=face",
     size: "normal",
   },
   {
     id: 11,
     name: "Clara B.",
-    location: "Winterthur",
     rating: 5,
-    text: "Génial ! 🌟",
+    text: "Super service ! 👍",
     date: "Il y a 1 jour",
-    avatar: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=100&h=100&fit=crop&crop=face",
     size: "tiny",
   },
   {
     id: 12,
     name: "David M.",
-    location: "Lucerne",
-    rating: 5,
-    text: "En tant que chef d'entreprise, je n'ai pas le temps de m'occuper du ménage. justmaid m'a changé la vie. La réservation est ultra simple, les intervenants sont ponctuels et le résultat est toujours impeccable. Je l'utilise aussi pour mes bureaux maintenant.",
+    rating: 4,
+    text: "Je n'ai pas le temps de m'occuper du ménage avec mon travail. justmaid m'a simplifié la vie. La réservation est ultra simple, l'intervenante était ponctuelle et le résultat était impeccable.",
     date: "Il y a 1 semaine",
-    avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop&crop=face",
     size: "large",
   },
 ];
@@ -151,7 +127,7 @@ export function TestimonialsSection() {
               ))}
             </div>
             <span className="font-semibold text-foreground">4.9/5</span>
-            <span className="text-muted-foreground">basé sur 2 500+ avis</span>
+            <span className="text-muted-foreground">basé sur 1 000+ avis</span>
           </div>
         </div>
 
@@ -203,14 +179,12 @@ export function TestimonialsSection() {
 
                 {/* Author */}
                 <div className="flex items-center gap-3">
-                  <img
-                    src={testimonial.avatar}
-                    alt={testimonial.name}
-                    className={`rounded-full object-cover ${
-                      testimonial.size === "tiny" ? "h-8 w-8" :
-                      testimonial.size === "small" ? "h-10 w-10" : "h-12 w-12"
-                    }`}
-                  />
+                  <div className={`flex items-center justify-center rounded-full bg-primary/10 text-primary font-bold ${
+                    testimonial.size === "tiny" ? "h-8 w-8 text-xs" :
+                    testimonial.size === "small" ? "h-10 w-10 text-sm" : "h-12 w-12"
+                  }`}>
+                    {testimonial.name.charAt(0)}
+                  </div>
                   <div>
                     <p className={`font-semibold text-gray-900 ${
                       testimonial.size === "tiny" || testimonial.size === "small" ? "text-sm" : ""
@@ -220,7 +194,7 @@ export function TestimonialsSection() {
                     <p className={`text-gray-500 ${
                       testimonial.size === "tiny" ? "text-xs" : "text-sm"
                     }`}>
-                      {testimonial.location} • {testimonial.date}
+                      {testimonial.date}
                     </p>
                   </div>
                 </div>

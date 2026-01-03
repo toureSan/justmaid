@@ -1,25 +1,40 @@
 {
-  "short_name": "TanStack App",
-  "name": "Create TanStack App Sample",
+  "short_name": "justmaid",
+  "name": "justmaid - Ménage à domicile",
+  "description": "Réservez une aide ménagère qualifiée à Genève et Nyon. Service disponible dès demain.",
   "icons": [
     {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
     },
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "orientation": "portrait",
+  "theme_color": "#2FCCC0",
+  "background_color": "#ffffff",
+  "lang": "fr-CH",
+  "categories": ["lifestyle", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Réserver un ménage",
+      "short_name": "Réserver",
+      "description": "Réservez votre aide ménagère",
+      "url": "/booking/cleaning",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    }
+  ]
 }

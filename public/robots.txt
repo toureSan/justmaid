@@ -1,3 +1,29 @@
 # https://www.robotstxt.org/robotstxt.html
+# justmaid.ch Robots.txt
+
 User-agent: *
-Disallow:
+Allow: /
+
+# Disallow private/auth pages
+Disallow: /dashboard
+Disallow: /auth/
+Disallow: /booking/
+
+# Allow booking for SEO but noindex on page level
+Allow: /booking/cleaning
+
+# Sitemap location
+Sitemap: https://justmaid.ch/sitemap.xml
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1
+
+# Specific rules for major search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /

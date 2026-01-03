@@ -11,7 +11,34 @@ import {
   CTASection,
 } from "@/components/home";
 
-export const Route = createFileRoute("/")({ component: HomePage });
+export const Route = createFileRoute("/")({
+  component: HomePage,
+  head: () => ({
+    meta: [
+      {
+        title: "justmaid - Femme de ménage à Genève & Nyon | Réservez en 2 minutes",
+      },
+      {
+        name: "description",
+        content: "Réservez une aide ménagère qualifiée à Genève et Nyon. Service disponible dès demain, professionnels vérifiés et assurés. Note moyenne 4.9/5. Tarif transparent dès 40 CHF/h.",
+      },
+      {
+        property: "og:title",
+        content: "justmaid - Femme de ménage à Genève & Nyon | Réservez en 2 minutes",
+      },
+      {
+        property: "og:description",
+        content: "Réservez une aide ménagère qualifiée à Genève et Nyon. Service disponible dès demain, professionnels vérifiés et assurés.",
+      },
+    ],
+    links: [
+      {
+        rel: "canonical",
+        href: "https://justmaid.ch",
+      },
+    ],
+  }),
+});
 
 function HomePage() {
   return (

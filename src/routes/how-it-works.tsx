@@ -15,6 +15,31 @@ import {
 
 export const Route = createFileRoute("/how-it-works")({
   component: HowItWorksPage,
+  head: () => ({
+    meta: [
+      {
+        title: "Comment ça marche | Réservez votre ménage en 3 étapes | justmaid",
+      },
+      {
+        name: "description",
+        content: "Réservez votre aide ménagère en 3 étapes simples : 1. Choisissez date et durée 2. Un professionnel vérifié se déplace 3. Profitez d'un intérieur impeccable. Paiement après intervention.",
+      },
+      {
+        property: "og:title",
+        content: "Comment ça marche | Réservez votre ménage en 3 étapes | justmaid",
+      },
+      {
+        property: "og:description",
+        content: "Réservez votre aide ménagère en 3 étapes simples. Professionnels vérifiés, paiement après intervention.",
+      },
+    ],
+    links: [
+      {
+        rel: "canonical",
+        href: "https://justmaid.ch/how-it-works",
+      },
+    ],
+  }),
 });
 
 const steps = [
@@ -38,7 +63,7 @@ const steps = [
     icon: CreditCardIcon,
     image: "/femme-2-menage.png",
     details: [
-      "Visa, Mastercard, Twint, Apple Pay",
+      "Visa, Mastercard, Apple Pay, Google Pay",
       "Paiement après intervention réussie",
       "Factures disponibles dans votre espace",
       "Remboursement garanti si insatisfait",
@@ -62,7 +87,7 @@ const steps = [
     title: "Profitez de votre temps libre",
     description: "Pendant que nous nettoyons, détendez-vous ! Vous recevrez une notification une fois le ménage terminé.",
     icon: StarIcon,
-    image: "/equipe-menage.png",
+    image: "/menage-equipe6.png",
     details: [
       "Notification de fin d'intervention",
       "Évaluez votre intervenant",

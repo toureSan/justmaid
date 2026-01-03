@@ -233,11 +233,16 @@ export function Footer() {
                 <div className="flex h-10 w-14 items-center justify-center rounded-md bg-[#016FD0] p-1.5">
                   <span className="text-[8px] font-bold text-white leading-none text-center">AMERICAN<br/>EXPRESS</span>
                 </div>
-                {/* TWINT */}
-                <div className="flex h-10 w-14 items-center justify-center rounded-md bg-black p-1.5">
-                  <svg viewBox="0 0 80 32" className="h-full w-full" fill="white">
-                    <path d="M13.5 8.5h-3v15h3v-15zM25.8 8.5l-3.8 10.5-3.8-10.5h-3.3l5.3 15h3.6l5.3-15h-3.3zM32.5 8.5h3v15h-3v-15zM51.8 8.5h-3v8.3l-6.3-8.3h-2.7v15h3v-8.7l6.5 8.7h2.5v-15zM66.5 8.5h-10v3h3.5v12h3v-12h3.5v-3z"/>
-                  </svg>
+                {/* TWINT - Bientôt disponible */}
+                <div className="relative">
+                  <div className="flex h-10 w-14 items-center justify-center rounded-md bg-black p-1.5 opacity-50">
+                    <svg viewBox="0 0 80 32" className="h-full w-full" fill="white">
+                      <path d="M13.5 8.5h-3v15h3v-15zM25.8 8.5l-3.8 10.5-3.8-10.5h-3.3l5.3 15h3.6l5.3-15h-3.3zM32.5 8.5h3v15h-3v-15zM51.8 8.5h-3v8.3l-6.3-8.3h-2.7v15h3v-8.7l6.5 8.7h2.5v-15zM66.5 8.5h-10v3h3.5v12h3v-12h3.5v-3z"/>
+                    </svg>
+                  </div>
+                  <span className="absolute -top-2 -right-2 bg-amber-500 text-white text-[6px] font-bold px-1 py-0.5 rounded">
+                    Bientôt
+                  </span>
                 </div>
               </div>
             </div>

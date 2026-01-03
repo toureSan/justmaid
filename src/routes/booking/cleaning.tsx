@@ -3,7 +3,38 @@ import { BookingWizard } from "@/components/booking";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ShieldIcon, Tick02Icon, Clock01Icon } from "@hugeicons/core-free-icons";
 
-export const Route = createFileRoute("/booking/cleaning")({ component: CleaningBookingPage });
+export const Route = createFileRoute("/booking/cleaning")({
+  component: CleaningBookingPage,
+  head: () => ({
+    meta: [
+      {
+        title: "Réserver un ménage à domicile | Genève & Nyon | justmaid",
+      },
+      {
+        name: "description",
+        content: "Réservez votre ménage à domicile en quelques clics. Choisissez date, durée et services. Professionnels vérifiés à Genève et Nyon. Dès 40 CHF/h.",
+      },
+      {
+        property: "og:title",
+        content: "Réserver un ménage à domicile | Genève & Nyon | justmaid",
+      },
+      {
+        property: "og:description",
+        content: "Réservez votre ménage à domicile en quelques clics. Professionnels vérifiés à Genève et Nyon.",
+      },
+      {
+        name: "robots",
+        content: "noindex, nofollow",
+      },
+    ],
+    links: [
+      {
+        rel: "canonical",
+        href: "https://justmaid.ch/booking/cleaning",
+      },
+    ],
+  }),
+});
 
 function CleaningBookingPage() {
   return (

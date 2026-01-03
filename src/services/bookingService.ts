@@ -12,6 +12,13 @@ import { sendConfirmationEmail, sendCancellationEmail } from './emailService';
 // TYPES
 // =====================================================
 
+export interface ExtraService {
+  id: string;
+  label: string;
+  price: number;
+  details?: string;
+}
+
 export interface CreateBookingData {
   serviceType: ServiceType;
   address: string;
@@ -26,6 +33,8 @@ export interface CreateBookingData {
   tasks: string[];
   notes?: string;
   totalPrice: number;
+  extras?: ExtraService[];
+  hasPets?: boolean;
 }
 
 export interface BookingWithDetails extends Booking {
@@ -45,6 +54,31 @@ export async function createBooking(
   userId: string,
   data: CreateBookingData
 ): Promise<{ booking: Booking | null; error: string | null }> {
+  // Construire les notes enrichies avec extras et animaux
+  const buildEnrichedNotes = () => {
+    const parts: string[] = [];
+    
+    // Ajouter les extras
+    if (data.extras && data.extras.length > 0) {
+      const extrasText = data.extras.map(e => `${e.label}: +${e.price} CHF`).join(', ');
+      parts.push(`[EXTRAS] ${extrasText}`);
+    }
+    
+    // Ajouter info animaux
+    if (data.hasPets) {
+      parts.push('[ANIMAUX] Présence d\'animaux');
+    }
+    
+    // Ajouter les notes utilisateur
+    if (data.notes) {
+      parts.push(data.notes);
+    }
+    
+    return parts.length > 0 ? parts.join(' | ') : null;
+  };
+  
+  const enrichedNotes = buildEnrichedNotes();
+
   if (!isSupabaseConfigured()) {
     // Mode démo: sauvegarder dans localStorage
     const booking: Booking = {
@@ -61,7 +95,7 @@ export async function createBooking(
       time: data.time,
       duration: data.duration,
       tasks: data.tasks,
-      notes: data.notes || null,
+      notes: enrichedNotes,
       status: 'pending',
       total_price: data.totalPrice,
       provider_id: null,
@@ -89,7 +123,7 @@ export async function createBooking(
     time: data.time,
     duration: data.duration,
     tasks: data.tasks,
-    notes: data.notes,
+    notes: enrichedNotes,
     total_price: data.totalPrice,
   };
 

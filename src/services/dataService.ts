@@ -266,7 +266,7 @@ export async function getStats(): Promise<{
     return {
       totalBookings: 200,
       averageRating: 4.9,
-      totalReviews: 2500,
+      totalReviews: 1000,
     };
   }
 

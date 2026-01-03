@@ -37,19 +37,18 @@ export function HeroSection() {
                 ))}
               </div>
               <span className="text-sm font-medium text-secondary-foreground">
-                4.9/5 basé sur 2 500+ avis
+                4.9/5 basé sur 1 000+ avis
               </span>
             </div>
 
             {/* Headline */}
-            <div className="space-y-4">
+            <div className="space-y-6">
               <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-                                                                 Hommes et femmes de ménage de confiance, 
-                                                                 <span className="text-primary"> notés par les clients</span> 🇨🇭
+                Offrez-vous la sérénité d'un intérieur <span className="text-primary">toujours <span className="whitespace-nowrap">propre et accueillant</span></span>
               </h1>
               <p className="max-w-xl text-lg text-muted-foreground sm:text-xl">
-                Réservez des professionnel du ménage qualifiée en quelques clics. 
-                Service disponible dans la 24h/7.
+                Réservez des professionnels du ménage qualifiés en quelques clics. 
+                Service disponible 6j/7.
               </p>
             </div>
 
@@ -100,7 +99,7 @@ export function HeroSection() {
                   className="h-10 w-10 rounded-full border-2 border-white object-cover"
                 />
                 <img
-                  src="/equipe-menage.png"
+                  src="/menage-equipe6.png"
                   alt="Agent d'entretien"
                   className="h-10 w-10 rounded-full border-2 border-white object-cover"
                 />
@@ -374,36 +373,19 @@ function QuickBookingCard() {
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">
-                  Type de logement
-                </label>
-                <select 
-                  className="w-full rounded-lg border border-input bg-background px-4 py-3 text-sm outline-none"
-                  value={formData.homeType}
-                  onChange={(e) => setFormData({ ...formData, homeType: e.target.value })}
-                >
-                  <option value="apartment">Appartement</option>
-                  <option value="house">Maison</option>
-                  <option value="studio">Studio</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">
-                  Durée
-                </label>
-                <select 
-                  className="w-full rounded-lg border border-input bg-background px-4 py-3 text-sm outline-none"
-                  value={formData.duration}
-                  onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                >
-                  <option value="2">2 heures</option>
-                  <option value="3">3 heures</option>
-                  <option value="4">4 heures</option>
-                  <option value="5">5 heures</option>
-                </select>
-              </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Type de logement
+              </label>
+              <select 
+                className="w-full rounded-lg border border-input bg-background px-4 py-3 text-sm outline-none"
+                value={formData.homeType}
+                onChange={(e) => setFormData({ ...formData, homeType: e.target.value })}
+              >
+                <option value="apartment">Appartement</option>
+                <option value="house">Maison</option>
+                <option value="studio">Studio</option>
+              </select>
             </div>
 
             <Button 

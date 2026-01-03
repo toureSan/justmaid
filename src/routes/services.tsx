@@ -12,6 +12,31 @@ import {
 
 export const Route = createFileRoute("/services")({
   component: ServicesPage,
+  head: () => ({
+    meta: [
+      {
+        title: "Nos services de ménage | Nettoyage, Pressing, Repassage | justmaid",
+      },
+      {
+        name: "description",
+        content: "Découvrez nos services de ménage à domicile à Genève et Nyon : nettoyage régulier, ménage d'entreprise, pressing et repassage. Professionnels qualifiés, tarifs transparents.",
+      },
+      {
+        property: "og:title",
+        content: "Nos services de ménage | Nettoyage, Pressing, Repassage | justmaid",
+      },
+      {
+        property: "og:description",
+        content: "Découvrez nos services de ménage à domicile à Genève et Nyon. Professionnels qualifiés, tarifs transparents.",
+      },
+    ],
+    links: [
+      {
+        rel: "canonical",
+        href: "https://justmaid.ch/services",
+      },
+    ],
+  }),
 });
 
 const services = [
@@ -195,7 +220,7 @@ function ServicesPage() {
       <section className="relative overflow-hidden min-h-[400px] sm:min-h-[450px]">
         <div className="absolute inset-0">
           <img
-            src="/equipe-menage.png"
+            src="/menage-equipe6.png"
             alt="Équipe justmaid"
             className="h-full w-full object-cover object-top"
           />
