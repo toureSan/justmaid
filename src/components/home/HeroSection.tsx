@@ -85,22 +85,22 @@ export function HeroSection() {
             <div className="flex items-center gap-4">
               <div className="flex -space-x-3">
                 <img
-                  src="https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=100&h=100&fit=crop&crop=face"
+                  src="/femme-2-menage.png"
                   alt="Femme de ménage souriante"
                   className="h-10 w-10 rounded-full border-2 border-white object-cover"
                 />
                 <img
-                  src="https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=100&h=100&fit=crop&crop=face"
+                  src="/homme-menage.png"
                   alt="Agent de propreté homme"
                   className="h-10 w-10 rounded-full border-2 border-white object-cover"
                 />
                 <img
-                  src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop&crop=face"
+                  src="/femme-menage.png"
                   alt="Intervenante ménage"
                   className="h-10 w-10 rounded-full border-2 border-white object-cover"
                 />
                 <img
-                  src="https://images.unsplash.com/photo-1506277886164-e25aa3f4ef7f?w=100&h=100&fit=crop&crop=face"
+                  src="/equipe-menage.png"
                   alt="Agent d'entretien"
                   className="h-10 w-10 rounded-full border-2 border-white object-cover"
                 />
@@ -269,7 +269,7 @@ function QuickBookingCard() {
           {/* Header with image */}
           <div className="flex items-start gap-4">
             <img
-              src="https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=80&h=80&fit=crop&crop=face"
+              src="/femme-2-menage.png"
               alt="Femme de ménage disponible"
               className="h-14 w-14 rounded-full object-cover ring-2 ring-primary"
             />

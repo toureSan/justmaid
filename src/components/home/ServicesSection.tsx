@@ -10,7 +10,7 @@ const services = [
     title: "Ménage à domicile",
     emoji: "🧹",
     description: "Faites appel à nos femmes de ménage qualifiées pour un intérieur impeccable. Disponible dans la journée.",
-    image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&h=800&fit=crop",
+    image: "/equipe-menage1.png",
     href: "/booking/cleaning",
     available: true,
     features: [
@@ -26,7 +26,7 @@ const services = [
     title: "Pressing & Blanchisserie",
     emoji: "👔",
     description: "Nous récupérons vos vêtements, les lavons, séchons et repassons. Livraison à domicile.",
-    image: "https://images.unsplash.com/photo-1545173168-9f1947eebb7f?w=600&h=800&fit=crop",
+    image: "/lavage-menage.png",
     href: "/booking/laundry",
     available: false,
     features: [
@@ -42,7 +42,7 @@ const services = [
     title: "Repassage",
     emoji: "✨",
     description: "Service de repassage professionnel pour tous vos vêtements et linges de maison.",
-    image: "https://images.unsplash.com/photo-1489274495757-95c7c837b101?w=600&h=800&fit=crop",
+    image: "/repassage-menage.png",
     href: "/booking/laundry",
     available: false,
     features: [
