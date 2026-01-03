@@ -2,6 +2,7 @@ import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-r
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { Layout } from '@/components/layout'
+import { LoadingProvider } from '@/components/ui/loading-screen'
 
 import appCss from '../styles.css?url'
 
@@ -55,9 +56,11 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   return (
-    <Layout>
-      <Outlet />
-    </Layout>
+    <LoadingProvider>
+      <Layout>
+        <Outlet />
+      </Layout>
+    </LoadingProvider>
   )
 }
 

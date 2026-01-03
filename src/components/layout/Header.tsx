@@ -7,9 +7,6 @@ import {
   Tick02Icon,
   Tag01Icon,
   RepeatIcon,
-  Wallet01Icon,
-  StarIcon,
-  GiftIcon,
   UserIcon,
   HelpCircleIcon,
   Logout02Icon,
@@ -260,7 +257,7 @@ export function Header() {
               Comment ça marche
             </Link>
             <Link
-              to="/"
+              to="/aide"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               Aide
@@ -271,11 +268,19 @@ export function Header() {
           <div className="hidden items-center gap-3 md:flex">
             {isAuthenticated && user ? (
               <>
-                <Link to="/booking/cleaning">
-                  <Button size="sm" className="rounded-full px-5">
-                    Réserver maintenant
-                  </Button>
-                </Link>
+                <Button 
+                  size="sm" 
+                  className="rounded-full px-5"
+                  onClick={() => {
+                    // Nettoyer l'état du wizard pour démarrer une nouvelle réservation
+                    localStorage.removeItem("bookingWizardData");
+                    localStorage.removeItem("bookingWizardStep");
+                    localStorage.removeItem("bookingInProgress");
+                    navigate({ to: "/booking/cleaning" });
+                  }}
+                >
+                  Réserver maintenant
+                </Button>
                 <button
                   onClick={() => setSidebarOpen(true)}
                   className="flex items-center gap-2 rounded-full border border-border bg-muted/50 py-1.5 pl-3 pr-1.5 transition-colors hover:bg-muted"
@@ -301,11 +306,19 @@ export function Header() {
                 >
                   Se connecter
                 </Button>
-                <Link to="/booking/cleaning">
-                  <Button size="sm" className="rounded-full px-5">
-                    Réserver maintenant
-                  </Button>
-                </Link>
+                <Button 
+                  size="sm" 
+                  className="rounded-full px-5"
+                  onClick={() => {
+                    // Nettoyer l'état du wizard pour démarrer une nouvelle réservation
+                    localStorage.removeItem("bookingWizardData");
+                    localStorage.removeItem("bookingWizardStep");
+                    localStorage.removeItem("bookingInProgress");
+                    navigate({ to: "/booking/cleaning" });
+                  }}
+                >
+                  Réserver maintenant
+                </Button>
               </>
             )}
           </div>
@@ -367,7 +380,7 @@ export function Header() {
                 Comment ça marche
               </Link>
               <Link
-                to="/"
+                to="/aide"
                 className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 onClick={() => setMobileMenuOpen(false)}
               >
@@ -385,11 +398,19 @@ export function Header() {
                   >
                     Se connecter
                   </Button>
-                  <Link to="/booking/cleaning" onClick={() => setMobileMenuOpen(false)}>
-                    <Button className="w-full rounded-full">
-                      Réserver maintenant
-                    </Button>
-                  </Link>
+                  <Button 
+                    className="w-full rounded-full"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      // Nettoyer l'état du wizard pour démarrer une nouvelle réservation
+                      localStorage.removeItem("bookingWizardData");
+                      localStorage.removeItem("bookingWizardStep");
+                      localStorage.removeItem("bookingInProgress");
+                      navigate({ to: "/booking/cleaning" });
+                    }}
+                  >
+                    Réserver maintenant
+                  </Button>
                 </div>
               )}
             </nav>
@@ -519,10 +540,9 @@ function AuthModal({
     const result = await onGoogleAuth();
     if (result.error) {
       setError(result.error);
-    } else {
-      onClose();
+      setIsLoading(false);
     }
-    setIsLoading(false);
+    // Pas de hideLoading ici car on va être redirigé
   };
 
   const handleAppleAuth = async () => {
@@ -531,10 +551,8 @@ function AuthModal({
     const result = await onAppleAuth();
     if (result.error) {
       setError(result.error);
-    } else {
-      onClose();
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
@@ -571,87 +589,125 @@ function AuthModal({
         onClick={onClose}
       />
       
-      {/* Modal */}
-      <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 text-muted-foreground hover:text-foreground"
-        >
-          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-
-        {authMode === "choose" ? (
-          <>
-            {/* Header */}
-            <div className="text-center mb-6">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-                <HugeiconsIcon icon={SecurityLockIcon} strokeWidth={1.5} className="h-7 w-7 text-primary" />
-              </div>
-              <h2 className="text-xl font-bold text-foreground">Connexion</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Connectez-vous ou créez un compte pour continuer
-              </p>
+      {/* Modal with Image */}
+      <div className="relative w-full max-w-3xl rounded-2xl bg-white shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden flex">
+        {/* Left Side - Image (hidden on mobile) */}
+        <div className="hidden md:block w-1/2 relative">
+          <img
+            src="/femme-menage.png"
+            alt="justmaid"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div 
+            className="absolute inset-0"
+            style={{
+              background: "linear-gradient(135deg, rgba(47, 204, 192, 0.85) 0%, rgba(37, 168, 158, 0.85) 100%)",
+            }}
+          />
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-white text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm mb-6">
+              <span className="text-3xl font-bold">J</span>
             </div>
-
-            {/* Error message */}
-            {error && (
-              <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-600">
-                {error}
-              </div>
-            )}
-
-            {/* Social Auth Buttons */}
-            <div className="space-y-3">
-              {/* Google */}
-              <button
-                onClick={handleGoogleAuth}
-                disabled={isLoading}
-                className="flex w-full items-center justify-center gap-3 rounded-xl border-2 border-border bg-white px-4 py-3.5 font-medium text-foreground transition-all hover:border-primary/50 hover:bg-muted/50 disabled:opacity-50"
-              >
-                <svg className="h-5 w-5" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                </svg>
-                Continuer avec Google
-              </button>
-
-              {/* Divider */}
-              <div className="relative my-4">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-border"></div>
-                </div>
-                <div className="relative flex justify-center">
-                  <span className="bg-white px-4 text-sm text-muted-foreground">ou</span>
-                </div>
-              </div>
-
-              {/* Email */}
-              <button
-                onClick={() => setAuthMode("email_login")}
-                disabled={isLoading}
-                className="flex w-full items-center justify-center gap-3 rounded-xl border-2 border-border bg-white px-4 py-3.5 font-medium text-foreground transition-all hover:border-primary/50 hover:bg-muted/50 disabled:opacity-50"
-              >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                Continuer avec Email
-              </button>
-            </div>
-
-            {/* Footer */}
-            <p className="mt-6 text-center text-xs text-muted-foreground">
-              En continuant, vous acceptez nos{" "}
-              <a href="#" className="text-primary hover:underline">Conditions d'utilisation</a>
-              {" "}et notre{" "}
-              <a href="#" className="text-primary hover:underline">Politique de confidentialité</a>
+            <h3 className="text-2xl font-bold font-bricolage-grotesque mb-3">
+              Bienvenue sur justmaid ✨
+            </h3>
+            <p className="text-white/90 text-sm">
+              Réservez votre ménage en quelques clics et profitez d'un intérieur impeccable.
             </p>
-          </>
-        ) : (
+            <div className="flex gap-6 mt-8">
+              <div className="text-center">
+                <p className="text-2xl font-bold">4.9/5</p>
+                <p className="text-white/70 text-xs">Satisfaction</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold">+500</p>
+                <p className="text-white/70 text-xs">Intervenants</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side - Form */}
+        <div className="flex-1 p-6 md:p-8">
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-4 text-muted-foreground hover:text-foreground z-10"
+          >
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {authMode === "choose" ? (
+            <>
+              {/* Header */}
+              <div className="text-center mb-6">
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 md:hidden">
+                  <HugeiconsIcon icon={SecurityLockIcon} strokeWidth={1.5} className="h-7 w-7 text-primary" />
+                </div>
+                <h2 className="text-xl font-bold text-foreground">Connexion</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Connectez-vous ou créez un compte pour continuer
+                </p>
+              </div>
+
+              {/* Error message */}
+              {error && (
+                <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-600">
+                  {error}
+                </div>
+              )}
+
+              {/* Social Auth Buttons */}
+              <div className="space-y-3">
+                {/* Google */}
+                <button
+                  onClick={handleGoogleAuth}
+                  disabled={isLoading}
+                  className="flex w-full items-center justify-center gap-3 rounded-xl border-2 border-border bg-white px-4 py-3.5 font-medium text-foreground transition-all hover:border-primary/50 hover:bg-muted/50 disabled:opacity-50"
+                >
+                  <svg className="h-5 w-5" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </svg>
+                  Continuer avec Google
+                </button>
+
+                {/* Divider */}
+                <div className="relative my-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-border"></div>
+                  </div>
+                  <div className="relative flex justify-center">
+                    <span className="bg-white px-4 text-sm text-muted-foreground">ou</span>
+                  </div>
+                </div>
+
+                {/* Email */}
+                <button
+                  onClick={() => setAuthMode("email_login")}
+                  disabled={isLoading}
+                  className="flex w-full items-center justify-center gap-3 rounded-xl border-2 border-border bg-white px-4 py-3.5 font-medium text-foreground transition-all hover:border-primary/50 hover:bg-muted/50 disabled:opacity-50"
+                >
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  Continuer avec Email
+                </button>
+              </div>
+
+              {/* Footer */}
+              <p className="mt-6 text-center text-xs text-muted-foreground">
+                En continuant, vous acceptez nos{" "}
+                <a href="#" className="text-primary hover:underline">Conditions d'utilisation</a>
+                {" "}et notre{" "}
+                <a href="#" className="text-primary hover:underline">Politique de confidentialité</a>
+              </p>
+            </>
+          ) : (
           <>
             {/* Email Auth Form */}
             <button
@@ -756,15 +812,16 @@ function AuthModal({
           </>
         )}
 
-        {/* Loading overlay */}
-        {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-white/80 backdrop-blur-sm">
-            <div className="flex flex-col items-center gap-3">
-              <div className="h-8 w-8 animate-spin rounded-full border-3 border-primary border-t-transparent" />
-              <p className="text-sm font-medium text-muted-foreground">Connexion en cours...</p>
+          {/* Loading overlay */}
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm">
+              <div className="flex flex-col items-center gap-3">
+                <div className="h-8 w-8 animate-spin rounded-full border-3 border-primary border-t-transparent" />
+                <p className="text-sm font-medium text-muted-foreground">Connexion en cours...</p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

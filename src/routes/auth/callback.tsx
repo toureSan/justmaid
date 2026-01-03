@@ -85,40 +85,86 @@ function AuthCallback() {
   }, [navigate])
 
   return (
-    <div className="flex min-h-[60vh] items-center justify-center">
-      <div className="text-center">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-white">
+      <div className="flex flex-col items-center gap-6 text-center px-4">
         {status === 'loading' && (
           <>
-            <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-            <h2 className="text-xl font-semibold text-foreground">Connexion en cours...</h2>
-            <p className="mt-2 text-muted-foreground">Veuillez patienter</p>
+            {/* Logo animé */}
+            <div className="relative">
+              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-justmaid-turquoise text-white animate-pulse">
+                <span className="text-4xl font-bold font-bricolage-grotesque">J</span>
+              </div>
+              {/* Cercle de chargement autour du logo */}
+              <div className="absolute -inset-2">
+                <svg className="h-24 w-24 animate-spin" viewBox="0 0 100 100">
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    fill="none"
+                    stroke="#2FCCC0"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeDasharray="70 200"
+                    className="opacity-30"
+                  />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    fill="none"
+                    stroke="#2FCCC0"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeDasharray="70 200"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div className="space-y-2">
+              <p className="text-lg font-semibold text-gray-900">Connexion en cours...</p>
+              <p className="text-sm text-gray-500">Veuillez patienter</p>
+            </div>
+
+            {/* Dots animés */}
+            <div className="flex gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-justmaid-turquoise animate-bounce" style={{ animationDelay: "0ms" }} />
+              <span className="h-2.5 w-2.5 rounded-full bg-justmaid-turquoise animate-bounce" style={{ animationDelay: "150ms" }} />
+              <span className="h-2.5 w-2.5 rounded-full bg-justmaid-turquoise animate-bounce" style={{ animationDelay: "300ms" }} />
+            </div>
           </>
         )}
         
         {status === 'success' && (
           <>
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-              <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
+              <svg className="h-10 w-10 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="text-xl font-semibold text-foreground">Connexion réussie ! 🎉</h2>
-            <p className="mt-2 text-muted-foreground">Redirection en cours...</p>
+            <div className="space-y-2">
+              <p className="text-xl font-bold text-gray-900">Connexion réussie ! 🎉</p>
+              <p className="text-sm text-gray-500">Redirection en cours...</p>
+            </div>
           </>
         )}
         
         {status === 'error' && (
           <>
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-              <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
+              <svg className="h-10 w-10 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </div>
-            <h2 className="text-xl font-semibold text-foreground">Erreur de connexion</h2>
-            <p className="mt-2 text-muted-foreground">{error}</p>
+            <div className="space-y-2">
+              <p className="text-xl font-bold text-gray-900">Erreur de connexion</p>
+              <p className="text-sm text-gray-500">{error}</p>
+            </div>
             <button
               onClick={() => navigate({ to: '/' })}
-              className="mt-4 rounded-lg bg-primary px-4 py-2 text-white hover:bg-primary/90"
+              className="mt-4 rounded-xl bg-primary px-6 py-3 font-medium text-white hover:bg-primary/90 transition-colors"
             >
               Retour à l'accueil
             </button>
