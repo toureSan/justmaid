@@ -175,7 +175,7 @@ export function StripePaymentForm({
           </span>
         ) : (
           <span className="flex items-center gap-2">
-            💳 Payer {amount} CHF
+            🔒 Pré-autorisation {(amount / 100).toFixed(0)} CHF
           </span>
         )}
       </Button>
