@@ -15,6 +15,7 @@ import {
   UserIcon,
   SecurityLockIcon,
   ArrowDown01Icon,
+  Location01Icon,
 } from "@hugeicons/core-free-icons";
 import { useState } from "react";
 
@@ -165,11 +166,11 @@ const contactMethods = [
     href: "tel:+41221234567",
   },
   {
-    icon: Message01Icon,
-    title: "Chat",
-    description: "Réponse instantanée",
-    value: "Ouvrir le chat",
-    href: "#",
+    icon: Location01Icon,
+    title: "Adresse",
+    description: "Siège social",
+    value: "Rte de Mon-Idée, 1226 Thônex",
+    href: "https://maps.google.com/?q=Rte+de+Mon-Idée,+1226+Thônex,+Suisse",
   },
 ];
 
