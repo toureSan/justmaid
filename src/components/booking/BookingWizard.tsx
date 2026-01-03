@@ -2299,6 +2299,8 @@ function Step4PersonalInfo({
   bookingData: BookingData;
   updateBookingData: (field: keyof BookingData, value: string) => void;
 }) {
+  const [touched, setTouched] = React.useState<Record<string, boolean>>({});
+
   const formatPhone = (value: string) => {
     const v = value.replace(/\D/g, "");
     if (v.length <= 3) return v;
@@ -2309,6 +2311,33 @@ function Step4PersonalInfo({
 
   const formatPostalCode = (value: string) => {
     return value.replace(/\D/g, "").slice(0, 4);
+  };
+
+  const isValidEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const isValidPhone = (phone: string) => {
+    const digits = phone.replace(/\D/g, "");
+    return digits.length >= 9;
+  };
+
+  const markTouched = (field: string) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+  };
+
+  const getFieldError = (field: string, value: string, type?: string) => {
+    if (!touched[field]) return null;
+    if (!value || value.trim() === "") return "Ce champ est requis";
+    if (type === "email" && !isValidEmail(value)) return "Email invalide";
+    if (type === "phone" && !isValidPhone(value)) return "Numéro incomplet";
+    if (type === "postalCode" && value.length !== 4) return "Code postal à 4 chiffres";
+    return null;
+  };
+
+  const inputClass = (field: string, value: string, type?: string) => {
+    const error = getFieldError(field, value, type);
+    return `h-12 ${error ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`;
   };
 
   return (
@@ -2333,8 +2362,12 @@ function Step4PersonalInfo({
               placeholder="Jean"
               value={bookingData.firstName}
               onChange={(e) => updateBookingData("firstName", e.target.value)}
-              className="h-12"
+              onBlur={() => markTouched("firstName")}
+              className={inputClass("firstName", bookingData.firstName)}
             />
+            {getFieldError("firstName", bookingData.firstName) && (
+              <p className="text-xs text-red-500">{getFieldError("firstName", bookingData.firstName)}</p>
+            )}
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Nom *</label>
@@ -2343,8 +2376,12 @@ function Step4PersonalInfo({
               placeholder="Dupont"
               value={bookingData.lastName}
               onChange={(e) => updateBookingData("lastName", e.target.value)}
-              className="h-12"
+              onBlur={() => markTouched("lastName")}
+              className={inputClass("lastName", bookingData.lastName)}
             />
+            {getFieldError("lastName", bookingData.lastName) && (
+              <p className="text-xs text-red-500">{getFieldError("lastName", bookingData.lastName)}</p>
+            )}
           </div>
         </div>
 
@@ -2356,11 +2393,16 @@ function Step4PersonalInfo({
             placeholder="jean.dupont@exemple.com"
             value={bookingData.email}
             onChange={(e) => updateBookingData("email", e.target.value)}
-            className="h-12"
+            onBlur={() => markTouched("email")}
+            className={inputClass("email", bookingData.email, "email")}
           />
-          <p className="text-xs text-muted-foreground">
-            Vous recevrez la confirmation de réservation à cette adresse
-          </p>
+          {getFieldError("email", bookingData.email, "email") ? (
+            <p className="text-xs text-red-500">{getFieldError("email", bookingData.email, "email")}</p>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Vous recevrez la confirmation de réservation à cette adresse
+            </p>
+          )}
         </div>
 
         {/* Téléphone */}
@@ -2371,12 +2413,17 @@ function Step4PersonalInfo({
             placeholder="079 123 45 67"
             value={bookingData.phone}
             onChange={(e) => updateBookingData("phone", formatPhone(e.target.value))}
+            onBlur={() => markTouched("phone")}
             maxLength={14}
-            className="h-12"
+            className={inputClass("phone", bookingData.phone, "phone")}
           />
-          <p className="text-xs text-muted-foreground">
-            L'intervenant(e) vous contactera sur ce numéro
-          </p>
+          {getFieldError("phone", bookingData.phone, "phone") ? (
+            <p className="text-xs text-red-500">{getFieldError("phone", bookingData.phone, "phone")}</p>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              L'intervenant(e) vous contactera sur ce numéro
+            </p>
+          )}
         </div>
 
         {/* Séparateur */}
@@ -2401,8 +2448,12 @@ function Step4PersonalInfo({
               placeholder="Rue de Lausanne"
               value={bookingData.street}
               onChange={(e) => updateBookingData("street", e.target.value)}
-              className="h-12"
+              onBlur={() => markTouched("street")}
+              className={inputClass("street", bookingData.street)}
             />
+            {getFieldError("street", bookingData.street) && (
+              <p className="text-xs text-red-500">{getFieldError("street", bookingData.street)}</p>
+            )}
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">N° *</label>
@@ -2411,8 +2462,12 @@ function Step4PersonalInfo({
               placeholder="12"
               value={bookingData.streetNumber}
               onChange={(e) => updateBookingData("streetNumber", e.target.value)}
-              className="h-12"
+              onBlur={() => markTouched("streetNumber")}
+              className={inputClass("streetNumber", bookingData.streetNumber)}
             />
+            {getFieldError("streetNumber", bookingData.streetNumber) && (
+              <p className="text-xs text-red-500">{getFieldError("streetNumber", bookingData.streetNumber)}</p>
+            )}
           </div>
         </div>
 
@@ -2425,9 +2480,13 @@ function Step4PersonalInfo({
               placeholder="1201"
               value={bookingData.postalCode}
               onChange={(e) => updateBookingData("postalCode", formatPostalCode(e.target.value))}
+              onBlur={() => markTouched("postalCode")}
               maxLength={4}
-              className="h-12"
+              className={inputClass("postalCode", bookingData.postalCode, "postalCode")}
             />
+            {getFieldError("postalCode", bookingData.postalCode, "postalCode") && (
+              <p className="text-xs text-red-500">{getFieldError("postalCode", bookingData.postalCode, "postalCode")}</p>
+            )}
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Ville *</label>
@@ -2436,8 +2495,12 @@ function Step4PersonalInfo({
               placeholder="Genève"
               value={bookingData.city}
               onChange={(e) => updateBookingData("city", e.target.value)}
-              className="h-12"
+              onBlur={() => markTouched("city")}
+              className={inputClass("city", bookingData.city)}
             />
+            {getFieldError("city", bookingData.city) && (
+              <p className="text-xs text-red-500">{getFieldError("city", bookingData.city)}</p>
+            )}
           </div>
         </div>
 
