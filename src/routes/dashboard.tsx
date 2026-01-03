@@ -1,6 +1,8 @@
 import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Calendar03Icon,
@@ -836,37 +838,232 @@ function ReferralTab({ user }: { user: UserAuth | null }) {
 }
 
 function AccountTab({ user }: { user: UserAuth | null }) {
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [saveSuccess, setSaveSuccess] = React.useState(false);
+  const [formData, setFormData] = React.useState({
+    firstName: "",
+    lastName: "",
+    phone: "",
+  });
+
+  // Charger les données utilisateur depuis Supabase
+  React.useEffect(() => {
+    const loadProfile = async () => {
+      if (isSupabaseConfigured() && user) {
+        const supabase = getSupabase();
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("first_name, last_name, phone")
+          .eq("id", user.id)
+          .single() as { data: { first_name: string | null; last_name: string | null; phone: string | null } | null };
+
+        if (profile) {
+          setFormData({
+            firstName: profile.first_name || "",
+            lastName: profile.last_name || "",
+            phone: profile.phone || "",
+          });
+        } else {
+          // Fallback: utiliser les métadonnées de l'auth
+          const nameParts = (user.name || "").split(" ");
+          setFormData({
+            firstName: nameParts[0] || "",
+            lastName: nameParts.slice(1).join(" ") || "",
+            phone: "",
+          });
+        }
+      } else if (user) {
+        const nameParts = (user.name || "").split(" ");
+        setFormData({
+          firstName: nameParts[0] || "",
+          lastName: nameParts.slice(1).join(" ") || "",
+          phone: "",
+        });
+      }
+    };
+    loadProfile();
+  }, [user]);
+
+  const handleSave = async () => {
+    if (!user) return;
+    
+    setIsSaving(true);
+    setSaveSuccess(false);
+
+    try {
+      if (isSupabaseConfigured()) {
+        const supabase = getSupabase();
+        
+        // Mettre à jour le profil dans la table profiles
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .upsert({
+            id: user.id,
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            phone: formData.phone,
+            updated_at: new Date().toISOString(),
+          } as any);
+
+        if (profileError) throw profileError;
+
+        // Mettre à jour les métadonnées de l'utilisateur auth
+        const { error: authError } = await supabase.auth.updateUser({
+          data: {
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            full_name: `${formData.firstName} ${formData.lastName}`.trim(),
+            phone: formData.phone,
+          },
+        });
+
+        if (authError) throw authError;
+
+        setSaveSuccess(true);
+        setIsEditing(false);
+        setTimeout(() => setSaveSuccess(false), 3000);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la sauvegarde:", error);
+      alert("Une erreur est survenue lors de la sauvegarde.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">Mon compte</h2>
       
+      {/* Success Toast */}
+      {saveSuccess && (
+        <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+          <div className="flex items-center gap-2">
+            <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} className="h-5 w-5 text-green-600" />
+            <p className="text-green-800 font-medium">Informations mises à jour avec succès !</p>
+          </div>
+        </div>
+      )}
+
+      {/* Profile Header */}
       <div className="flex items-center gap-4 rounded-2xl bg-white p-6">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary overflow-hidden">
           {user?.avatar ? (
             <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
           ) : (
             <span className="text-2xl font-bold text-white">
-              {user?.name.charAt(0).toUpperCase()}
+              {(formData.firstName || user?.name || "U").charAt(0).toUpperCase()}
             </span>
           )}
         </div>
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900">{user?.name}</h3>
+          <h3 className="text-lg font-semibold text-gray-900">
+            {formData.firstName && formData.lastName 
+              ? `${formData.firstName} ${formData.lastName}` 
+              : user?.name}
+          </h3>
           <p className="text-gray-500">{user?.email}</p>
           <Badge variant="secondary" className="mt-1">
             {user?.provider === "google" ? "Compte Google" : 
              user?.provider === "apple" ? "Compte Apple" : "Compte Email"}
           </Badge>
         </div>
-        <Button variant="outline">Modifier</Button>
       </div>
 
+      {/* Personal Information Form */}
+      <div className="rounded-2xl bg-white p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <HugeiconsIcon icon={UserIcon} strokeWidth={1.5} className="h-5 w-5 text-gray-400" />
+            <h3 className="font-semibold text-gray-900">Informations personnelles</h3>
+          </div>
+          {!isEditing ? (
+            <button 
+              type="button"
+              onClick={() => setIsEditing(true)}
+              className="px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary hover:text-white transition-colors cursor-pointer"
+            >
+              ✏️ Modifier
+            </button>
+          ) : null}
+        </div>
+
+        <div className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <Label htmlFor="firstName" className="text-gray-700">Prénom</Label>
+              <Input
+                id="firstName"
+                type="text"
+                value={formData.firstName}
+                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                disabled={!isEditing}
+                className="mt-1.5"
+                placeholder="Votre prénom"
+              />
+            </div>
+            <div>
+              <Label htmlFor="lastName" className="text-gray-700">Nom</Label>
+              <Input
+                id="lastName"
+                type="text"
+                value={formData.lastName}
+                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                disabled={!isEditing}
+                className="mt-1.5"
+                placeholder="Votre nom"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="email" className="text-gray-700">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={user?.email || ""}
+              disabled
+              className="mt-1.5 bg-gray-50"
+            />
+            <p className="text-xs text-gray-500 mt-1">L'email ne peut pas être modifié</p>
+          </div>
+
+          <div>
+            <Label htmlFor="phone" className="text-gray-700">Téléphone</Label>
+            <Input
+              id="phone"
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              disabled={!isEditing}
+              className="mt-1.5"
+              placeholder="+41 XX XXX XX XX"
+            />
+          </div>
+
+          {isEditing && (
+            <div className="flex gap-3 pt-4">
+              <Button onClick={handleSave} disabled={isSaving}>
+                {isSaving ? "Sauvegarde..." : "Sauvegarder"}
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsEditing(false)}
+                disabled={isSaving}
+              >
+                Annuler
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Other Settings */}
       <div className="space-y-3">
         <h3 className="font-semibold text-gray-900">Paramètres</h3>
         
         {[
-          { label: "Informations personnelles", icon: UserIcon },
-          { label: "Adresses enregistrées", icon: Home01Icon },
           { label: "Moyens de paiement", icon: CreditCardIcon },
           { label: "Notifications", icon: Tick02Icon },
         ].map((item) => (
