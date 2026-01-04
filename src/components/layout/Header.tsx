@@ -276,6 +276,7 @@ export function Header() {
                     localStorage.removeItem("bookingWizardData");
                     localStorage.removeItem("bookingWizardStep");
                     localStorage.removeItem("bookingInProgress");
+                    localStorage.removeItem("bookingDraft");
                     navigate({ to: "/booking/cleaning" });
                   }}
                 >
@@ -314,6 +315,7 @@ export function Header() {
                     localStorage.removeItem("bookingWizardData");
                     localStorage.removeItem("bookingWizardStep");
                     localStorage.removeItem("bookingInProgress");
+                    localStorage.removeItem("bookingDraft");
                     navigate({ to: "/booking/cleaning" });
                   }}
                 >
@@ -699,7 +701,7 @@ function AuthModal({
                 </button>
               </div>
 
-              {/* Footer */}
+          
               <p className="mt-6 text-center text-xs text-muted-foreground">
                 En continuant, vous acceptez nos{" "}
                 <a href="#" className="text-primary hover:underline">Conditions d'utilisation</a>

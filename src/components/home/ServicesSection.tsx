@@ -16,7 +16,7 @@ const services = [
     features: [
       "Personnel vérifié et assuré",
       "Disponible aujourd'hui",
-      "Produits inclus sur demande",
+      "Produits à fournir par le client",
       "Réservation flexible",
     ],
     price: "25 CHF/h",

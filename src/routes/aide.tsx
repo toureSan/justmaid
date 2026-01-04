@@ -73,7 +73,7 @@ const categories = [
       },
       {
         question: "Quelle est la durée minimum d'une intervention ?",
-        answer: "La durée minimum est de 2 heures. Nous recommandons 3 heures pour un appartement standard et 4-5 heures pour une maison ou un grand ménage.",
+        answer: "La durée minimum est de 3 heures. Nous recommandons 3 heures pour un appartement standard et 4-5 heures pour une maison ou un grand ménage.",
       },
     ],
   },
@@ -187,8 +187,8 @@ const contactMethods = [
     icon: Call02Icon,
     title: "Téléphone",
     description: "Lun-Ven 9h-18h",
-    value: "+41 22 123 45 67",
-    href: "tel:+41221234567",
+    value: "+41 22 792 67 23",
+    href: "tel:+41227926723",
   },
   {
     icon: Location01Icon,

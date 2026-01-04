@@ -98,7 +98,7 @@ function getReminderEmailHtml(userName: string, booking: any): string {
     
     <!-- CTA Button -->
     <div style="text-align: center; margin: 40px 0;">
-      <a href="https://justmaid-production.up.railway.app/dashboard" 
+      <a href="https://www.justmaid.ch/dashboard" 
          style="display: inline-block; background: #2563eb; color: white; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
         Voir ma réservation
       </a>

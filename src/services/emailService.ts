@@ -6,6 +6,16 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 export type EmailType = 'confirmation' | 'reminder' | 'cancellation';
 
+export interface ExtraService {
+  id: string;
+  name: string;
+  price: number;
+  duration?: number;
+  quantity?: number;
+}
+
+export type FrequencyType = "once" | "weekly" | "biweekly" | "monthly" | "custom";
+
 export interface BookingEmailData {
   bookingId: string;
   userEmail: string;
@@ -18,6 +28,10 @@ export interface BookingEmailData {
     address: string;
     tasks: string[];
     service_type: string;
+    extras?: ExtraService[];
+    hasPets?: boolean;
+    notes?: string;
+    frequency?: FrequencyType;
   };
   type: EmailType;
 }

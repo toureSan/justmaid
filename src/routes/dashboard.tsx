@@ -3,6 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Calendar03Icon,
@@ -13,11 +23,7 @@ import {
   Tick02Icon,
   Tag01Icon,
   RepeatIcon,
-  Wallet01Icon,
   StarIcon,
-  PackageIcon,
-  PercentIcon,
-  GiftIcon,
   UserIcon,
   HelpCircleIcon,
   Copy01Icon,
@@ -28,13 +34,15 @@ import {
 } from "@hugeicons/core-free-icons";
 import * as React from "react";
 import { listBookings, cancelBooking as cancelBookingService } from "@/services/bookingService";
+import { listSubscriptions, cancelSubscription, frequencyLabels, syncSubscriptions } from "@/services/subscriptionService";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
-import type { Booking as SupabaseBooking } from "@/types/database";
+import type { Booking as SupabaseBooking, Subscription } from "@/types/database";
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardPage,
   validateSearch: (search: Record<string, unknown>) => ({
     tab: (search.tab as string) || "home",
+    success: (search.success as string) || undefined,
   }),
 });
 
@@ -142,14 +150,8 @@ function DashboardPage() {
 
   const menuItems = [
     { id: "prices" as TabId, icon: Tag01Icon, label: "Prix et services" },
-    { id: "recurring" as TabId, icon: RepeatIcon, label: "Commandes répétées" },
+    { id: "subscriptions" as TabId, icon: StarIcon, label: "Mes abonnements" },
   ];
-
-  // Masqué pour l'instant
-  // const economyItems = [
-  //   { id: "subscriptions" as TabId, icon: StarIcon, label: "Abonnements" },
-  //   { id: "referral" as TabId, icon: GiftIcon, label: "Parrainer un ami" },
-  // ];
 
   const infoItems = [
     { id: "account" as TabId, icon: UserIcon, label: "Compte" },
@@ -175,12 +177,8 @@ function DashboardPage() {
         return <HomeTab bookings={bookings} cancelBooking={handleCancelBooking} user={user} />;
       case "prices":
         return <PricesTab />;
-      case "recurring":
-        return <RecurringTab />;
       case "subscriptions":
-        return <SubscriptionsTab />;
-      case "referral":
-        return <ReferralTab user={user} />;
+        return <SubscriptionsTab user={user} />;
       case "account":
         return <AccountTab user={user} />;
       case "help":
@@ -422,6 +420,8 @@ function BookingCard({
   booking: Booking; 
   cancelBooking: (id: string) => void;
 }) {
+  const [showCancelDialog, setShowCancelDialog] = React.useState(false);
+
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString("fr-FR", {
@@ -431,7 +431,40 @@ function BookingCard({
     });
   };
 
+  // Vérifier si le ménage est passé ou en cours
+  const getBookingTimeStatus = () => {
+    if (!booking.date || !booking.time) return "unknown";
+    
+    const now = new Date();
+    const bookingDate = new Date(booking.date);
+    const [hours, minutes] = (booking.time || "07:00").split(":").map(Number);
+    bookingDate.setHours(hours, minutes, 0, 0);
+    
+    const bookingEnd = new Date(bookingDate);
+    const duration = booking.duration || 3;
+    bookingEnd.setHours(bookingEnd.getHours() + duration);
+    
+    if (now >= bookingEnd) {
+      return "completed";
+    } else if (now >= bookingDate && now < bookingEnd) {
+      return "in_progress";
+    }
+    return "upcoming";
+  };
+  
+  const timeStatus = getBookingTimeStatus();
+
   const getStatusBadge = (status: Booking["status"]) => {
+    // Si le ménage est terminé (heure passée), afficher "Terminé"
+    if (timeStatus === "completed" && status !== "cancelled") {
+      return <Badge className="bg-green-100 text-green-700">Terminé ✓</Badge>;
+    }
+    
+    // Si le ménage est en cours
+    if (timeStatus === "in_progress" && status !== "cancelled") {
+      return <Badge className="bg-blue-100 text-blue-700">Prévu pour aujourd'hui</Badge>;
+    }
+    
     switch (status) {
       case "pending":
         return <Badge className="bg-yellow-100 text-yellow-700">En attente</Badge>;
@@ -439,6 +472,8 @@ function BookingCard({
         return <Badge className="bg-green-100 text-green-700">Confirmé</Badge>;
       case "in_progress":
         return <Badge className="bg-blue-100 text-blue-700">En cours</Badge>;
+      case "cancelled":
+        return <Badge className="bg-red-100 text-red-700">Annulé</Badge>;
       default:
         return null;
     }
@@ -466,67 +501,182 @@ function BookingCard({
   const tasks = booking.tasks || [];
   const notes = booking.notes || "";
   
+  // Parser les extras depuis notes (format texte avec [EXTRAS] et [ANIMAUX])
+  let extrasList: string[] = [];
+  let hasPets = false;
+  let specialInstructions = "";
+  
+  // Format: "[EXTRAS] label1: +XX CHF, label2: +XX CHF | [ANIMAUX] Présence d'animaux | Notes utilisateur"
+  if (notes) {
+    const parts = notes.split(' | ');
+    
+    for (const part of parts) {
+      if (part.startsWith('[EXTRAS]')) {
+        // Extraire les extras: enlever [EXTRAS], puis split par virgule
+        const extrasStr = part.replace('[EXTRAS]', '').trim();
+        extrasList = extrasStr.split(', ').map(e => {
+          // Enlever le prix (": +XX CHF") et les emojis
+          return e.replace(/:\s*\+\d+\s*CHF/g, '').replace(/[\u{1F300}-\u{1F9FF}]/gu, '').trim();
+        }).filter(e => e.length > 0);
+      } else if (part.startsWith('[ANIMAUX]')) {
+        hasPets = true;
+      } else {
+        // C'est une instruction utilisateur
+        specialInstructions = part.trim();
+      }
+    }
+  }
+  
   // Calcul du prix: utiliser total_price si disponible, sinon calculer
-  const price = booking.total_price || hours * 25;
+  const price = booking.total_price || hours * 40;
+
+  const handleCancelConfirm = () => {
+    cancelBooking(booking.id);
+    setShowCancelDialog(false);
+  };
 
   return (
-    <div className="rounded-2xl bg-white p-5">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex-1 space-y-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-              <HugeiconsIcon icon={Home01Icon} strokeWidth={1.5} className="h-6 w-6 text-primary" />
+    <>
+      <div className="rounded-2xl bg-white p-5 border border-gray-200">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex-1 space-y-4">
+            {/* En-tête */}
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                <HugeiconsIcon icon={Home01Icon} strokeWidth={1.5} className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Ménage à domicile</h3>
+                <p className="text-sm text-gray-500">{booking.address}</p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-gray-900">Ménage à domicile</h3>
-              <p className="text-sm text-gray-500">{booking.address}</p>
+
+            {/* Date et heure */}
+            <div className="flex flex-wrap gap-4 text-sm">
+              <div className="flex items-center gap-2 text-gray-500">
+                <HugeiconsIcon icon={Calendar03Icon} strokeWidth={2} className="h-4 w-4" />
+                <span className="capitalize">{formatDate(booking.date)}</span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-500">
+                <HugeiconsIcon icon={Clock01Icon} strokeWidth={2} className="h-4 w-4" />
+                <span>{booking.time} • {hours}h</span>
+              </div>
             </div>
+
+            {/* Services supplémentaires (extras) */}
+            {extrasList.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {extrasList.map((extra, index) => (
+                  <Badge key={index} variant="secondary" className="bg-primary/10 text-primary">
+                    ✨ {extra}
+                  </Badge>
+                ))}
+              </div>
+            )}
+
+            {/* Animaux */}
+            {hasPets && (
+              <Badge variant="secondary" className="bg-amber-100 text-amber-700">
+                🐾 Présence d'animaux
+              </Badge>
+            )}
+
+            {/* Services inclus */}
+            <div className="mt-2 pt-3 border-t border-gray-100">
+              <p className="text-xs font-medium text-gray-500 mb-2">Services inclus :</p>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {/* Chambre & Salon */}
+                <div>
+                  <p className="text-xs font-semibold text-gray-700 mb-1">🛏️ Chambre & Salon</p>
+                  <ul className="space-y-0.5 text-xs text-gray-600">
+                    <li className="flex items-center gap-1"><span className="text-green-500">✓</span>Aspirateur et sols</li>
+                    <li className="flex items-center gap-1"><span className="text-green-500">✓</span>Dépoussiérage</li>
+                    <li className="flex items-center gap-1"><span className="text-green-500">✓</span>Miroirs et vitres</li>
+                    <li className="flex items-center gap-1"><span className="text-green-500">✓</span>Poubelles</li>
+                    <li className="flex items-center gap-1"><span className="text-green-500">✓</span>Faire les lits</li>
+                  </ul>
+                </div>
+                {/* Salle de bain */}
+                <div>
+                  <p className="text-xs font-semibold text-gray-700 mb-1">🚿 Salle de bain</p>
+                  <ul className="space-y-0.5 text-xs text-gray-600">
+                    <li className="flex items-center gap-1"><span className="text-green-500">✓</span>Nettoyage sols</li>
+                    <li className="flex items-center gap-1"><span className="text-green-500">✓</span>Miroirs</li>
+                    <li className="flex items-center gap-1"><span className="text-green-500">✓</span>Désinfection WC/douche</li>
+                    <li className="flex items-center gap-1"><span className="text-green-500">✓</span>Dépoussiérage</li>
+                  </ul>
+                </div>
+                {/* Cuisine */}
+                <div>
+                  <p className="text-xs font-semibold text-gray-700 mb-1">🍳 Cuisine</p>
+                  <ul className="space-y-0.5 text-xs text-gray-600">
+                    <li className="flex items-center gap-1"><span className="text-green-500">✓</span>Nettoyage sols</li>
+                    <li className="flex items-center gap-1"><span className="text-green-500">✓</span>Vaisselle</li>
+                    <li className="flex items-center gap-1"><span className="text-green-500">✓</span>Évier et surfaces</li>
+                    <li className="flex items-center gap-1"><span className="text-green-500">✓</span>Électroménager</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Instructions spéciales */}
+            {specialInstructions && (
+              <div className="mt-3 pt-3 border-t border-gray-100">
+                <p className="text-xs font-medium text-gray-500 mb-1">Instructions :</p>
+                <p className="text-sm text-gray-600 leading-relaxed">{specialInstructions}</p>
+              </div>
+            )}
           </div>
 
-          <div className="flex flex-wrap gap-4 text-sm">
-            <div className="flex items-center gap-2 text-gray-500">
-              <HugeiconsIcon icon={Calendar03Icon} strokeWidth={2} className="h-4 w-4" />
-              <span className="capitalize">{formatDate(booking.date)}</span>
-            </div>
-            <div className="flex items-center gap-2 text-gray-500">
-              <HugeiconsIcon icon={Clock01Icon} strokeWidth={2} className="h-4 w-4" />
-              <span>{booking.time} • {hours}h</span>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {tasks.slice(0, 4).map((task) => (
-              <Badge key={task} variant="secondary" className="text-xs bg-gray-100 text-gray-600">
-                {taskLabels[task] || task}
-              </Badge>
-            ))}
-            {tasks.length > 4 && (
-              <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600">
-                +{tasks.length - 4}
-              </Badge>
+          {/* Prix et actions */}
+          <div className="flex flex-col items-end gap-3 sm:min-w-[140px]">
+            {getStatusBadge(booking.status)}
+           
+            {booking.status === "pending" && timeStatus === "upcoming" && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowCancelDialog(true)}
+                className="text-red-600 hover:bg-red-50 hover:text-red-700 border-red-200"
+              >
+                <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="mr-1 h-4 w-4" />
+                Annuler
+              </Button>
             )}
           </div>
         </div>
-
-        <div className="flex flex-col items-end gap-3">
-          {getStatusBadge(booking.status)}
-          <p className="text-xl font-bold text-gray-900">
-            {price} CHF
-          </p>
-          {booking.status === "pending" && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => cancelBooking(booking.id)}
-              className="text-red-600 hover:bg-red-50 hover:text-red-700"
-            >
-              <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="mr-1 h-4 w-4" />
-              Annuler
-            </Button>
-          )}
-        </div>
       </div>
-    </div>
+
+      {/* Modal de confirmation d'annulation */}
+      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Annuler cette réservation ?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>
+                Êtes-vous sûr de vouloir annuler votre réservation du{" "}
+                <span className="font-semibold">{formatDate(booking.date)}</span> à{" "}
+                <span className="font-semibold">{booking.time}</span> ?
+              </p>
+              <div className="rounded-lg bg-amber-50 p-3 border border-amber-200">
+                <p className="text-sm text-amber-800">
+                  ⚠️ Cette action est irréversible. Vous devrez créer une nouvelle réservation si vous changez d'avis.
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Garder ma réservation</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancelConfirm}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Oui, annuler
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 
@@ -572,25 +722,86 @@ function OrdersTab({
 }
 
 function PricesTab() {
-  const services = [
-    { name: "Ménage standard", price: "25 CHF/h", description: "Nettoyage général de votre domicile", icon: "🧹" },
-    { name: "Grand ménage", price: "30 CHF/h", description: "Nettoyage en profondeur", icon: "✨" },
-    { name: "Repassage", price: "20 CHF/h", description: "Service de repassage à domicile", icon: "👔" },
-    { name: "Vitres", price: "35 CHF/h", description: "Nettoyage des vitres", icon: "🪟" },
+  const mainServices = [
+    { 
+      name: "Ménage à domicile", 
+      price: "40 CHF/h", 
+      description: "Nettoyage complet de votre intérieur (sols, surfaces, cuisine, salle de bain)", 
+      details: "Minimum 3 heures • Produits non inclus",
+      icon: "🧹" 
+    },
+  ];
+
+  const extraServices = [
+    { name: "Repassage", price: "45 CHF/h", description: "Service de repassage professionnel à domicile", icon: "👔" },
+    { name: "Fenêtres", price: "25 CHF/h", description: "Nettoyage intérieur et extérieur des vitres (30 min par fenêtre)", icon: "🪟" },
+    { name: "Lessive & séchage", price: "40 CHF/h", description: "Lavage, séchage et pliage de votre linge", icon: "🧺" },
+    { name: "Intérieur du four", price: "30 CHF", description: "Dégraissage complet de votre four (environ 30 min)", icon: "🔥" },
+    { name: "Placards de cuisine", price: "30 CHF", description: "Nettoyage intérieur des placards (environ 30 min)", icon: "🗄️" },
+    { name: "Intérieur du frigidaire", price: "30 CHF", description: "Nettoyage et désinfection du réfrigérateur (environ 30 min)", icon: "❄️" },
   ];
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Prix et services</h2>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {services.map((service) => (
-          <div key={service.name} className="rounded-2xl bg-white p-6">
-            <div className="text-3xl mb-3">{service.icon}</div>
-            <h3 className="font-semibold text-gray-900">{service.name}</h3>
-            <p className="mt-1 text-sm text-gray-500">{service.description}</p>
-            <p className="mt-3 text-xl font-bold text-primary">{service.price}</p>
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900">Prix et services</h2>
+        <p className="mt-1 text-gray-600">Tarifs transparents et sans frais cachés 🇨🇭</p>
+      </div>
+
+      {/* Service principal */}
+      <div>
+        <h3 className="mb-4 text-lg font-semibold text-gray-900">Service principal</h3>
+        {mainServices.map((service) => (
+          <div key={service.name} className="rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 p-6 border-2 border-primary/20">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-3">
+                  <div className="text-3xl">{service.icon}</div>
+                  <div>
+                    <h4 className="text-xl font-semibold text-gray-900">{service.name}</h4>
+                    <p className="mt-1 text-sm text-gray-600">{service.description}</p>
+                    <p className="mt-2 text-xs font-medium text-primary">{service.details}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-3xl font-bold text-primary">{service.price}</p>
+              </div>
+            </div>
           </div>
         ))}
+      </div>
+
+      {/* Services supplémentaires */}
+      <div>
+        <h3 className="mb-4 text-lg font-semibold text-gray-900">Services supplémentaires</h3>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {extraServices.map((service) => (
+            <div key={service.name} className="rounded-2xl bg-white p-6 border border-gray-200 hover:border-primary/30 transition-all">
+              <div className="text-3xl mb-3">{service.icon}</div>
+              <h4 className="font-semibold text-gray-900">{service.name}</h4>
+              <p className="mt-1 text-sm text-gray-500 leading-relaxed">{service.description}</p>
+              <p className="mt-4 text-xl font-bold text-primary">{service.price}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Note importante */}
+      <div className="rounded-2xl bg-blue-50 p-6 border border-blue-100">
+        <div className="flex gap-3">
+          <span className="text-2xl">💡</span>
+          <div>
+            <h4 className="font-semibold text-gray-900">Bon à savoir</h4>
+            <ul className="mt-2 space-y-1 text-sm text-gray-600">
+              <li>• <strong>Produits et équipements non fournis</strong> - à prévoir par le client</li>
+              <li>• Réservation minimum de 3 heures pour le service de ménage</li>
+              <li>• Les services supplémentaires s'ajoutent à votre réservation</li>
+              <li>• Paiement sécurisé par carte bancaire uniquement après l'intervention</li>
+              <li>• Service disponible 6j/7 (du lundi au samedi)</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -599,18 +810,68 @@ function PricesTab() {
 function RecurringTab() {
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Commandes répétées</h2>
-      <div className="rounded-2xl bg-white p-12 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
-          <HugeiconsIcon icon={RepeatIcon} strokeWidth={1.5} className="h-8 w-8 text-gray-400" />
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900">Commandes répétées</h2>
+        <p className="mt-1 text-gray-600">Programmez vos ménages et économisez</p>
+      </div>
+
+      {/* Bientôt disponible */}
+      <div className="rounded-2xl bg-gradient-to-br from-orange-50 to-yellow-50 border-2 border-orange-200 p-12 text-center">
+        <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-md">
+          <HugeiconsIcon icon={RepeatIcon} strokeWidth={1.5} className="h-10 w-10 text-orange-500" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900">Pas de commande récurrente</h3>
-        <p className="mt-2 text-gray-500">
-          Programmez un ménage régulier et économisez jusqu'à 15%
+        
+        <div className="inline-flex items-center gap-2 rounded-full bg-orange-500 px-4 py-1.5 mb-4">
+          <span className="text-sm font-semibold text-white">🚀 Bientôt disponible</span>
+        </div>
+        
+        <h3 className="text-2xl font-bold text-gray-900 mb-3">Commandes répétées</h3>
+        <p className="mx-auto max-w-2xl text-gray-600 leading-relaxed">
+          Nous travaillons actuellement sur cette fonctionnalité pour vous permettre de programmer 
+          des ménages réguliers (hebdomadaires, bimensuels ou mensuels) et bénéficier d'une réduction allant jusqu'à <span className="font-semibold text-orange-600">15%</span> sur vos réservations.
         </p>
-        <Button className="mt-6 rounded-full">
-          Programmer un ménage régulier
+
+        {/* Avantages futurs */}
+        <div className="mt-8 grid gap-4 sm:grid-cols-3 text-left">
+          <div className="rounded-xl bg-white p-4 shadow-sm">
+            <div className="text-2xl mb-2">📅</div>
+            <h4 className="font-semibold text-gray-900 text-sm">Planning flexible</h4>
+            <p className="mt-1 text-xs text-gray-600">Choisissez votre fréquence et modifiez quand vous voulez</p>
+          </div>
+          <div className="rounded-xl bg-white p-4 shadow-sm">
+            <div className="text-2xl mb-2">💰</div>
+            <h4 className="font-semibold text-gray-900 text-sm">Économies garanties</h4>
+            <p className="mt-1 text-xs text-gray-600">Jusqu'à 15% de réduction sur chaque intervention</p>
+          </div>
+          <div className="rounded-xl bg-white p-4 shadow-sm">
+            <div className="text-2xl mb-2">⭐</div>
+            <h4 className="font-semibold text-gray-900 text-sm">Même intervenant(e)</h4>
+            <p className="mt-1 text-xs text-gray-600">Continuité et qualité assurées</p>
+          </div>
+        </div>
+
+        {/* CTA désactivé */}
+        <Button disabled className="mt-8 rounded-full bg-gray-300 hover:bg-gray-300 cursor-not-allowed">
+          Fonctionnalité en développement
         </Button>
+        
+        <p className="mt-4 text-sm text-gray-500">
+          💌 Vous serez notifié(e) par email dès que cette option sera disponible
+        </p>
+      </div>
+
+      {/* Info pour l'instant */}
+      <div className="rounded-2xl bg-white p-6 border border-gray-200">
+        <div className="flex gap-3">
+          <span className="text-2xl">💡</span>
+          <div>
+            <h4 className="font-semibold text-gray-900">En attendant...</h4>
+            <p className="mt-1 text-sm text-gray-600">
+              Vous pouvez toujours réserver ponctuellement vos ménages via la page d'accueil. 
+              Nous gardons l'historique de vos préférences pour faciliter vos prochaines réservations.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -647,66 +908,378 @@ function WalletTab() {
   );
 }
 
-function SubscriptionsTab() {
-  const plans = [
-    { 
-      name: "Essentiel", 
-      price: "49 CHF/mois", 
-      hours: "2h/semaine",
-      savings: "10%",
-      features: ["2h de ménage par semaine", "Même intervenant(e)", "Annulation gratuite 24h avant"]
-    },
-    { 
-      name: "Confort", 
-      price: "89 CHF/mois", 
-      hours: "4h/semaine",
-      savings: "15%",
-      popular: true,
-      features: ["4h de ménage par semaine", "Même intervenant(e)", "Annulation gratuite 24h avant", "Repassage inclus"]
-    },
-    { 
-      name: "Premium", 
-      price: "149 CHF/mois", 
-      hours: "8h/semaine",
-      savings: "20%",
-      features: ["8h de ménage par semaine", "Même intervenant(e)", "Annulation gratuite 24h avant", "Repassage inclus", "Vitres 1x/mois"]
-    },
-  ];
+function SubscriptionsTab({ user }: { user: UserAuth | null }) {
+  const [subscriptions, setSubscriptions] = React.useState<Subscription[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [isSyncing, setIsSyncing] = React.useState(false);
+  const [cancellingId, setCancellingId] = React.useState<string | null>(null);
+  const [showCancelDialog, setShowCancelDialog] = React.useState(false);
+  const [selectedSubscription, setSelectedSubscription] = React.useState<Subscription | null>(null);
+  const [cancelSuccess, setCancelSuccess] = React.useState(false);
+  const [subscriptionSuccess, setSubscriptionSuccess] = React.useState(false);
+
+  // Charger et synchroniser les abonnements
+  React.useEffect(() => {
+    const loadSubscriptions = async () => {
+      if (!user) return;
+      
+      setIsLoading(true);
+
+      // Vérifier si on revient de Stripe avec success=true
+      const urlParams = new URLSearchParams(window.location.search);
+      const isSuccess = urlParams.get("success") === "true";
+
+      if (isSuccess && user.email) {
+        setIsSyncing(true);
+        // Synchroniser les abonnements depuis Stripe
+        const syncResult = await syncSubscriptions(user.id, user.email);
+        console.log("Sync result:", syncResult);
+        setIsSyncing(false);
+
+        if (syncResult.synced > 0) {
+          setSubscriptionSuccess(true);
+          setTimeout(() => setSubscriptionSuccess(false), 5000);
+        }
+
+        // Nettoyer l'URL
+        window.history.replaceState({}, "", window.location.pathname + "?tab=subscriptions");
+      }
+
+      // Charger les abonnements depuis Supabase
+      const { subscriptions: userSubscriptions } = await listSubscriptions(user.id);
+      setSubscriptions(userSubscriptions);
+      setIsLoading(false);
+    };
+
+    loadSubscriptions();
+  }, [user]);
+
+  const handleCancelClick = (subscription: Subscription) => {
+    setSelectedSubscription(subscription);
+    setShowCancelDialog(true);
+  };
+
+  const handleCancelConfirm = async () => {
+    if (!selectedSubscription) return;
+
+    setCancellingId(selectedSubscription.stripe_subscription_id);
+    setShowCancelDialog(false);
+
+    const result = await cancelSubscription(selectedSubscription.stripe_subscription_id, false);
+
+    if (result.success) {
+      // Mettre à jour l'état local
+      setSubscriptions(prev => prev.map(sub => 
+        sub.id === selectedSubscription.id 
+          ? { ...sub, cancelled_at: new Date().toISOString() }
+          : sub
+      ));
+      setCancelSuccess(true);
+      setTimeout(() => setCancelSuccess(false), 5000);
+    } else {
+      alert("Erreur lors de l'annulation: " + result.error);
+    }
+
+    setCancellingId(null);
+    setSelectedSubscription(null);
+  };
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
+  const getStatusBadge = (subscription: Subscription) => {
+    if (subscription.cancelled_at) {
+      return <Badge className="bg-orange-100 text-orange-700">Annulé (actif jusqu'au {formatDate(subscription.current_period_end)})</Badge>;
+    }
+    switch (subscription.status) {
+      case "active":
+        return <Badge className="bg-green-100 text-green-700">Actif</Badge>;
+      case "paused":
+        return <Badge className="bg-yellow-100 text-yellow-700">En pause</Badge>;
+      case "past_due":
+        return <Badge className="bg-red-100 text-red-700">Paiement en retard</Badge>;
+      case "cancelled":
+        return <Badge className="bg-gray-100 text-gray-700">Annulé</Badge>;
+      default:
+        return null;
+    }
+  };
+
+  const activeSubscriptions = subscriptions.filter(s => s.status === "active" || s.status === "paused");
+  const cancelledSubscriptions = subscriptions.filter(s => s.status === "cancelled");
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Abonnements</h2>
-      <p className="text-gray-500">Optez pour un abonnement et économisez sur vos ménages réguliers.</p>
-      
-      <div className="grid gap-6 lg:grid-cols-3">
-        {plans.map((plan) => (
-          <div 
-            key={plan.name} 
-            className={`relative rounded-2xl bg-white p-6 ${plan.popular ? "ring-2 ring-primary" : ""}`}
-          >
-            {plan.popular && (
-              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary">
-                Populaire
-              </Badge>
-            )}
-            <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
-            <p className="mt-2 text-3xl font-bold text-gray-900">{plan.price}</p>
-            <p className="text-sm text-gray-500">{plan.hours}</p>
-            <Badge className="mt-2 bg-green-100 text-green-700">-{plan.savings}</Badge>
-            <ul className="mt-4 space-y-2">
-              {plan.features.map((feature) => (
-                <li key={feature} className="flex items-center gap-2 text-sm text-gray-600">
-                  <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} className="h-4 w-4 text-green-600" />
-                  {feature}
-                </li>
-              ))}
-            </ul>
-            <Button className="mt-6 w-full rounded-full">
-              Choisir
-            </Button>
+      {/* Success Toast */}
+      {/* Toast succès création abonnement */}
+      {subscriptionSuccess && (
+        <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+          <div className="flex items-center gap-2">
+            <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} className="h-5 w-5 text-green-600" />
+            <p className="text-green-800 font-medium">
+              🎉 Abonnement activé avec succès ! Votre premier ménage sera programmé prochainement.
+            </p>
           </div>
-        ))}
+        </div>
+      )}
+
+      {/* Toast succès annulation */}
+      {cancelSuccess && (
+        <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+          <div className="flex items-center gap-2">
+            <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} className="h-5 w-5 text-green-600" />
+            <p className="text-green-800 font-medium">
+              Abonnement annulé avec succès. Il reste actif jusqu'à la fin de la période en cours.
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900">Mes abonnements</h2>
+        <p className="mt-1 text-gray-600">Gérez vos abonnements de ménage récurrent</p>
       </div>
+
+      {isLoading || isSyncing ? (
+        <div className="flex flex-col items-center justify-center py-12 gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          {isSyncing && (
+            <p className="text-sm text-muted-foreground">Synchronisation avec Stripe...</p>
+          )}
+        </div>
+      ) : activeSubscriptions.length === 0 ? (
+        <div className="rounded-2xl bg-white p-8 text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+            <HugeiconsIcon icon={StarIcon} strokeWidth={1.5} className="h-8 w-8 text-primary" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900">Aucun abonnement actif</h3>
+          <p className="mt-2 text-gray-500 max-w-md mx-auto">
+            Souscrivez à un abonnement pour bénéficier de ménages récurrents à prix réduit et d'un même intervenant à chaque fois.
+          </p>
+          <Link to="/booking/cleaning" className="inline-block mt-6">
+            <Button className="rounded-full gap-2">
+              <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} className="h-4 w-4" />
+              Créer un abonnement
+            </Button>
+          </Link>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {activeSubscriptions.map((subscription) => (
+            <div key={subscription.id} className="rounded-2xl bg-white p-6 border border-gray-200">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex-1 space-y-4">
+                  {/* En-tête */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                      <HugeiconsIcon icon={RepeatIcon} strokeWidth={1.5} className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">
+                        Ménage récurrent – {subscription.duration_hours}h
+                        {subscription.extras && subscription.extras.length > 0 && (
+                          <span className="text-primary"> + {subscription.extras.map(e => e.name).join(', ')}</span>
+                        )}
+                      </h3>
+                      <p className="text-sm text-gray-500">{subscription.address}</p>
+                    </div>
+                  </div>
+
+                  {/* Détails */}
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="flex items-center gap-2 text-sm">
+                      <HugeiconsIcon icon={RepeatIcon} strokeWidth={1.5} className="h-4 w-4 text-gray-400" />
+                      <span className="text-gray-600">
+                        {frequencyLabels[subscription.frequency]}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <HugeiconsIcon icon={Clock01Icon} strokeWidth={1.5} className="h-4 w-4 text-gray-400" />
+                      <span className="text-gray-600">
+                        {subscription.preferred_time} • {subscription.duration_hours}h
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <HugeiconsIcon icon={Calendar03Icon} strokeWidth={1.5} className="h-4 w-4 text-gray-400" />
+                      <span className="text-gray-600">
+                        Prochain: {formatDate(subscription.next_billing_date)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <HugeiconsIcon icon={CreditCardIcon} strokeWidth={1.5} className="h-4 w-4 text-gray-400" />
+                      <span className="text-gray-600 font-medium">
+                        {subscription.price_per_session} CHF/séance
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Services inclus */}
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <p className="text-xs font-medium text-gray-500 mb-3">Services inclus à chaque intervention :</p>
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      {/* Chambre & Salon */}
+                      <div>
+                        <p className="text-xs font-semibold text-gray-700 mb-1.5">🛏️ Chambre & Salon</p>
+                        <ul className="space-y-1 text-xs text-gray-600">
+                          <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span>Aspirateur et sols</li>
+                          <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span>Dépoussiérage</li>
+                          <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span>Miroirs et vitres</li>
+                          <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span>Poubelles</li>
+                          <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span>Faire les lits</li>
+                        </ul>
+                      </div>
+                      {/* Salle de bain */}
+                      <div>
+                        <p className="text-xs font-semibold text-gray-700 mb-1.5">🚿 Salle de bain</p>
+                        <ul className="space-y-1 text-xs text-gray-600">
+                          <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span>Nettoyage sols</li>
+                          <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span>Miroirs</li>
+                          <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span>Désinfection WC/douche</li>
+                          <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span>Dépoussiérage</li>
+                        </ul>
+                      </div>
+                      {/* Cuisine */}
+                      <div>
+                        <p className="text-xs font-semibold text-gray-700 mb-1.5">🍳 Cuisine</p>
+                        <ul className="space-y-1 text-xs text-gray-600">
+                          <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span>Nettoyage sols</li>
+                          <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span>Vaisselle</li>
+                          <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span>Évier et surfaces</li>
+                          <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span>Électroménager</li>
+                        </ul>
+                      </div>
+                    </div>
+                    
+                    {/* Extras si présents */}
+                    {subscription.extras && subscription.extras.length > 0 && (
+                      <div className="mt-4 pt-3 border-t border-gray-100">
+                        <p className="text-xs font-medium text-gray-500 mb-2">✨ Services supplémentaires inclus :</p>
+                        <div className="flex flex-wrap gap-2">
+                          {subscription.extras.map((extra, index) => (
+                            <span 
+                              key={index}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium"
+                            >
+                              <span className="text-green-500">✓</span>
+                              {extra.name} (+{extra.price} CHF)
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex flex-col items-end gap-3">
+                  {getStatusBadge(subscription)}
+                  
+                  {!subscription.cancelled_at && subscription.status === "active" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleCancelClick(subscription)}
+                      disabled={cancellingId === subscription.stripe_subscription_id}
+                      className="text-red-600 hover:bg-red-50 hover:text-red-700 border-red-200"
+                    >
+                      {cancellingId === subscription.stripe_subscription_id ? (
+                        <>
+                          <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent"></div>
+                          Annulation...
+                        </>
+                      ) : (
+                        <>
+                          <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="mr-1 h-4 w-4" />
+                          Se désabonner
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Historique des abonnements annulés */}
+      {cancelledSubscriptions.length > 0 && (
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Abonnements passés</h3>
+          <div className="space-y-3">
+            {cancelledSubscriptions.map((subscription) => (
+              <div key={subscription.id} className="rounded-xl bg-gray-50 p-4 opacity-60">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-200">
+                      <HugeiconsIcon icon={RepeatIcon} strokeWidth={1.5} className="h-5 w-5 text-gray-500" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-700">
+                        Ménage {subscription.duration_hours}h - {frequencyLabels[subscription.frequency]}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Annulé le {formatDate(subscription.cancelled_at || subscription.updated_at)}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge className="bg-gray-200 text-gray-600">Terminé</Badge>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Informations sur les abonnements */}
+      <div className="rounded-2xl bg-blue-50 p-6 border border-blue-100 mt-8">
+        <div className="flex gap-3">
+          <span className="text-2xl">💡</span>
+          <div>
+            <h4 className="font-semibold text-gray-900">Avantages de l'abonnement</h4>
+            <ul className="mt-2 space-y-1 text-sm text-gray-600">
+              <li>• <strong>Économisez jusqu'à 10%</strong> sur chaque intervention avec un abonnement hebdomadaire</li>
+              <li>• <strong>Même intervenant(e)</strong> à chaque visite pour une qualité constante</li>
+              <li>• <strong>Annulation flexible</strong> - vous pouvez vous désabonner à tout moment</li>
+              <li>• <strong>Paiement automatique</strong> - plus besoin de payer à chaque fois</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal de confirmation d'annulation */}
+      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Se désabonner ?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>
+                Êtes-vous sûr de vouloir annuler votre abonnement de ménage{" "}
+                <span className="font-semibold">{selectedSubscription?.duration_hours}h {selectedSubscription?.frequency && frequencyLabels[selectedSubscription.frequency]}</span> ?
+              </p>
+              <div className="rounded-lg bg-blue-50 p-3 border border-blue-200">
+                <p className="text-sm text-blue-800">
+                  ℹ️ Votre abonnement restera actif jusqu'à la fin de la période en cours ({selectedSubscription && formatDate(selectedSubscription.current_period_end)}). Aucun prélèvement supplémentaire ne sera effectué.
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Garder mon abonnement</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancelConfirm}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Oui, me désabonner
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -1091,7 +1664,7 @@ function HelpTab() {
   const faqs = [
     { q: "Comment annuler une réservation ?", a: "Vous pouvez annuler gratuitement jusqu'à 24h avant l'intervention dans la section 'Mes commandes'." },
     { q: "Comment contacter mon intervenant(e) ?", a: "Une fois la réservation confirmée, vous recevrez les coordonnées de votre intervenant(e) par SMS." },
-    { q: "Quels produits dois-je fournir ?", a: "Nos intervenants apportent leurs produits. Si vous préférez qu'ils utilisent les vôtres, précisez-le dans les instructions." },
+    { q: "Quels produits dois-je fournir ?", a: "Les produits et équipements de ménage ne sont pas fournis. Merci de prévoir : aspirateur, serpillière, éponges, chiffons et produits ménagers (multi-surfaces, vitres, sol, salle de bain)." },
   ];
 
   return (
@@ -1100,13 +1673,13 @@ function HelpTab() {
       
       <div className="rounded-2xl bg-primary/5 p-6">
         <h3 className="font-semibold text-gray-900">Besoin d'aide ?</h3>
-        <p className="mt-1 text-gray-500">Notre équipe est disponible 7j/7 de 8h à 20h</p>
+        <p className="mt-1 text-gray-500">Notre équipe est disponible 6j/7 de 8h à 20h</p>
         <div className="mt-4 flex flex-wrap gap-3">
           <Button variant="outline" className="gap-2 rounded-xl">
-            📞 01 23 45 67 89
+            📞 +41 22 792 67 23
           </Button>
           <Button variant="outline" className="gap-2 rounded-xl">
-            ✉️ support@justmade.fr
+            ✉️ contact@justmaid.ch
           </Button>
         </div>
       </div>

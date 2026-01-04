@@ -18,7 +18,7 @@ const defaultServices: Service[] = [
     image_url: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600',
     emoji: '🧹',
     is_available: true,
-    features: ['Personnel vérifié et assuré', 'Disponible aujourd\'hui', 'Produits inclus', 'Réservation flexible'],
+    features: ['Personnel vérifié et assuré', 'Disponible aujourd\'hui', 'Produits à fournir', 'Réservation flexible'],
     created_at: new Date().toISOString(),
   },
   {

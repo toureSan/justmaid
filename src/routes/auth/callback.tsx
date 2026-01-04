@@ -10,11 +10,22 @@ function AuthCallback() {
   const navigate = useNavigate()
   const [status, setStatus] = React.useState<'loading' | 'success' | 'error'>('loading')
   const [error, setError] = React.useState<string | null>(null)
+  const [message, setMessage] = React.useState<string>('Connexion en cours...')
 
   React.useEffect(() => {
     const handleCallback = async () => {
       try {
         const supabase = getSupabase()
+        
+        // Vérifier si c'est un recovery (reset password)
+        const hashParams = new URLSearchParams(window.location.hash.substring(1))
+        const queryParams = new URLSearchParams(window.location.search)
+        const type = hashParams.get('type') || queryParams.get('type')
+        const isRecovery = type === 'recovery'
+        
+        if (isRecovery) {
+          setMessage('Réinitialisation du mot de passe...')
+        }
         
         // Récupérer le code de l'URL et échanger contre une session
         const { data, error } = await supabase.auth.getSession()
@@ -26,11 +37,25 @@ function AuthCallback() {
           return
         }
 
+        // Fonction pour déterminer la redirection
+        const getRedirectUrl = () => {
+          // Si c'est un recovery, rediriger vers le dashboard pour modifier le mot de passe
+          if (isRecovery) {
+            return '/dashboard?tab=account'
+          }
+          // Si une réservation était en cours
+          const bookingInProgress = localStorage.getItem("bookingInProgress")
+          if (bookingInProgress) {
+            return '/booking/cleaning'
+          }
+          // Par défaut, aller au dashboard
+          return '/dashboard?tab=home'
+        }
+
         if (data.session) {
           setStatus('success')
-          // Vérifier si une réservation était en cours
-          const bookingInProgress = localStorage.getItem("bookingInProgress")
-          const redirectTo = bookingInProgress ? '/booking/cleaning' : '/'
+          setMessage(isRecovery ? 'Mot de passe modifié !' : 'Connexion réussie !')
+          const redirectTo = getRedirectUrl()
           
           // Rediriger après 1 seconde
           setTimeout(() => {
@@ -38,9 +63,6 @@ function AuthCallback() {
           }, 1000)
         } else {
           // Pas de session, essayer d'échanger le code
-          const hashParams = new URLSearchParams(window.location.hash.substring(1))
-          const queryParams = new URLSearchParams(window.location.search)
-          
           const accessToken = hashParams.get('access_token') || queryParams.get('access_token')
           const refreshToken = hashParams.get('refresh_token') || queryParams.get('refresh_token')
           
@@ -57,20 +79,18 @@ function AuthCallback() {
             }
             
             setStatus('success')
-            // Vérifier si une réservation était en cours
-            const bookingInProgress2 = localStorage.getItem("bookingInProgress")
-            const redirectTo2 = bookingInProgress2 ? '/booking/cleaning' : '/'
+            setMessage(isRecovery ? 'Mot de passe modifié !' : 'Connexion réussie !')
+            const redirectTo = getRedirectUrl()
             setTimeout(() => {
-              navigate({ to: redirectTo2 })
+              navigate({ to: redirectTo })
             }, 1000)
           } else {
             // Rediriger quand même, la session peut déjà être dans les cookies
             setStatus('success')
-            // Vérifier si une réservation était en cours
-            const bookingInProgress3 = localStorage.getItem("bookingInProgress")
-            const redirectTo3 = bookingInProgress3 ? '/booking/cleaning' : '/'
+            setMessage(isRecovery ? 'Mot de passe modifié !' : 'Connexion réussie !')
+            const redirectTo = getRedirectUrl()
             setTimeout(() => {
-              navigate({ to: redirectTo3 })
+              navigate({ to: redirectTo })
             }, 500)
           }
         }
@@ -124,7 +144,7 @@ function AuthCallback() {
 
             {/* Messages */}
             <div className="space-y-2">
-              <p className="text-lg font-semibold text-gray-900">Connexion en cours...</p>
+              <p className="text-lg font-semibold text-gray-900">{message}</p>
               <p className="text-sm text-gray-500">Veuillez patienter</p>
             </div>
 
@@ -145,8 +165,8 @@ function AuthCallback() {
               </svg>
             </div>
             <div className="space-y-2">
-              <p className="text-xl font-bold text-gray-900">Connexion réussie ! 🎉</p>
-              <p className="text-sm text-gray-500">Redirection en cours...</p>
+              <p className="text-xl font-bold text-gray-900">{message} 🎉</p>
+              <p className="text-sm text-gray-500">Redirection vers votre espace...</p>
             </div>
           </>
         )}

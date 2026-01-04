@@ -14,6 +14,8 @@ export type ServiceType = 'cleaning' | 'laundry' | 'ironing' | 'business_cleanin
 export type PaymentStatus = 'pending' | 'processing' | 'succeeded' | 'failed' | 'refunded';
 export type PaymentMethod = 'card' | 'twint' | 'apple_pay' | 'google_pay';
 export type UserRole = 'client' | 'provider' | 'admin';
+export type SubscriptionStatus = 'active' | 'cancelled' | 'paused' | 'past_due' | 'trialing';
+export type SubscriptionFrequency = 'weekly' | 'biweekly' | 'monthly';
 
 export interface Database {
   public: {
@@ -262,6 +264,66 @@ export interface Database {
           comment?: string | null;
         };
       };
+      subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          stripe_subscription_id: string;
+          stripe_customer_id: string;
+          status: SubscriptionStatus;
+          frequency: SubscriptionFrequency;
+          duration_hours: number;
+          address: string;
+          address_details: string | null;
+          preferred_day: string | null;
+          preferred_time: string;
+          price_per_session: number;
+          next_billing_date: string;
+          current_period_end: string;
+          cancelled_at: string | null;
+          extras: { name: string; price: number }[] | null;
+          extras_total: number | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          stripe_subscription_id: string;
+          stripe_customer_id: string;
+          status?: SubscriptionStatus;
+          frequency: SubscriptionFrequency;
+          duration_hours: number;
+          address: string;
+          address_details?: string | null;
+          preferred_day?: string | null;
+          preferred_time: string;
+          price_per_session: number;
+          next_billing_date: string;
+          current_period_end: string;
+          cancelled_at?: string | null;
+          extras?: { name: string; price: number }[] | null;
+          extras_total?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          status?: SubscriptionStatus;
+          frequency?: SubscriptionFrequency;
+          duration_hours?: number;
+          address?: string;
+          address_details?: string | null;
+          preferred_day?: string | null;
+          preferred_time?: string;
+          price_per_session?: number;
+          next_billing_date?: string;
+          current_period_end?: string;
+          cancelled_at?: string | null;
+          extras?: { name: string; price: number }[] | null;
+          extras_total?: number | null;
+          updated_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -294,3 +356,7 @@ export type PaymentInsert = Database['public']['Tables']['payments']['Insert'];
 export type Service = Database['public']['Tables']['services']['Row'];
 export type City = Database['public']['Tables']['cities']['Row'];
 export type Review = Database['public']['Tables']['reviews']['Row'];
+
+export type Subscription = Database['public']['Tables']['subscriptions']['Row'];
+export type SubscriptionInsert = Database['public']['Tables']['subscriptions']['Insert'];
+export type SubscriptionUpdate = Database['public']['Tables']['subscriptions']['Update'];

@@ -22,7 +22,7 @@ export function MissionSection() {
     },
     {
       icon: Clock01Icon,
-      text: "Disponible 7j/7 avec réservation en quelques clics",
+      text: "Disponible 6j/7 avec réservation en quelques clics",
     },
   ];
 

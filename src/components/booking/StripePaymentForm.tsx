@@ -3,18 +3,35 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { SecurityLockIcon, CreditCardIcon } from "@hugeicons/core-free-icons";
+import { SecurityLockIcon, CreditCardIcon, RepeatIcon } from "@hugeicons/core-free-icons";
+import type { SubscriptionFrequency } from "@/types/database";
 
 interface StripePaymentFormProps {
   amount: number; // Montant en centimes
   bookingId?: string;
   customerEmail?: string;
+  customerName?: string;
+  userId?: string;
   onPaymentSuccess: () => void;
   onPaymentError: (error: string) => void;
+  // Props pour les abonnements
+  isSubscription?: boolean;
+  subscriptionData?: {
+    frequency: SubscriptionFrequency;
+    durationHours: number;
+    address: string;
+    addressDetails?: string;
+    preferredDay?: string;
+    preferredTime: string;
+    baseHourlyRate: number;
+    extras?: Array<{ name: string; price: number }>;
+    extrasTotal?: number;
+  };
 }
 
 // URL de l'API Stripe (à configurer avec votre backend ou Supabase Edge Function)
 const STRIPE_CHECKOUT_API = import.meta.env.VITE_STRIPE_CHECKOUT_API || "/api/create-checkout-session";
+const STRIPE_SUBSCRIPTION_API = import.meta.env.VITE_SUPABASE_URL + "/functions/v1/create-subscription";
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 
 // Icônes de paiement en SVG inline
@@ -52,13 +69,24 @@ const PaymentIcons = () => (
   </div>
 );
 
+// Labels de fréquence
+const frequencyLabels: Record<SubscriptionFrequency, string> = {
+  weekly: "Hebdomadaire",
+  biweekly: "Toutes les 2 semaines",
+  monthly: "Mensuel",
+};
+
 // Composant principal avec Stripe Checkout Redirect
 export function StripePaymentForm({ 
   amount, 
   bookingId, 
   customerEmail,
+  customerName,
+  userId,
   onPaymentSuccess, 
-  onPaymentError 
+  onPaymentError,
+  isSubscription = false,
+  subscriptionData,
 }: StripePaymentFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [useDemo, setUseDemo] = React.useState(false);
@@ -77,8 +105,9 @@ export function StripePaymentForm({
     const urlParams = new URLSearchParams(window.location.search);
     const sessionId = urlParams.get("session_id");
     const paymentStatus = urlParams.get("payment_status");
+    const success = urlParams.get("success");
 
-    if (sessionId && paymentStatus === "success") {
+    if ((sessionId && paymentStatus === "success") || success === "true") {
       // Paiement réussi, nettoyer l'URL
       window.history.replaceState({}, "", window.location.pathname);
       onPaymentSuccess();
@@ -88,7 +117,7 @@ export function StripePaymentForm({
     }
   }, [onPaymentSuccess, onPaymentError]);
 
-  // Redirection vers Stripe Checkout
+  // Redirection vers Stripe Checkout pour paiement unique
   const handleStripeCheckout = async () => {
     setIsLoading(true);
 
@@ -139,11 +168,199 @@ export function StripePaymentForm({
     }
   };
 
+  // Redirection vers Stripe Checkout pour abonnement
+  const handleSubscriptionCheckout = async () => {
+    if (!subscriptionData || !userId || !customerEmail) {
+      onPaymentError("Données d'abonnement incomplètes");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(STRIPE_SUBSCRIPTION_API, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+          "apikey": SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({
+          userId,
+          customerEmail,
+          customerName,
+          frequency: subscriptionData.frequency,
+          durationHours: subscriptionData.durationHours,
+          address: subscriptionData.address,
+          addressDetails: subscriptionData.addressDetails,
+          preferredDay: subscriptionData.preferredDay,
+          preferredTime: subscriptionData.preferredTime,
+          baseHourlyRate: subscriptionData.baseHourlyRate,
+          extras: subscriptionData.extras || [],
+          extrasTotal: subscriptionData.extrasTotal || 0,
+          successUrl: `${window.location.origin}/dashboard?tab=subscriptions&success=true`,
+          cancelUrl: `${window.location.origin}${window.location.pathname}?cancelled=true`,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Erreur lors de la création de l'abonnement");
+      }
+
+      const { url } = await response.json();
+      
+      if (url) {
+        // Sauvegarder l'état avant la redirection
+        const bookingData = localStorage.getItem("bookingWizardData");
+        const bookingStep = localStorage.getItem("bookingWizardStep");
+        if (bookingData && bookingStep) {
+          localStorage.setItem("bookingBeforeStripe", JSON.stringify({
+            data: bookingData,
+            step: bookingStep,
+          }));
+        }
+        
+        // Redirection vers Stripe Checkout
+        window.location.href = url;
+      } else {
+        throw new Error("URL de paiement non reçue");
+      }
+    } catch (error) {
+      console.error("Stripe Subscription error:", error);
+      onPaymentError(error instanceof Error ? error.message : "Erreur de paiement");
+      setIsLoading(false);
+    }
+  };
+
   // Mode démo si Stripe n'est pas configuré
   if (!isStripeConfigured || useDemo) {
     return <DemoPaymentForm onPaymentSuccess={onPaymentSuccess} onPaymentError={onPaymentError} amount={amount} />;
   }
 
+  // Rendu pour abonnement
+  if (isSubscription && subscriptionData) {
+    // Réduction en CHF/h (cohérent avec BookingWizard FREQUENCIES)
+    const discountsPerHour: Record<SubscriptionFrequency, number> = {
+      weekly: 2,
+      biweekly: 2,
+      monthly: 2,
+    };
+    const discountPerHour = discountsPerHour[subscriptionData.frequency];
+    const discountedRate = subscriptionData.baseHourlyRate - discountPerHour;
+    const basePrice = discountedRate * subscriptionData.durationHours;
+    const extrasTotal = subscriptionData.extrasTotal || 0;
+    const pricePerSession = basePrice + extrasTotal;
+    const totalDiscount = discountPerHour * subscriptionData.durationHours;
+
+    return (
+      <div className="space-y-6">
+        {/* Résumé de l'abonnement */}
+        <div className="rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 p-6 border-2 border-primary/20">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="rounded-full bg-primary/20 p-3">
+              <HugeiconsIcon icon={RepeatIcon} strokeWidth={2} className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground">Abonnement ménage</h3>
+              <p className="text-sm text-muted-foreground">{frequencyLabels[subscriptionData.frequency]}</p>
+            </div>
+          </div>
+          
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Durée</span>
+              <span className="font-medium">{subscriptionData.durationHours}h par séance</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Tarif horaire</span>
+              <span className="font-medium">
+                {discountPerHour > 0 && (
+                  <span className="line-through text-gray-400 mr-2">{subscriptionData.baseHourlyRate} CHF</span>
+                )}
+                {discountedRate} CHF/h
+              </span>
+            </div>
+            {discountPerHour > 0 && (
+              <div className="flex justify-between text-green-600">
+                <span>Économie</span>
+                <span className="font-medium">-{discountPerHour} CHF/h ({totalDiscount} CHF)</span>
+              </div>
+            )}
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Ménage de base</span>
+              <span className="font-medium">{basePrice} CHF</span>
+            </div>
+            {subscriptionData.extras && subscriptionData.extras.length > 0 && (
+              <>
+                {subscriptionData.extras.map((extra, index) => (
+                  <div key={index} className="flex justify-between">
+                    <span className="text-muted-foreground">+ {extra.name}</span>
+                    <span className="font-medium">{extra.price} CHF</span>
+                  </div>
+                ))}
+              </>
+            )}
+            <div className="border-t border-primary/20 pt-2 mt-2">
+              <div className="flex justify-between">
+                <span className="font-semibold">Prix par séance</span>
+                <span className="text-xl font-bold text-primary">{pricePerSession} CHF</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bouton Stripe Checkout Abonnement */}
+        <Button
+          onClick={handleSubscriptionCheckout}
+          disabled={isLoading}
+          className="w-full rounded-full py-6 text-base font-semibold bg-primary hover:bg-primary/90"
+        >
+          {isLoading ? (
+            <span className="flex items-center gap-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              Redirection vers Stripe...
+            </span>
+          ) : (
+            <span className="flex items-center gap-2">
+              <HugeiconsIcon icon={RepeatIcon} strokeWidth={2} className="h-5 w-5" />
+              S'abonner - {pricePerSession} CHF/{subscriptionData.frequency === "monthly" ? "mois" : "séance"}
+            </span>
+          )}
+        </Button>
+
+        {/* Moyens de paiement acceptés */}
+        <PaymentIcons />
+
+        {/* Explication abonnement */}
+        <div className="rounded-lg bg-blue-50 p-4 text-sm text-blue-800">
+          <p className="font-medium mb-2">ℹ️ Fonctionnement de l'abonnement</p>
+          <ul className="space-y-1 text-xs">
+            <li>• Vous serez prélevé automatiquement {subscriptionData.frequency === "weekly" ? "chaque semaine" : subscriptionData.frequency === "biweekly" ? "toutes les 2 semaines" : "chaque mois"}</li>
+            <li>• Vous pouvez vous désabonner à tout moment depuis votre tableau de bord</li>
+            <li>• Même intervenant(e) à chaque visite pour une qualité constante</li>
+          </ul>
+        </div>
+
+        {/* Sécurité */}
+        <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+          <HugeiconsIcon icon={SecurityLockIcon} strokeWidth={2} className="h-4 w-4" />
+          <span>Paiement 100% sécurisé • Annulation à tout moment</span>
+        </div>
+
+        {/* Lien vers mode démo */}
+        <button
+          type="button"
+          onClick={() => setUseDemo(true)}
+          className="w-full text-center text-xs text-muted-foreground hover:text-primary transition-colors"
+        >
+          Problème de paiement ? Utiliser le mode démo →
+        </button>
+      </div>
+    );
+  }
+
+  // Rendu pour paiement unique
   return (
     <div className="space-y-6">
       {/* Résumé du paiement */}

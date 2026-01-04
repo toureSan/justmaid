@@ -19,6 +19,16 @@ export interface ExtraService {
   details?: string;
 }
 
+export type FrequencyType = "once" | "weekly" | "biweekly" | "monthly" | "custom";
+
+export const FREQUENCY_LABELS: Record<FrequencyType, string> = {
+  once: "Ponctuel",
+  weekly: "Hebdomadaire",
+  biweekly: "Toutes les 2 semaines",
+  monthly: "Toutes les 4 semaines",
+  custom: "Personnalisé",
+};
+
 export interface CreateBookingData {
   serviceType: ServiceType;
   address: string;
@@ -35,6 +45,7 @@ export interface CreateBookingData {
   totalPrice: number;
   extras?: ExtraService[];
   hasPets?: boolean;
+  frequency?: FrequencyType;
 }
 
 export interface BookingWithDetails extends Booking {
@@ -54,9 +65,14 @@ export async function createBooking(
   userId: string,
   data: CreateBookingData
 ): Promise<{ booking: Booking | null; error: string | null }> {
-  // Construire les notes enrichies avec extras et animaux
+  // Construire les notes enrichies avec extras, animaux et fréquence
   const buildEnrichedNotes = () => {
     const parts: string[] = [];
+    
+    // Ajouter la fréquence si abonnement
+    if (data.frequency && data.frequency !== 'once') {
+      parts.push(`[ABONNEMENT] ${FREQUENCY_LABELS[data.frequency]}`);
+    }
     
     // Ajouter les extras
     if (data.extras && data.extras.length > 0) {
@@ -161,6 +177,15 @@ export async function createBookingWithEmail(
     return { booking: null, error, emailSent: false };
   }
 
+  // Transformer les extras pour l'email
+  const emailExtras = data.extras?.map(extra => ({
+    id: extra.id,
+    name: extra.label,
+    price: extra.price,
+    duration: extra.details?.includes('h') ? parseInt(extra.details) : undefined,
+    quantity: extra.details?.includes('fenêtre') ? parseInt(extra.details) : undefined,
+  })) || [];
+
   // Envoyer l'email de confirmation
   const emailResult = await sendConfirmationEmail(
     data.userEmail,
@@ -173,6 +198,10 @@ export async function createBookingWithEmail(
       address: data.address,
       tasks: data.tasks,
       service_type: data.serviceType,
+      extras: emailExtras,
+      hasPets: data.hasPets,
+      notes: data.notes,
+      frequency: data.frequency,
     },
     booking.id
   );

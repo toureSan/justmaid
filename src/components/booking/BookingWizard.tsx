@@ -34,6 +34,17 @@ interface ExtraService {
   details?: string;
 }
 
+// Fréquences disponibles
+type FrequencyType = "once" | "weekly" | "biweekly" | "monthly" | "custom";
+
+const FREQUENCIES: { id: FrequencyType; label: string; description: string; discount: number; popular?: boolean }[] = [
+  { id: "once", label: "Une fois", description: "Intervention ponctuelle", discount: 0 },
+  { id: "weekly", label: "Hebdomadaire", description: "Même agent de ménage à chaque fois", discount: 2, popular: true },
+  { id: "biweekly", label: "Toutes les 2 semaines", description: "Même agent de ménage à chaque fois", discount: 2 },
+  { id: "monthly", label: "Toutes les 4 semaines", description: "Intervention mensuelle régulière", discount: 2 },
+  { id: "custom", label: "Plus souvent", description: "Contactez-nous pour un devis personnalisé", discount: 2 },
+];
+
 interface BookingData {
   // Adresse détaillée
   street: string;
@@ -56,6 +67,8 @@ interface BookingData {
   extras: ExtraService[];
   hasPets: boolean;
   hasEquipment: boolean;
+  // Fréquence (abonnement)
+  frequency: FrequencyType;
   // Informations personnelles
   firstName: string;
   lastName: string;
@@ -82,7 +95,7 @@ const initialBookingData: BookingData = {
   homeSize: "medium",
   date: "",
   time: "",
-  duration: "2",
+  duration: "3",
   tasks: [],
   notes: "",
   coords: null,
@@ -90,6 +103,8 @@ const initialBookingData: BookingData = {
   extras: [],
   hasPets: false,
   hasEquipment: false,
+  // Fréquence (abonnement)
+  frequency: "once",
   // Informations personnelles
   firstName: "",
   lastName: "",
@@ -222,6 +237,20 @@ export function BookingWizard() {
     // Priorité 3: Restaurer les données sauvegardées (refresh de page)
     const savedData = localStorage.getItem("bookingWizardData");
     const savedStep = localStorage.getItem("bookingWizardStep");
+    
+    if (savedStep) {
+      const step = parseInt(savedStep);
+      // Si c'était l'étape de confirmation (5) ou plus, nettoyer et recommencer
+      if (step >= 5) {
+        localStorage.removeItem("bookingWizardData");
+        localStorage.removeItem("bookingWizardStep");
+        localStorage.removeItem("bookingInProgress");
+        localStorage.removeItem("bookingDraft");
+        // Ne pas restaurer les données, recommencer à zéro
+        return;
+      }
+    }
+    
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
@@ -231,7 +260,7 @@ export function BookingWizard() {
         }));
         if (savedStep) {
           const step = parseInt(savedStep);
-          if (step >= 1 && step <= 6) {
+          if (step >= 1 && step <= 4) {
             setCurrentStep(step);
           }
         }
@@ -374,6 +403,7 @@ export function BookingWizard() {
         totalPrice: calculatePrice(),
         extras: bookingData.extras,
         hasPets: bookingData.hasPets,
+        frequency: bookingData.frequency,
         userEmail: user.email,
         userName: user.name,
       });
@@ -388,8 +418,14 @@ export function BookingWizard() {
       console.log("Booking created:", booking, "Email sent:", emailSent);
       setIsSubmitting(false);
 
+      // Nettoyer le localStorage après une réservation réussie
+      localStorage.removeItem("bookingWizardData");
+      localStorage.removeItem("bookingWizardStep");
+      localStorage.removeItem("bookingInProgress");
+      localStorage.removeItem("bookingDraft");
+
       // Rediriger vers le dashboard
-      navigate({ to: "/dashboard", search: { tab: "home" } });
+      navigate({ to: "/dashboard", search: { tab: "home", success: undefined } });
     } catch (err) {
       console.error("Error:", err);
       setIsSubmitting(false);
@@ -398,7 +434,8 @@ export function BookingWizard() {
 
   const calculatePrice = () => {
     const hours = parseInt(bookingData.duration) || 2;
-    const basePrice = 40; // 40 CHF/heure
+    const frequencyDiscount = FREQUENCIES.find(f => f.id === bookingData.frequency)?.discount || 0;
+    const basePrice = 40 - frequencyDiscount; // 40 CHF/heure - réduction abonnement
     const baseTotal = hours * basePrice;
     const extrasTotal = bookingData.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0;
     return baseTotal + extrasTotal;
@@ -406,11 +443,20 @@ export function BookingWizard() {
   
   const getBasePrice = () => {
     const hours = parseInt(bookingData.duration) || 2;
-    return hours * 40;
+    const frequencyDiscount = FREQUENCIES.find(f => f.id === bookingData.frequency)?.discount || 0;
+    return hours * (40 - frequencyDiscount);
   };
   
   const getExtrasTotal = () => {
     return bookingData.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0;
+  };
+  
+  const getFrequencyDiscount = () => {
+    return FREQUENCIES.find(f => f.id === bookingData.frequency)?.discount || 0;
+  };
+  
+  const isSubscription = () => {
+    return bookingData.frequency !== "once";
   };
 
   return (
@@ -427,7 +473,7 @@ export function BookingWizard() {
       {isAuthenticated && user && (
         <div className="mb-4 flex items-center justify-end gap-2 text-sm">
           <button
-            onClick={() => navigate({ to: "/dashboard", search: { tab: "home" } })}
+            onClick={() => navigate({ to: "/dashboard", search: { tab: "home", success: undefined } })}
             className="flex items-center gap-2 rounded-full bg-white border border-gray-200 px-3 py-1.5 hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer shadow-sm"
           >
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 overflow-hidden">
@@ -523,6 +569,9 @@ export function BookingWizard() {
             <Step5Payment 
               onPaymentSuccess={() => setCurrentStep(5)} 
               calculatePrice={calculatePrice}
+              bookingData={bookingData}
+              isSubscription={isSubscription()}
+              user={user}
             />
           )}
           {currentStep === 5 && (
@@ -576,13 +625,29 @@ export function BookingWizard() {
           
           {/* Price Preview */}
           <div className="mt-8 border-t border-border/50 pt-6 space-y-2">
+            {/* Fréquence sélectionnée */}
+            {isSubscription() && (
+              <div className="mb-3 p-2 bg-green-50 rounded-lg border border-green-200">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs">🔄</span>
+                  <span className="text-xs font-medium text-green-700">
+                    {FREQUENCIES.find(f => f.id === bookingData.frequency)?.label}
+                  </span>
+                </div>
+                <p className="text-[10px] text-green-600 mt-0.5">
+                  -2 CHF/h • Économie: {getFrequencyDiscount() * (parseInt(bookingData.duration) || 2)} CHF
+                </p>
+              </div>
+            )}
+            
             {/* Ménage de base */}
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">🧹 Ménage</span>
               <span className="font-medium">{getBasePrice()} CHF</span>
             </div>
             <p className="text-xs text-muted-foreground pl-5">
-              {bookingData.duration || 2}h × 40 CHF/h
+              {bookingData.duration || 2}h × {40 - getFrequencyDiscount()} CHF/h
+              {isSubscription() && <span className="text-green-600 ml-1">(abonnement)</span>}
             </p>
             
             {/* Services supplémentaires */}
@@ -720,11 +785,29 @@ export function BookingWizard() {
               <h3 className="text-lg font-bold mb-4">Détail de votre réservation</h3>
               
               <div className="space-y-3">
+                {/* Abonnement badge */}
+                {isSubscription() && (
+                  <div className="p-3 bg-green-50 rounded-xl border border-green-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-green-700">🔄 {FREQUENCIES.find(f => f.id === bookingData.frequency)?.label}</p>
+                        <p className="text-xs text-green-600">Tarif abonnement: {40 - getFrequencyDiscount()} CHF/h</p>
+                      </div>
+                      <span className="text-green-700 font-semibold">
+                        -{getFrequencyDiscount() * (parseInt(bookingData.duration) || 2)} CHF
+                      </span>
+                    </div>
+                  </div>
+                )}
+                
                 {/* Ménage de base */}
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">🧹 Ménage à domicile</p>
-                    <p className="text-xs text-muted-foreground">{bookingData.duration || 2}h × 40 CHF/h</p>
+                    <p className="text-xs text-muted-foreground">
+                      {bookingData.duration || 2}h × {40 - getFrequencyDiscount()} CHF/h
+                      {isSubscription() && <span className="text-green-600 ml-1">(abo)</span>}
+                    </p>
                   </div>
                   <span className="font-semibold">{getBasePrice()} CHF</span>
                 </div>
@@ -1127,7 +1210,7 @@ function Step2DateTime({
   
   // Calculer la durée recommandée
   const calculateRecommendedHours = () => {
-    return Math.max(2, Math.ceil(1.5 + (bedrooms * 0.5) + (bathrooms * 0.5)));
+    return Math.max(3, Math.ceil(1.5 + (bedrooms * 0.5) + (bathrooms * 0.5)));
   };
   
   // Calculer le temps pour les fenêtres (30min par fenêtre)
@@ -1146,8 +1229,8 @@ function Step2DateTime({
     return Math.ceil((ironingMinutes / 60) * IRONING_RATE);
   };
   
-  // Durée actuelle (minimum 2h)
-  const duration = Math.max(2, parseInt(bookingData.duration) || 2);
+  // Durée actuelle (minimum 3h)
+  const duration = Math.max(3, parseInt(bookingData.duration) || 3);
   
   // Prix du ménage de base
   const basePrice = duration * HOURLY_RATE;
@@ -1291,11 +1374,11 @@ function Step2DateTime({
         <div className="flex items-center justify-center gap-4 sm:gap-6">
           <button
             type="button"
-            onClick={() => duration > 2 && updateBookingData("duration", String(duration - 1))}
+            onClick={() => duration > 3 && updateBookingData("duration", String(duration - 1))}
             className={`flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full border-2 transition-colors ${
-              duration <= 2 ? "border-gray-200 opacity-50" : "border-border hover:border-primary"
+              duration <= 3 ? "border-gray-200 opacity-50" : "border-border hover:border-primary"
             }`}
-            disabled={duration <= 2}
+            disabled={duration <= 3}
           >
             <span className="text-xl sm:text-2xl text-gray-400">−</span>
           </button>
@@ -1326,8 +1409,85 @@ function Step2DateTime({
           </button>
         </p>
         <p className="text-xs text-muted-foreground text-center mt-1">
-          Minimum 2 heures • {HOURLY_RATE} CHF/heure
+          Minimum 3 heures • {HOURLY_RATE} CHF/heure
         </p>
+      </div>
+
+      {/* Fréquence / Abonnement */}
+      <div className="rounded-2xl border border-border bg-white p-4 sm:p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-base sm:text-lg font-semibold">🔄 À quelle fréquence ?</h3>
+          {bookingData.frequency !== "once" && (
+            <Badge className="bg-green-100 text-green-700 text-xs">
+              -2 CHF/h avec abonnement
+            </Badge>
+          )}
+        </div>
+        
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
+          {FREQUENCIES.map((freq) => {
+            const isSelected = bookingData.frequency === freq.id;
+            const isCustom = freq.id === "custom";
+            
+            return (
+              <button
+                key={freq.id}
+                type="button"
+                onClick={() => !isCustom && updateBookingData("frequency", freq.id)}
+                disabled={isCustom}
+                className={`relative flex flex-col items-center p-3 sm:p-4 rounded-xl border-2 transition-all text-center ${
+                  isSelected
+                    ? "border-primary bg-primary/5 shadow-md"
+                    : isCustom
+                    ? "border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed"
+                    : "border-gray-200 hover:border-primary/50 hover:bg-gray-50"
+                }`}
+              >
+                {freq.popular && (
+                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] px-2 py-0.5 rounded-full whitespace-nowrap">
+                    Plus populaire
+                  </span>
+                )}
+                {isCustom && (
+                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gray-400 text-white text-[10px] px-2 py-0.5 rounded-full whitespace-nowrap">
+                    Bientôt
+                  </span>
+                )}
+                <span className={`font-semibold text-xs sm:text-sm ${isSelected ? "text-primary" : "text-foreground"}`}>
+                  {freq.label}
+                </span>
+                {freq.discount > 0 && freq.id !== "once" && (
+                  <span className="text-[10px] sm:text-xs text-green-600 mt-1">
+                    {HOURLY_RATE - freq.discount} CHF/h
+                  </span>
+                )}
+                {freq.id === "once" && (
+                  <span className="text-[10px] sm:text-xs text-muted-foreground mt-1">
+                    {HOURLY_RATE} CHF/h
+                  </span>
+                )}
+                {isSelected && (
+                  <div className="absolute top-1 right-1 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
+                    <svg className="h-2.5 w-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+        
+        {bookingData.frequency !== "once" && (
+          <div className="mt-4 p-3 bg-green-50 rounded-xl border border-green-200">
+            <p className="text-sm text-green-700">
+              ✅ <strong>Abonnement activé !</strong> Vous économisez {2 * (parseInt(bookingData.duration) || 2)} CHF sur cette réservation.
+            </p>
+            <p className="text-xs text-green-600 mt-1">
+              Même intervenant(e) à chaque passage • Annulation flexible
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Card pour date et heure */}
@@ -2560,9 +2720,15 @@ function Step4PersonalInfo({
 function Step5Payment({
   onPaymentSuccess,
   calculatePrice,
+  bookingData,
+  isSubscription,
+  user,
 }: {
   onPaymentSuccess: () => void;
   calculatePrice: () => number;
+  bookingData: BookingData;
+  isSubscription: boolean;
+  user: UserAuth | null;
 }) {
   const [paymentStatus, setPaymentStatus] = React.useState<"pending" | "success" | "error">("pending");
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
@@ -2580,14 +2746,34 @@ function Step5Payment({
     setErrorMessage(error);
   };
 
+  // Préparer les données d'abonnement si c'est un abonnement
+  const extrasTotal = bookingData.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0;
+  const subscriptionData = isSubscription ? {
+    frequency: bookingData.frequency as "weekly" | "biweekly" | "monthly",
+    durationHours: parseInt(bookingData.duration) || 3,
+    address: `${bookingData.street} ${bookingData.streetNumber}, ${bookingData.postalCode} ${bookingData.city}`,
+    addressDetails: bookingData.building || bookingData.floor || bookingData.doorCode 
+      ? `Bât. ${bookingData.building || '-'}, ${bookingData.floor || 'RDC'}, Code: ${bookingData.doorCode || '-'}`
+      : undefined,
+    preferredDay: bookingData.date ? new Date(bookingData.date).toLocaleDateString("en-US", { weekday: "long" }).toLowerCase() : undefined,
+    preferredTime: bookingData.time || "09:00",
+    baseHourlyRate: 40,
+    extras: bookingData.extras?.map(e => ({ name: e.label, price: e.price })) || [],
+    extrasTotal: extrasTotal,
+  } : undefined;
+
   if (paymentStatus === "success") {
     return (
       <div className="flex flex-col items-center justify-center py-12 space-y-4">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
           <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} className="h-8 w-8 text-green-600" />
         </div>
-        <h2 className="text-xl font-bold text-foreground">Paiement validé !</h2>
-        <p className="text-sm text-muted-foreground">Redirection vers le récapitulatif...</p>
+        <h2 className="text-xl font-bold text-foreground">
+          {isSubscription ? "Abonnement activé !" : "Paiement validé !"}
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          {isSubscription ? "Redirection vers votre tableau de bord..." : "Redirection vers le récapitulatif..."}
+        </p>
       </div>
     );
   }
@@ -2599,33 +2785,59 @@ function Step5Payment({
           <HugeiconsIcon icon={CreditCardIcon} strokeWidth={1.5} className="h-6 w-6 text-primary" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-foreground">Moyen de paiement</h2>
-          <p className="text-sm text-muted-foreground">Vérification sécurisée de votre carte</p>
+          <h2 className="text-xl font-bold text-foreground">
+            {isSubscription ? "Activer l'abonnement" : "Moyen de paiement"}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {isSubscription ? "Paiement récurrent sécurisé" : "Vérification sécurisée de votre carte"}
+          </p>
         </div>
       </div>
 
-      {/* Info pré-autorisation */}
-      <div className="rounded-xl border-2 border-green-200 bg-green-50 p-4">
-        <div className="flex items-start gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
-            <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} className="h-4 w-4 text-green-600" />
-          </div>
-          <div>
-            <p className="font-medium text-green-800">Pré-autorisation sécurisée</p>
-            <p className="text-sm text-green-700">
-              Un montant de <strong>{calculatePrice()} CHF</strong> sera pré-autorisé sur votre carte. 
-              Vous ne serez débité qu'après la réalisation du ménage. 
-              Si vous annulez avant l'intervention, aucun montant ne sera prélevé.
-            </p>
+      {/* Info selon le type de paiement */}
+      {isSubscription ? (
+        <div className="rounded-xl border-2 border-primary/30 bg-primary/5 p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
+              <span className="text-lg">🔄</span>
+            </div>
+            <div>
+              <p className="font-medium text-primary">Abonnement récurrent</p>
+              <p className="text-sm text-gray-600">
+                Vous serez prélevé automatiquement de <strong>{calculatePrice()} CHF</strong> {bookingData.frequency === "weekly" ? "chaque semaine" : bookingData.frequency === "biweekly" ? "toutes les 2 semaines" : "chaque mois"}.
+                Vous pouvez annuler à tout moment depuis votre tableau de bord.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="rounded-xl border-2 border-green-200 bg-green-50 p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
+              <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} className="h-4 w-4 text-green-600" />
+            </div>
+            <div>
+              <p className="font-medium text-green-800">Pré-autorisation sécurisée</p>
+              <p className="text-sm text-green-700">
+                Un montant de <strong>{calculatePrice()} CHF</strong> sera pré-autorisé sur votre carte. 
+                Vous ne serez débité qu'après la réalisation du ménage. 
+                Si vous annulez avant l'intervention, aucun montant ne sera prélevé.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Stripe Payment Form avec pré-autorisation du montant total */}
+      {/* Stripe Payment Form */}
       <StripePaymentForm 
-        amount={calculatePrice() * 100} // Montant total en centimes
+        amount={calculatePrice() * 100}
         onPaymentSuccess={handlePaymentSuccess}
         onPaymentError={handlePaymentError}
+        customerEmail={user?.email}
+        customerName={`${bookingData.firstName} ${bookingData.lastName}`}
+        userId={user?.id}
+        isSubscription={isSubscription}
+        subscriptionData={subscriptionData}
       />
 
       {/* Message d'erreur */}
@@ -2799,6 +3011,37 @@ function Step6Confirmation({
             <Badge className="mt-1 bg-green-100 text-green-700">
               Paiement après intervention
             </Badge>
+          </div>
+        </div>
+      </div>
+
+      {/* Rappel important : ce que le client doit prévoir */}
+      <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-5">
+        <div className="flex items-start gap-3">
+          <span className="text-2xl">⚠️</span>
+          <div>
+            <h3 className="font-semibold text-amber-900 mb-2">À prévoir pour l'intervention</h3>
+            <p className="text-sm text-amber-800 mb-3">
+              Les produits et équipements de ménage ne sont <strong>pas fournis</strong>. 
+              Merci de mettre à disposition :
+            </p>
+            <ul className="text-sm text-amber-800 space-y-1.5">
+              <li className="flex items-center gap-2">
+                <span>🧹</span> Aspirateur en état de marche
+              </li>
+              <li className="flex items-center gap-2">
+                <span>🧽</span> Éponges, chiffons et serpillière
+              </li>
+              <li className="flex items-center gap-2">
+                <span>🧴</span> Produits ménagers (multi-surfaces, vitres, sol, salle de bain)
+              </li>
+              <li className="flex items-center gap-2">
+                <span>🗑️</span> Sacs poubelle
+              </li>
+              <li className="flex items-center gap-2">
+                <span>🪣</span> Seau et balai si nécessaire
+              </li>
+            </ul>
           </div>
         </div>
       </div>

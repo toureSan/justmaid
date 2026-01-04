@@ -50,7 +50,7 @@ const steps = [
     icon: SmartPhone01Icon,
     image: "/equipe-menage1.png",
     details: [
-      "Disponible 7j/7, 24h/24",
+      "Disponible 6j/7, de 7h à 22h",
       "Réservation en moins de 2 minutes",
       "Confirmation instantanée par email",
       "Modification gratuite jusqu'à 24h avant",

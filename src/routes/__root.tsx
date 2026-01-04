@@ -181,7 +181,7 @@ export const Route = createRootRoute({
           "url": SITE_URL,
           "logo": `${SITE_URL}/logo512.png`,
           "image": `${SITE_URL}/menage-equipe6.png`,
-          "telephone": "+41 XX XXX XX XX",
+          "telephone": "+41 22 792 67 23",
           "email": "contact@justmaid.ch",
           "address": {
             "@type": "PostalAddress",
