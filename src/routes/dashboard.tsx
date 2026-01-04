@@ -66,12 +66,13 @@ function DashboardPage() {
   const [user, setUser] = React.useState<UserAuth | null>(null);
   const [showToast, setShowToast] = React.useState(false);
 
-  // Mettre à jour l'onglet actif quand le search param change
+  // Mettre à jour l'onglet actif quand le search param change (uniquement au chargement initial)
   React.useEffect(() => {
-    if (tab && tab !== activeTab) {
+    if (tab) {
       setActiveTab(tab as TabId);
     }
-  }, [tab, activeTab]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
 
   React.useEffect(() => {
     const loadData = async () => {
@@ -211,6 +212,7 @@ function DashboardPage() {
         <div className="mb-8 overflow-x-auto">
           <div className="flex items-center gap-2 border-b border-gray-200 pb-4">
             <button
+              type="button"
               onClick={() => setActiveTab("home")}
               className={`cursor-pointer whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all ${
                 activeTab === "home"
@@ -222,6 +224,7 @@ function DashboardPage() {
             </button>
             {menuItems.map((item) => (
               <button
+                type="button"
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
                 className={`cursor-pointer flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all ${
@@ -236,6 +239,7 @@ function DashboardPage() {
             ))}
             {infoItems.map((item) => (
               <button
+                type="button"
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
                 className={`cursor-pointer flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all ${

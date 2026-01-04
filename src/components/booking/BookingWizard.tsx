@@ -559,7 +559,7 @@ export function BookingWizard() {
                   "Confirmation en cours..."
                 ) : (
                   <>
-                    Confirmer la réservation
+                    Continuer
                     <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} className="ml-2 h-4 w-4" />
                   </>
                 )}
