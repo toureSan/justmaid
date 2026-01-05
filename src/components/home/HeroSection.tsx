@@ -37,7 +37,7 @@ export function HeroSection() {
                 ))}
               </div>
               <span className="text-sm font-medium text-secondary-foreground">
-                4.9/5 basé sur 1 000+ avis
+                4.9/5 basé sur 200+ avis
               </span>
             </div>
 

@@ -69,7 +69,7 @@ const categories = [
       },
       {
         question: "Puis-je réserver pour le jour même ?",
-        answer: "Oui ! Selon les disponibilités, nous pouvons intervenir le jour même. Réservez avant 14h pour une intervention dans l'après-midi.",
+        answer: "Oui ! Selon les disponibilités, nous pouvons intervenir le jour même ou le lendemain.",
       },
       {
         question: "Quelle est la durée minimum d'une intervention ?",

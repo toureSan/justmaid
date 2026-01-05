@@ -23,6 +23,10 @@ export function Footer() {
                 <span className="text-base">📍</span>
                 <span>Rte de Mon-Idée<br />1226 Thônex, Suisse</span>
               </div>
+              <a href="tel:+41227926723" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <span className="text-base">📞</span>
+                <span>022 792 67 23</span>
+              </a>
               
               {/* Social Media */}
               <div className="flex items-center gap-3 pt-2">
@@ -107,7 +111,7 @@ export function Footer() {
               <ul className="space-y-2">
                 <li>
                   <Link
-                    to="/"
+                    to="/a-propos"
                     className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     À propos
@@ -115,7 +119,7 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    to="/"
+                    to="/devenir-intervenant"
                     className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     Devenir intervenant
@@ -138,7 +142,7 @@ export function Footer() {
               <ul className="space-y-2">
                 <li>
                   <Link
-                    to="/"
+                    to="/cgv"
                     className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     Conditions générales
@@ -146,7 +150,7 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    to="/"
+                    to="/confidentialite"
                     className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     Politique de confidentialité
@@ -154,7 +158,7 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    to="/"
+                    to="/mentions-legales"
                     className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     Mentions légales
@@ -189,21 +193,6 @@ export function Footer() {
                     <path d="M262.02 54.48l7.56 5.04c-2.44 3.61-8.32 9.83-18.48 9.83-12.6 0-22.01-9.74-22.01-22.18 0-13.19 9.49-22.18 20.92-22.18 11.51 0 17.14 9.16 18.98 14.11l1.01 2.52-29.65 12.28c2.27 4.45 5.8 6.72 10.75 6.72 4.96 0 8.4-2.44 10.92-6.14zm-23.27-7.98l19.82-8.23c-1.09-2.77-4.37-4.7-8.23-4.7-4.95 0-11.84 4.37-11.59 12.93z"/>
                     <path d="M35.29 41.41V32H67c.31 1.64.47 3.58.47 5.68 0 7.06-1.93 15.79-8.15 22.01-6.05 6.3-13.78 9.66-24.02 9.66C16.32 69.35.36 53.89.36 34.91.36 15.93 16.32.47 35.3.47c10.5 0 17.98 4.12 23.6 9.49l-6.64 6.64c-4.03-3.78-9.49-6.72-16.97-6.72-13.86 0-24.7 11.17-24.7 25.03 0 13.86 10.84 25.03 24.7 25.03 8.99 0 14.11-3.61 17.39-6.89 2.66-2.66 4.41-6.46 5.1-11.65l-22.49.01z"/>
                   </svg>
-                </a>
-                {/* Trustpilot */}
-                <a 
-                  href="https://trustpilot.com/review/justmaid.ch" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-                >
-                  <svg className="h-6" fill="white" viewBox="0 0 126 31">
-                    <path d="M33.166 0H0v30.54h33.166V0z" fill="currentColor"/>
-                    <path d="M16.583 12.695l10.63-3.255-8.142-5.917-2.488 9.172z" fill="#00B67A"/>
-                    <path d="M16.583 12.695l-2.488 9.172 8.142-5.917-5.654-3.255z" fill="#005128"/>
-                    <path d="M16.583 21.867l2.488-9.172-8.142-5.917 5.654 15.089z" fill="#00B67A"/>
-                  </svg>
-                  <span className="font-semibold text-lg">Trustpilot</span>
                 </a>
               </div>
             </div>

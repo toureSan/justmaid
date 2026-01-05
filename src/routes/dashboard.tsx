@@ -574,7 +574,7 @@ function BookingCard({
               </div>
             )}
 
-            {/* Animaux */}
+                {/* Animaux */}
             {hasPets && (
               <Badge variant="secondary" className="bg-amber-100 text-amber-700">
                 🐾 Présence d'animaux
@@ -594,7 +594,7 @@ function BookingCard({
                     <li className="flex items-center gap-1"><span className="text-green-500">✓</span>Miroirs et vitres</li>
                     <li className="flex items-center gap-1"><span className="text-green-500">✓</span>Poubelles</li>
                     <li className="flex items-center gap-1"><span className="text-green-500">✓</span>Faire les lits</li>
-                  </ul>
+              </ul>
                 </div>
                 {/* Salle de bain */}
                 <div>
@@ -619,13 +619,13 @@ function BookingCard({
               </div>
             </div>
 
-            {/* Instructions spéciales */}
-            {specialInstructions && (
-              <div className="mt-3 pt-3 border-t border-gray-100">
-                <p className="text-xs font-medium text-gray-500 mb-1">Instructions :</p>
-                <p className="text-sm text-gray-600 leading-relaxed">{specialInstructions}</p>
-              </div>
-            )}
+              {/* Instructions spéciales */}
+              {specialInstructions && (
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <p className="text-xs font-medium text-gray-500 mb-1">Instructions :</p>
+                  <p className="text-sm text-gray-600 leading-relaxed">{specialInstructions}</p>
+                </div>
+              )}
           </div>
 
           {/* Prix et actions */}
@@ -725,7 +725,7 @@ function PricesTab() {
   const mainServices = [
     { 
       name: "Ménage à domicile", 
-      price: "40 CHF/h", 
+      price: "45 CHF/h", 
       description: "Nettoyage complet de votre intérieur (sols, surfaces, cuisine, salle de bain)", 
       details: "Minimum 3 heures • Produits non inclus",
       icon: "🧹" 
@@ -733,9 +733,9 @@ function PricesTab() {
   ];
 
   const extraServices = [
-    { name: "Repassage", price: "45 CHF/h", description: "Service de repassage professionnel à domicile", icon: "👔" },
+    { name: "Repassage", price: "3.50 CHF/pièce", description: "Service de repassage professionnel à domicile", icon: "👔" },
     { name: "Fenêtres", price: "25 CHF/h", description: "Nettoyage intérieur et extérieur des vitres (30 min par fenêtre)", icon: "🪟" },
-    { name: "Lessive & séchage", price: "40 CHF/h", description: "Lavage, séchage et pliage de votre linge", icon: "🧺" },
+    { name: "Lessive & séchage", price: "45 CHF/h", description: "Lavage, séchage et pliage de votre linge", icon: "🧺" },
     { name: "Intérieur du four", price: "30 CHF", description: "Dégraissage complet de votre four (environ 30 min)", icon: "🔥" },
     { name: "Placards de cuisine", price: "30 CHF", description: "Nettoyage intérieur des placards (environ 30 min)", icon: "🗄️" },
     { name: "Intérieur du frigidaire", price: "30 CHF", description: "Nettoyage et désinfection du réfrigérateur (environ 30 min)", icon: "❄️" },
@@ -1131,7 +1131,7 @@ function SubscriptionsTab({ user }: { user: UserAuth | null }) {
                           <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span>Miroirs et vitres</li>
                           <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span>Poubelles</li>
                           <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span>Faire les lits</li>
-                        </ul>
+            </ul>
                       </div>
                       {/* Salle de bain */}
                       <div>
@@ -1198,13 +1198,13 @@ function SubscriptionsTab({ user }: { user: UserAuth | null }) {
                           Se désabonner
                         </>
                       )}
-                    </Button>
+            </Button>
                   )}
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+          </div>
+        ))}
+      </div>
       )}
 
       {/* Historique des abonnements annulés */}

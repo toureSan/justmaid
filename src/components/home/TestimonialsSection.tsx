@@ -127,7 +127,7 @@ export function TestimonialsSection() {
               ))}
             </div>
             <span className="font-semibold text-foreground">4.9/5</span>
-            <span className="text-muted-foreground">basé sur 1 000+ avis</span>
+            <span className="text-muted-foreground">basé sur 200+ avis</span>
           </div>
         </div>
 

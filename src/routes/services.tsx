@@ -69,7 +69,7 @@ const services = [
       {
         icon: Clock01Icon,
         title: "Disponible aujourd'hui",
-        description: "Réservez le matin, intervention l'après-midi",
+        description: "Intervention rapide selon disponibilités",
       },
       {
         icon: StarIcon,
@@ -162,7 +162,7 @@ const services = [
     description: "Service de repassage professionnel pour tous vos vêtements et linges de maison. Chemises, costumes, draps... tout est traité avec le plus grand soin.",
     image: "/repassage-menage.png",
     available: false,
-    price: "2 CHF/pièce",
+    price: "3.50 CHF/pièce",
     duration: "48h de délai",
     href: "/booking/laundry",
     features: [

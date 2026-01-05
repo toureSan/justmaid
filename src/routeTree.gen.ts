@@ -10,9 +10,14 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ServicesRouteImport } from './routes/services'
+import { Route as MentionsLegalesRouteImport } from './routes/mentions-legales'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as DevenirIntervenantRouteImport } from './routes/devenir-intervenant'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ConfidentialiteRouteImport } from './routes/confidentialite'
+import { Route as CgvRouteImport } from './routes/cgv'
 import { Route as AideRouteImport } from './routes/aide'
+import { Route as AProposRouteImport } from './routes/a-propos'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BookingLaundryRouteImport } from './routes/booking/laundry'
 import { Route as BookingCleaningRouteImport } from './routes/booking/cleaning'
@@ -26,9 +31,19 @@ const ServicesRoute = ServicesRouteImport.update({
   path: '/services',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MentionsLegalesRoute = MentionsLegalesRouteImport.update({
+  id: '/mentions-legales',
+  path: '/mentions-legales',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HowItWorksRoute = HowItWorksRouteImport.update({
   id: '/how-it-works',
   path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevenirIntervenantRoute = DevenirIntervenantRouteImport.update({
+  id: '/devenir-intervenant',
+  path: '/devenir-intervenant',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -36,9 +51,24 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConfidentialiteRoute = ConfidentialiteRouteImport.update({
+  id: '/confidentialite',
+  path: '/confidentialite',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CgvRoute = CgvRouteImport.update({
+  id: '/cgv',
+  path: '/cgv',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AideRoute = AideRouteImport.update({
   id: '/aide',
   path: '/aide',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AProposRoute = AProposRouteImport.update({
+  id: '/a-propos',
+  path: '/a-propos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -79,9 +109,14 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/a-propos': typeof AProposRoute
   '/aide': typeof AideRoute
+  '/cgv': typeof CgvRoute
+  '/confidentialite': typeof ConfidentialiteRoute
   '/dashboard': typeof DashboardRoute
+  '/devenir-intervenant': typeof DevenirIntervenantRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/mentions-legales': typeof MentionsLegalesRoute
   '/services': typeof ServicesRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -92,9 +127,14 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/a-propos': typeof AProposRoute
   '/aide': typeof AideRoute
+  '/cgv': typeof CgvRoute
+  '/confidentialite': typeof ConfidentialiteRoute
   '/dashboard': typeof DashboardRoute
+  '/devenir-intervenant': typeof DevenirIntervenantRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/mentions-legales': typeof MentionsLegalesRoute
   '/services': typeof ServicesRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -106,9 +146,14 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/a-propos': typeof AProposRoute
   '/aide': typeof AideRoute
+  '/cgv': typeof CgvRoute
+  '/confidentialite': typeof ConfidentialiteRoute
   '/dashboard': typeof DashboardRoute
+  '/devenir-intervenant': typeof DevenirIntervenantRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/mentions-legales': typeof MentionsLegalesRoute
   '/services': typeof ServicesRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -121,9 +166,14 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/a-propos'
     | '/aide'
+    | '/cgv'
+    | '/confidentialite'
     | '/dashboard'
+    | '/devenir-intervenant'
     | '/how-it-works'
+    | '/mentions-legales'
     | '/services'
     | '/auth/callback'
     | '/auth/forgot-password'
@@ -134,9 +184,14 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/a-propos'
     | '/aide'
+    | '/cgv'
+    | '/confidentialite'
     | '/dashboard'
+    | '/devenir-intervenant'
     | '/how-it-works'
+    | '/mentions-legales'
     | '/services'
     | '/auth/callback'
     | '/auth/forgot-password'
@@ -147,9 +202,14 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/a-propos'
     | '/aide'
+    | '/cgv'
+    | '/confidentialite'
     | '/dashboard'
+    | '/devenir-intervenant'
     | '/how-it-works'
+    | '/mentions-legales'
     | '/services'
     | '/auth/callback'
     | '/auth/forgot-password'
@@ -161,9 +221,14 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AProposRoute: typeof AProposRoute
   AideRoute: typeof AideRoute
+  CgvRoute: typeof CgvRoute
+  ConfidentialiteRoute: typeof ConfidentialiteRoute
   DashboardRoute: typeof DashboardRoute
+  DevenirIntervenantRoute: typeof DevenirIntervenantRoute
   HowItWorksRoute: typeof HowItWorksRoute
+  MentionsLegalesRoute: typeof MentionsLegalesRoute
   ServicesRoute: typeof ServicesRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
@@ -182,11 +247,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServicesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mentions-legales': {
+      id: '/mentions-legales'
+      path: '/mentions-legales'
+      fullPath: '/mentions-legales'
+      preLoaderRoute: typeof MentionsLegalesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/how-it-works': {
       id: '/how-it-works'
       path: '/how-it-works'
       fullPath: '/how-it-works'
       preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/devenir-intervenant': {
+      id: '/devenir-intervenant'
+      path: '/devenir-intervenant'
+      fullPath: '/devenir-intervenant'
+      preLoaderRoute: typeof DevenirIntervenantRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -196,11 +275,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/confidentialite': {
+      id: '/confidentialite'
+      path: '/confidentialite'
+      fullPath: '/confidentialite'
+      preLoaderRoute: typeof ConfidentialiteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cgv': {
+      id: '/cgv'
+      path: '/cgv'
+      fullPath: '/cgv'
+      preLoaderRoute: typeof CgvRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/aide': {
       id: '/aide'
       path: '/aide'
       fullPath: '/aide'
       preLoaderRoute: typeof AideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/a-propos': {
+      id: '/a-propos'
+      path: '/a-propos'
+      fullPath: '/a-propos'
+      preLoaderRoute: typeof AProposRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -257,9 +357,14 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AProposRoute: AProposRoute,
   AideRoute: AideRoute,
+  CgvRoute: CgvRoute,
+  ConfidentialiteRoute: ConfidentialiteRoute,
   DashboardRoute: DashboardRoute,
+  DevenirIntervenantRoute: DevenirIntervenantRoute,
   HowItWorksRoute: HowItWorksRoute,
+  MentionsLegalesRoute: MentionsLegalesRoute,
   ServicesRoute: ServicesRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,

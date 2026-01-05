@@ -49,7 +49,7 @@ serve(async (req) => {
       addressDetails,
       preferredDay,     // ex: 'monday', 'tuesday'...
       preferredTime,    // ex: '09:00'
-      baseHourlyRate,   // Prix horaire de base (40 CHF)
+      baseHourlyRate,   // Prix horaire de base (45 CHF)
       extras,           // Array d'extras [{name, price}]
       extrasTotal,      // Total des extras en CHF
       successUrl,
@@ -68,7 +68,7 @@ serve(async (req) => {
 
     // Calculer le prix avec réduction (2 CHF/h pour les abonnements)
     const discountPerHour = frequencyDiscountPerHour[frequency] || 0;
-    const hourlyRate = baseHourlyRate || 40;
+    const hourlyRate = baseHourlyRate || 45;
     const discountedRate = hourlyRate - discountPerHour;
     const basePrice = discountedRate * durationHours;
     const extrasTotalAmount = extrasTotal || 0;

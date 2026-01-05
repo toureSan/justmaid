@@ -435,7 +435,7 @@ export function BookingWizard() {
   const calculatePrice = () => {
     const hours = parseInt(bookingData.duration) || 2;
     const frequencyDiscount = FREQUENCIES.find(f => f.id === bookingData.frequency)?.discount || 0;
-    const basePrice = 40 - frequencyDiscount; // 40 CHF/heure - réduction abonnement
+    const basePrice = 45 - frequencyDiscount; // 45 CHF/heure - réduction abonnement
     const baseTotal = hours * basePrice;
     const extrasTotal = bookingData.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0;
     return baseTotal + extrasTotal;
@@ -444,7 +444,7 @@ export function BookingWizard() {
   const getBasePrice = () => {
     const hours = parseInt(bookingData.duration) || 2;
     const frequencyDiscount = FREQUENCIES.find(f => f.id === bookingData.frequency)?.discount || 0;
-    return hours * (40 - frequencyDiscount);
+    return hours * (45 - frequencyDiscount);
   };
   
   const getExtrasTotal = () => {
@@ -646,7 +646,7 @@ export function BookingWizard() {
               <span className="font-medium">{getBasePrice()} CHF</span>
             </div>
             <p className="text-xs text-muted-foreground pl-5">
-              {bookingData.duration || 2}h × {40 - getFrequencyDiscount()} CHF/h
+              {bookingData.duration || 2}h × {45 - getFrequencyDiscount()} CHF/h
               {isSubscription() && <span className="text-green-600 ml-1">(abonnement)</span>}
             </p>
             
@@ -791,7 +791,7 @@ export function BookingWizard() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium text-green-700">🔄 {FREQUENCIES.find(f => f.id === bookingData.frequency)?.label}</p>
-                        <p className="text-xs text-green-600">Tarif abonnement: {40 - getFrequencyDiscount()} CHF/h</p>
+                        <p className="text-xs text-green-600">Tarif abonnement: {45 - getFrequencyDiscount()} CHF/h</p>
                       </div>
                       <span className="text-green-700 font-semibold">
                         -{getFrequencyDiscount() * (parseInt(bookingData.duration) || 2)} CHF
@@ -805,7 +805,7 @@ export function BookingWizard() {
                   <div>
                     <p className="font-medium">🧹 Ménage à domicile</p>
                     <p className="text-xs text-muted-foreground">
-                      {bookingData.duration || 2}h × {40 - getFrequencyDiscount()} CHF/h
+                      {bookingData.duration || 2}h × {45 - getFrequencyDiscount()} CHF/h
                       {isSubscription() && <span className="text-green-600 ml-1">(abo)</span>}
                     </p>
                   </div>
@@ -1150,8 +1150,8 @@ function Step1Address({
 }
 
 // Prix constants
-const HOURLY_RATE = 40; // CHF par heure de ménage
-const IRONING_RATE = 45; // CHF par heure de repassage
+const HOURLY_RATE = 45; // CHF par heure de ménage
+const IRONING_RATE = 3.5; // CHF par pièce de repassage
 const WINDOWS_RATE = 25; // CHF par heure de nettoyage fenêtres
 const CUPBOARDS_PRICE = 30; // CHF pour 30min de placards
 const FRIDGE_PRICE = 30; // CHF pour 30min de frigidaire
@@ -1191,8 +1191,8 @@ function Step2DateTime({
   const [standardWindows, setStandardWindows] = React.useState(0);
   const [largeWindows, setLargeWindows] = React.useState(0);
   
-  // Ironing state
-  const [ironingMinutes, setIroningMinutes] = React.useState(30);
+  // Ironing state (nombre de pièces)
+  const [ironingPieces, setIroningPieces] = React.useState(5);
   
   // Services supplémentaires - utiliser bookingData.extras
   const extraServices = bookingData.extras || [];
@@ -1224,9 +1224,9 @@ function Step2DateTime({
     return Math.ceil(hours * WINDOWS_RATE);
   };
   
-  // Calculer le prix du repassage
+  // Calculer le prix du repassage (par pièce)
   const calculateIroningPrice = () => {
-    return Math.ceil((ironingMinutes / 60) * IRONING_RATE);
+    return Math.round(ironingPieces * IRONING_RATE * 100) / 100;
   };
   
   // Durée actuelle (minimum 3h)
@@ -1323,7 +1323,7 @@ function Step2DateTime({
   // Services supplémentaires
   const supplementaryServices = [
     { id: "windows", label: "Fenêtres", icon: "🪟", hasModal: true, priceLabel: "25 CHF/h" },
-    { id: "ironing", label: "Repassage", icon: "👔", hasModal: true, priceLabel: "45 CHF/h" },
+    { id: "ironing", label: "Repassage", icon: "👔", hasModal: true, priceLabel: "3.50 CHF/pièce" },
     { id: "laundry", label: "Lessive & séchage", icon: "🧺", time: "+1h", price: LAUNDRY_PRICE },
     { id: "oven", label: "Intérieur du four", icon: "🔥", time: "+30min", price: OVEN_PRICE },
     { id: "cupboards", label: "Placards de cuisine", icon: "🗄️", time: "+30min", price: CUPBOARDS_PRICE },
@@ -1909,20 +1909,20 @@ function Step2DateTime({
             </div>
             
             <p className="text-sm text-gray-600 mb-4 text-center">
-              Durée de repassage. <span className="text-primary font-medium">{IRONING_RATE} CHF/h</span>
+              Prix par pièce. <span className="text-primary font-medium">{IRONING_RATE} CHF/pièce</span>
             </p>
             
             <div className="flex items-center justify-center gap-4 py-3">
-              <button type="button" onClick={() => ironingMinutes > 30 && setIroningMinutes(ironingMinutes - 30)}
-                className={`flex h-11 w-11 items-center justify-center rounded-full border-2 ${ironingMinutes <= 30 ? "border-gray-200 opacity-50" : "border-border"}`}
-                disabled={ironingMinutes <= 30}>−</button>
+              <button type="button" onClick={() => ironingPieces > 1 && setIroningPieces(ironingPieces - 1)}
+                className={`flex h-11 w-11 items-center justify-center rounded-full border-2 ${ironingPieces <= 1 ? "border-gray-200 opacity-50" : "border-border"}`}
+                disabled={ironingPieces <= 1}>−</button>
               <div className="text-center">
-                <span className="text-xl font-bold">{ironingMinutes}min</span>
+                <span className="text-xl font-bold">{ironingPieces} pièce{ironingPieces > 1 ? 's' : ''}</span>
                 <p className="text-sm text-primary font-medium">+{calculateIroningPrice()} CHF</p>
               </div>
-              <button type="button" onClick={() => ironingMinutes < 120 && setIroningMinutes(ironingMinutes + 30)}
-                className={`flex h-11 w-11 items-center justify-center rounded-full border-2 ${ironingMinutes >= 120 ? "border-gray-200 opacity-50" : "border-border"}`}
-                disabled={ironingMinutes >= 120}>+</button>
+              <button type="button" onClick={() => ironingPieces < 30 && setIroningPieces(ironingPieces + 1)}
+                className={`flex h-11 w-11 items-center justify-center rounded-full border-2 ${ironingPieces >= 30 ? "border-gray-200 opacity-50" : "border-border"}`}
+                disabled={ironingPieces >= 30}>+</button>
             </div>
             
             <p className="text-xs text-gray-500 text-center mt-2">
@@ -1930,14 +1930,14 @@ function Step2DateTime({
             </p>
             
             <div className="flex gap-3 mt-4 pt-3 border-t">
-              <button type="button" onClick={() => { setIroningMinutes(30); setExtraServices(prev => prev.filter(s => s.id !== "ironing")); setShowIroningModal(false); }}
+              <button type="button" onClick={() => { setIroningPieces(5); setExtraServices(prev => prev.filter(s => s.id !== "ironing")); setShowIroningModal(false); }}
                 className="flex-1 py-2.5 text-primary font-semibold text-sm">Annuler</button>
               <button type="button" onClick={() => {
                 setExtraServices(prev => [...prev.filter(s => s.id !== "ironing"), { 
                   id: "ironing", 
-                  label: `👔 Repassage (${ironingMinutes}min)`,
+                  label: `👔 Repassage (${ironingPieces} pièce${ironingPieces > 1 ? 's' : ''})`,
                   price: calculateIroningPrice(), 
-                  details: `${ironingMinutes}min` 
+                  details: `${ironingPieces} pièce${ironingPieces > 1 ? 's' : ''}` 
                 }]);
                 setShowIroningModal(false);
               }} className="flex-1 py-2.5 bg-primary text-white rounded-xl font-semibold text-sm">Appliquer</button>
@@ -2757,7 +2757,7 @@ function Step5Payment({
       : undefined,
     preferredDay: bookingData.date ? new Date(bookingData.date).toLocaleDateString("en-US", { weekday: "long" }).toLowerCase() : undefined,
     preferredTime: bookingData.time || "09:00",
-    baseHourlyRate: 40,
+    baseHourlyRate: 45,
     extras: bookingData.extras?.map(e => ({ name: e.label, price: e.price })) || [],
     extrasTotal: extrasTotal,
   } : undefined;

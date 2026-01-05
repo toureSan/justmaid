@@ -12,7 +12,7 @@ export const Route = createFileRoute("/booking/cleaning")({
       },
       {
         name: "description",
-        content: "Réservez votre ménage à domicile en quelques clics. Choisissez date, durée et services. Professionnels vérifiés à Genève et Nyon. Dès 40 CHF/h.",
+        content: "Réservez votre ménage à domicile en quelques clics. Choisissez date, durée et services. Professionnels vérifiés à Genève et Nyon. Dès 45 CHF/h.",
       },
       {
         property: "og:title",

@@ -20,7 +20,7 @@ export const Route = createFileRoute("/")({
       },
       {
         name: "description",
-        content: "Réservez une aide ménagère qualifiée à Genève et Nyon. Service disponible dès demain, professionnels vérifiés et assurés. Note moyenne 4.9/5. Tarif transparent dès 40 CHF/h.",
+        content: "Réservez une aide ménagère qualifiée à Genève et Nyon. Service disponible dès demain, professionnels vérifiés et assurés. Note moyenne 4.9/5. Tarif transparent dès 45 CHF/h.",
       },
       {
         property: "og:title",
