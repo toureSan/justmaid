@@ -21,7 +21,7 @@ function AProposPage() {
       <div className="bg-gradient-to-br from-primary/10 via-white to-primary/5 py-16 sm:py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-6">
-            À propos de <span className="text-primary">justmaid</span>
+            À propos de <span className="text-primary">Justmaid</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Nous simplifions le quotidien des familles et professionnels en Suisse romande 
@@ -37,7 +37,7 @@ function AProposPage() {
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-6">Notre mission</h2>
               <p className="text-gray-600 leading-relaxed mb-4">
-                Chez justmaid, nous croyons que tout le monde mérite de rentrer dans un intérieur 
+                Chez Justmaid, nous croyons que tout le monde mérite de rentrer dans un intérieur 
                 propre et accueillant. Notre mission est de rendre les services de ménage 
                 professionnels accessibles à tous, avec une qualité irréprochable et des 
                 tarifs transparents.
@@ -54,7 +54,7 @@ function AProposPage() {
             <div className="relative">
               <img 
                 src="/equipe-menage.png" 
-                alt="Équipe justmaid" 
+                alt="Équipe Justmaid" 
                 className="rounded-2xl shadow-lg w-full"
               />
               <div className="absolute -bottom-6 -right-6 bg-primary text-white p-6 rounded-2xl shadow-lg">
@@ -108,7 +108,7 @@ function AProposPage() {
       {/* Pourquoi nous choisir */}
       <div className="py-16 bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">Pourquoi choisir justmaid ?</h2>
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">Pourquoi choisir Justmaid ?</h2>
           <div className="grid md:grid-cols-2 gap-8">
             {[
               "Intervenants vérifiés et assurés",
@@ -163,8 +163,8 @@ function AProposPage() {
             Notre équipe est à votre disposition pour répondre à toutes vos questions.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <a href="mailto:contact@justmaid.ch" className="text-primary font-medium hover:underline">
-              contact@justmaid.ch
+            <a href="mailto:contact@Justmaid.ch" className="text-primary font-medium hover:underline">
+              contact@Justmaid.ch
             </a>
             <span className="hidden sm:block text-gray-300">|</span>
             <a href="tel:+41227926723" className="text-primary font-medium hover:underline">

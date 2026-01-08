@@ -13,7 +13,7 @@ export function Footer() {
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ backgroundColor: '#2FCCC0' }}>
                   <span className="text-lg font-bold text-white">J</span>
                 </div>
-                <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Bricolage Grotesque, sans-serif' }}>justmaid</span>
+                <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Bricolage Grotesque, sans-serif' }}>Justmaid</span>
               </Link>
               <p className="text-sm text-muted-foreground">
                 Votre partenaire de confiance pour le ménage à domicile et le pressing. 
@@ -244,7 +244,7 @@ export function Footer() {
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <p className="text-sm text-white/80">
-              © {new Date().getFullYear()} justmaid. Tous droits réservés.
+              © {new Date().getFullYear()} Justmaid. Tous droits réservés.
             </p>
             <div className="flex items-center gap-4">
               <span className="text-sm text-white/80">

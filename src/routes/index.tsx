@@ -16,7 +16,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       {
-        title: "justmaid - Femme & Homme de ménage à Genève & Nyon | Réservez en 2 minutes",
+        title: "Justmaid - Femme & Homme de ménage à Genève & Nyon | Réservez en 2 minutes",
       },
       {
         name: "description",
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/")({
       },
       {
         property: "og:title",
-        content: "justmaid - Femme & Homme de ménage à Genève & Nyon | Réservez en 2 minutes",
+        content: "Justmaid - Femme & Homme de ménage à Genève & Nyon | Réservez en 2 minutes",
       },
       {
         property: "og:description",

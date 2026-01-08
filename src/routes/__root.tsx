@@ -8,8 +8,8 @@ import appCss from '../styles.css?url'
 
 // Site configuration for SEO
 const SITE_URL = 'https://justmaid.ch';
-const SITE_NAME = 'justmaid';
-const DEFAULT_TITLE = 'justmaid - Femme & Homme de ménage à Genève & Nyon | Réservation en ligne';
+const SITE_NAME = 'Justmaid';
+const DEFAULT_TITLE = 'Justmaid - Femme & Homme de ménage à Genève & Nyon | Réservation en ligne';
 const DEFAULT_DESCRIPTION = 'Réservez une femme de ménage ou un homme de ménage qualifié à Genève et Nyon. Service disponible dès demain. Professionnels vérifiés, assurés et notés 4.9/5. Tarifs transparents dès 45 CHF/h.';
 
 export const Route = createRootRoute({
@@ -42,7 +42,7 @@ export const Route = createRootRoute({
       // Author & Publisher
       {
         name: 'author',
-        content: 'justmaid',
+        content: 'Justmaid',
       },
       // Geo tags for local SEO
       {
@@ -175,8 +175,8 @@ export const Route = createRootRoute({
           "@context": "https://schema.org",
           "@type": "LocalBusiness",
           "@id": SITE_URL,
-          "name": "justmaid",
-          "alternateName": "justmaid Suisse",
+          "name": "Justmaid",
+          "alternateName": "Justmaid Suisse",
           "description": DEFAULT_DESCRIPTION,
           "url": SITE_URL,
           "logo": `${SITE_URL}/logo512.png`,
@@ -237,7 +237,7 @@ export const Route = createRootRoute({
           "serviceType": "Ménage à domicile",
           "provider": {
             "@type": "LocalBusiness",
-            "name": "justmaid"
+            "name": "Justmaid"
           },
           "areaServed": {
             "@type": "GeoCircle",

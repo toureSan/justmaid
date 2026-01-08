@@ -117,7 +117,7 @@ function RegisterPage() {
       <div className="hidden lg:block lg:flex-1 relative">
         <img
           src="/equipe-menage3.png"
-          alt="Équipe justmaid"
+          alt="Équipe Justmaid"
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div
@@ -130,7 +130,7 @@ function RegisterPage() {
         <div className="absolute inset-0 flex items-center justify-center p-12">
           <div className="text-center text-white max-w-lg">
             <h2 className="text-4xl font-bold font-bricolage-grotesque mb-6">
-              Rejoignez justmaid 🎉
+              Rejoignez Justmaid 🎉
             </h2>
             <p className="text-xl text-white/90 mb-8">
               Créez votre compte et réservez votre premier ménage en quelques
@@ -177,11 +177,11 @@ function RegisterPage() {
         <div className="w-full max-w-md">
           {/* Logo */}
           <Link to="/" className="flex items-center justify-center gap-2 mb-8">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-justmaid-turquoise text-white font-bold text-xl">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-Justmaid-turquoise text-white font-bold text-xl">
               J
             </div>
             <span className="text-2xl font-bold text-gray-900 font-bricolage-grotesque">
-              justmaid
+              Justmaid
             </span>
           </Link>
 

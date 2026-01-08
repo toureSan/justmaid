@@ -22,7 +22,7 @@ export function CitiesSection() {
             Où nous intervenons 📍
           </h2>
           <p className="mt-4 text-lg text-gray-600 max-w-2xl">
-            justmaid est disponible à Genève et Nyon. D'autres villes arrivent bientôt !
+            Justmaid est disponible à Genève et Nyon. D'autres villes arrivent bientôt !
           </p>
         </div>
 

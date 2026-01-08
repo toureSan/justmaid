@@ -17,7 +17,7 @@ function CGVPage() {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">1. Objet</h2>
               <p className="text-gray-600 leading-relaxed">
                 Les présentes Conditions Générales de Vente (CGV) régissent les relations contractuelles entre 
-                justmaid, société de services de ménage à domicile, et ses clients. En utilisant nos services, 
+                Justmaid, société de services de ménage à domicile, et ses clients. En utilisant nos services, 
                 vous acceptez ces conditions dans leur intégralité.
               </p>
             </section>
@@ -25,7 +25,7 @@ function CGVPage() {
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-4">2. Services proposés</h2>
               <p className="text-gray-600 leading-relaxed">
-                justmaid propose des services de ménage à domicile, comprenant :
+                Justmaid propose des services de ménage à domicile, comprenant :
               </p>
               <ul className="list-disc list-inside text-gray-600 mt-2 space-y-1">
                 <li>Nettoyage régulier ou ponctuel d'appartements et maisons</li>
@@ -82,7 +82,7 @@ function CGVPage() {
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-4">7. Responsabilité</h2>
               <p className="text-gray-600 leading-relaxed">
-                justmaid s'engage à fournir des services de qualité. Tous nos intervenants sont vérifiés, 
+                Justmaid s'engage à fournir des services de qualité. Tous nos intervenants sont vérifiés, 
                 formés et assurés. En cas de dommage causé par un intervenant, une assurance responsabilité 
                 civile professionnelle couvre les éventuels préjudices.
               </p>
@@ -92,7 +92,7 @@ function CGVPage() {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">8. Réclamations</h2>
               <p className="text-gray-600 leading-relaxed">
                 Toute réclamation doit être adressée dans les 48 heures suivant l'intervention à 
-                contact@justmaid.ch. Nous nous engageons à traiter votre demande dans les meilleurs délais.
+                contact@Justmaid.ch. Nous nous engageons à traiter votre demande dans les meilleurs délais.
               </p>
             </section>
 
@@ -108,7 +108,7 @@ function CGVPage() {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">10. Contact</h2>
               <p className="text-gray-600 leading-relaxed">
                 Pour toute question concernant ces conditions générales :<br />
-                Email : contact@justmaid.ch<br />
+                Email : contact@Justmaid.ch<br />
                 Téléphone : +41 22 792 67 23
               </p>
             </section>

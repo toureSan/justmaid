@@ -16,7 +16,7 @@ function ConfidentialitePage() {
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-4">1. Introduction</h2>
               <p className="text-gray-600 leading-relaxed">
-                justmaid s'engage à protéger la vie privée de ses utilisateurs. Cette politique de 
+                Justmaid s'engage à protéger la vie privée de ses utilisateurs. Cette politique de 
                 confidentialité explique comment nous collectons, utilisons et protégeons vos données 
                 personnelles conformément à la Loi fédérale sur la protection des données (LPD) et 
                 au Règlement Général sur la Protection des Données (RGPD).
@@ -83,7 +83,7 @@ function ConfidentialitePage() {
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-4">6. Durée de conservation</h2>
               <p className="text-gray-600 leading-relaxed">
-                Vos données sont conservées pendant la durée de votre relation avec justmaid, puis :
+                Vos données sont conservées pendant la durée de votre relation avec Justmaid, puis :
               </p>
               <ul className="list-disc list-inside text-gray-600 mt-2 space-y-1">
                 <li>Données de compte : 3 ans après la dernière activité</li>
@@ -106,7 +106,7 @@ function ConfidentialitePage() {
                 <li><strong>Limitation :</strong> limiter le traitement de vos données</li>
               </ul>
               <p className="text-gray-600 leading-relaxed mt-2">
-                Pour exercer ces droits, contactez-nous à contact@justmaid.ch
+                Pour exercer ces droits, contactez-nous à contact@Justmaid.ch
               </p>
             </section>
 
@@ -136,7 +136,7 @@ function ConfidentialitePage() {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">10. Contact</h2>
               <p className="text-gray-600 leading-relaxed">
                 Pour toute question concernant cette politique :<br />
-                Email : contact@justmaid.ch<br />
+                Email : contact@Justmaid.ch<br />
                 Téléphone : +41 22 792 67 23<br /><br />
                 Vous pouvez également déposer une plainte auprès du Préposé fédéral à la 
                 protection des données et à la transparence (PFPDT).

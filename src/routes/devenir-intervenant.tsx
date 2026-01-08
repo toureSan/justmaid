@@ -45,7 +45,7 @@ function DevenirIntervenantPage() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="text-white">
               <h1 className="text-4xl sm:text-5xl font-bold mb-6">
-                Rejoignez l'équipe justmaid
+                Rejoignez l'équipe Justmaid
               </h1>
               <p className="text-xl text-white/90 mb-8">
                 Devenez intervenant(e) et travaillez en toute flexibilité. 
@@ -65,7 +65,7 @@ function DevenirIntervenantPage() {
             <div className="hidden md:block">
               <img 
                 src="/femme-menage.png" 
-                alt="Devenir intervenant justmaid" 
+                alt="Devenir intervenant Justmaid" 
                 className="rounded-2xl shadow-2xl"
               />
             </div>
@@ -77,7 +77,7 @@ function DevenirIntervenantPage() {
       <div className="py-16 bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
-            Les avantages de travailler avec justmaid
+            Les avantages de travailler avec Justmaid
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
@@ -128,7 +128,7 @@ function DevenirIntervenantPage() {
       <div className="py-16 bg-gray-50">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
-            Comment rejoindre justmaid ?
+            Comment rejoindre Justmaid ?
           </h2>
           <div className="grid md:grid-cols-4 gap-8">
             {[
@@ -277,7 +277,7 @@ function DevenirIntervenantPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="motivation">Pourquoi souhaitez-vous rejoindre justmaid ?</Label>
+                  <Label htmlFor="motivation">Pourquoi souhaitez-vous rejoindre Justmaid ?</Label>
                   <Textarea 
                     id="motivation" 
                     name="motivation"
@@ -319,8 +319,8 @@ function DevenirIntervenantPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-gray-600">
             Des questions ? Contactez notre équipe recrutement à{" "}
-            <a href="mailto:contact@justmaid.ch" className="text-primary font-medium hover:underline">
-              contact@justmaid.ch
+            <a href="mailto:contact@Justmaid.ch" className="text-primary font-medium hover:underline">
+              contact@Justmaid.ch
             </a>
           </p>
         </div>

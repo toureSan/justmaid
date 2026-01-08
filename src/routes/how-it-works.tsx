@@ -18,7 +18,7 @@ export const Route = createFileRoute("/how-it-works")({
   head: () => ({
     meta: [
       {
-        title: "Comment ça marche | Réservez votre ménage en 3 étapes | justmaid",
+        title: "Comment ça marche | Réservez votre ménage en 3 étapes | Justmaid",
       },
       {
         name: "description",
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/how-it-works")({
       },
       {
         property: "og:title",
-        content: "Comment ça marche | Réservez votre ménage en 3 étapes | justmaid",
+        content: "Comment ça marche | Réservez votre ménage en 3 étapes | Justmaid",
       },
       {
         property: "og:description",
@@ -129,7 +129,7 @@ function HowItWorksPage() {
         <div className="absolute inset-0">
           <img
             src="/equipe-menage3.png"
-            alt="Équipe justmaid"
+            alt="Équipe Justmaid"
             className="h-full w-full object-cover object-top"
           />
           {/* Turquoise overlay for text readability */}
@@ -303,7 +303,7 @@ function HowItWorksPage() {
             Prêt à essayer ? 🏠
           </h2>
           <p className="mt-6 text-xl text-white/90">
-            Réservez votre premier ménage maintenant et découvrez la différence justmaid.
+            Réservez votre premier ménage maintenant et découvrez la différence Justmaid.
           </p>
           <div className="mt-10">
             <Link to="/booking/cleaning">

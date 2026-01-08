@@ -233,7 +233,7 @@ export function Header() {
             <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ backgroundColor: '#2FCCC0' }}>
               <span className="text-lg font-bold text-white">J</span>
             </div>
-            <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Bricolage Grotesque, sans-serif' }}>justmaid</span>
+            <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Bricolage Grotesque, sans-serif' }}>Justmaid</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -597,7 +597,7 @@ function AuthModal({
         <div className="hidden md:block w-1/2 relative">
           <img
             src="/femme-menage.png"
-            alt="justmaid"
+            alt="Justmaid"
             className="absolute inset-0 h-full w-full object-cover"
           />
           <div 
@@ -611,7 +611,7 @@ function AuthModal({
               <span className="text-3xl font-bold">J</span>
             </div>
             <h3 className="text-2xl font-bold font-bricolage-grotesque mb-3">
-              Bienvenue sur justmaid ✨
+              Bienvenue sur Justmaid ✨
             </h3>
             <p className="text-white/90 text-sm">
               Réservez votre ménage en quelques clics et profitez d'un intérieur impeccable.
@@ -727,7 +727,7 @@ function AuthModal({
               <p className="mt-1 text-sm text-muted-foreground">
                 {authMode === "email_login" 
                   ? "Entrez vos identifiants pour continuer" 
-                  : "Créez votre compte justmaid"}
+                  : "Créez votre compte Justmaid"}
               </p>
             </div>
 

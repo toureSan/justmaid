@@ -24,25 +24,25 @@ export const Route = createFileRoute("/aide")({
   head: () => ({
     meta: [
       {
-        title: "Aide & FAQ | Questions fréquentes | justmaid",
+        title: "Aide & FAQ | Questions fréquentes | Justmaid",
       },
       {
         name: "description",
-        content: "Trouvez les réponses à vos questions sur justmaid : réservation, paiement, annulation, intervention. Contactez notre équipe par email ou téléphone.",
+        content: "Trouvez les réponses à vos questions sur Justmaid : réservation, paiement, annulation, intervention. Contactez notre équipe par email ou téléphone.",
       },
       {
         property: "og:title",
-        content: "Aide & FAQ | Questions fréquentes | justmaid",
+        content: "Aide & FAQ | Questions fréquentes | Justmaid",
       },
       {
         property: "og:description",
-        content: "Trouvez les réponses à vos questions sur justmaid. Contactez notre équipe.",
+        content: "Trouvez les réponses à vos questions sur Justmaid. Contactez notre équipe.",
       },
     ],
     links: [
       {
         rel: "canonical",
-        href: "https://justmaid.ch/aide",
+        href: "https://Justmaid.ch/aide",
       },
     ],
   }),
@@ -149,7 +149,7 @@ const categories = [
       },
       {
         question: "Comment supprimer mon compte ?",
-        answer: "Contactez-nous à contact@justmaid.ch avec votre demande de suppression. Nous traiterons votre demande sous 48h conformément au RGPD.",
+        answer: "Contactez-nous à contact@Justmaid.ch avec votre demande de suppression. Nous traiterons votre demande sous 48h conformément au RGPD.",
       },
     ],
   },
@@ -180,8 +180,8 @@ const contactMethods = [
     icon: Mail01Icon,
     title: "Email",
     description: "Réponse sous 24h",
-    value: "contact@justmaid.ch",
-    href: "mailto:contact@justmaid.ch",
+    value: "contact@Justmaid.ch",
+    href: "mailto:contact@Justmaid.ch",
   },
   {
     icon: Call02Icon,
@@ -532,11 +532,11 @@ function AidePage() {
               to="/booking/cleaning"
               className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow text-center group"
             >
-              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-justmaid-turquoise/10 mx-auto mb-4 group-hover:bg-justmaid-turquoise/20 transition-colors">
+              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-Justmaid-turquoise/10 mx-auto mb-4 group-hover:bg-Justmaid-turquoise/20 transition-colors">
                 <HugeiconsIcon
                   icon={Calendar03Icon}
                   strokeWidth={1.5}
-                  className="h-7 w-7 text-justmaid-turquoise"
+                  className="h-7 w-7 text-Justmaid-turquoise"
                 />
               </div>
               <h3 className="font-semibold text-gray-900">Réserver un ménage</h3>

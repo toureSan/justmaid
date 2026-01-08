@@ -8,7 +8,7 @@ export const Route = createFileRoute("/booking/cleaning")({
   head: () => ({
     meta: [
       {
-        title: "Réserver un ménage à domicile | Genève & Nyon | justmaid",
+        title: "Réserver un ménage à domicile | Genève & Nyon | Justmaid",
       },
       {
         name: "description",
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/booking/cleaning")({
       },
       {
         property: "og:title",
-        content: "Réserver un ménage à domicile | Genève & Nyon | justmaid",
+        content: "Réserver un ménage à domicile | Genève & Nyon | Justmaid",
       },
       {
         property: "og:description",

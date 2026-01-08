@@ -2602,7 +2602,7 @@ function AuthModal({
               <p className="mt-1 text-sm text-muted-foreground">
                 {authMode === "email_login" 
                   ? "Entrez vos identifiants pour continuer" 
-                  : "Créez votre compte justmaid"}
+                  : "Créez votre compte Justmaid"}
               </p>
             </div>
 

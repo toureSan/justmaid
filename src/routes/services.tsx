@@ -15,7 +15,7 @@ export const Route = createFileRoute("/services")({
   head: () => ({
     meta: [
       {
-        title: "Nos services de ménage | Nettoyage, Pressing, Repassage | justmaid",
+        title: "Nos services de ménage | Nettoyage, Pressing, Repassage | Justmaid",
       },
       {
         name: "description",
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/services")({
       },
       {
         property: "og:title",
-        content: "Nos services de ménage | Nettoyage, Pressing, Repassage | justmaid",
+        content: "Nos services de ménage | Nettoyage, Pressing, Repassage | Justmaid",
       },
       {
         property: "og:description",
@@ -221,7 +221,7 @@ function ServicesPage() {
         <div className="absolute inset-0">
           <img
             src="/menage-equipe6.png"
-            alt="Équipe justmaid"
+            alt="Équipe Justmaid"
             className="h-full w-full object-cover object-top"
           />
           <div 
@@ -398,7 +398,7 @@ function ServicesPage() {
             Prêt à simplifier votre quotidien ? ✨
           </h2>
           <p className="mt-6 text-xl text-white/90">
-            Réservez votre premier service maintenant et découvrez la différence justmaid.
+            Réservez votre premier service maintenant et découvrez la différence Justmaid.
           </p>
           <div className="mt-10">
             <Link to="/booking/cleaning">

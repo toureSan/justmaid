@@ -71,11 +71,11 @@ function LoginPage() {
         <div className="w-full max-w-md">
           {/* Logo */}
           <Link to="/" className="flex items-center justify-center gap-2 mb-8">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-justmaid-turquoise text-white font-bold text-xl">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-Justmaid-turquoise text-white font-bold text-xl">
               J
             </div>
             <span className="text-2xl font-bold text-gray-900 font-bricolage-grotesque">
-              justmaid
+              Justmaid
             </span>
           </Link>
 
@@ -85,7 +85,7 @@ function LoginPage() {
               Connexion
             </h1>
             <p className="mt-2 text-gray-600">
-              Accédez à votre espace client justmaid
+              Accédez à votre espace client Justmaid
             </p>
           </div>
 
@@ -235,7 +235,7 @@ function LoginPage() {
       <div className="hidden lg:block lg:flex-1 relative">
         <img
           src="/equipe-menage1.png"
-          alt="Équipe justmaid"
+          alt="Équipe Justmaid"
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div
@@ -248,7 +248,7 @@ function LoginPage() {
         <div className="absolute inset-0 flex items-center justify-center p-12">
           <div className="text-center text-white max-w-lg">
             <h2 className="text-4xl font-bold font-bricolage-grotesque mb-6">
-              Bienvenue chez justmaid ✨
+              Bienvenue chez Justmaid ✨
             </h2>
             <p className="text-xl text-white/90 mb-8">
               Réservez votre ménage en quelques clics et profitez d'un intérieur
