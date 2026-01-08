@@ -9,7 +9,7 @@ import appCss from '../styles.css?url'
 // Site configuration for SEO
 const SITE_URL = 'https://justmaid.ch';
 const SITE_NAME = 'justmaid';
-const DEFAULT_TITLE = 'justmaid - Ménage à domicile à Genève & Nyon | Réservation en ligne';
+const DEFAULT_TITLE = 'justmaid - Femme & Homme de ménage à Genève & Nyon | Réservation en ligne';
 const DEFAULT_DESCRIPTION = 'Réservez une femme de ménage ou un homme de ménage qualifié à Genève et Nyon. Service disponible dès demain. Professionnels vérifiés, assurés et notés 4.9/5. Tarifs transparents dès 45 CHF/h.';
 
 export const Route = createRootRoute({
