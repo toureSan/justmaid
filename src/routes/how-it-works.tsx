@@ -303,7 +303,7 @@ function HowItWorksPage() {
             Prêt à essayer ? 🏠
           </h2>
           <p className="mt-6 text-xl text-white/90">
-            Réservez votre premier ménage maintenant et découvrez la différence Justmaid.
+            Réservez votre premier ménage et profitez d’un intérieur impeccable avec Justmaid.
           </p>
           <div className="mt-10">
             <Link to="/booking/cleaning">
