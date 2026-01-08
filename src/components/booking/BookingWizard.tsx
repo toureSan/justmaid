@@ -1413,7 +1413,6 @@ const WINDOWS_RATE = 25; // CHF par heure de nettoyage fenêtres
 const CUPBOARDS_PRICE = 30; // CHF pour 30min de placards
 const FRIDGE_PRICE = 30; // CHF pour 30min de frigidaire
 const OVEN_PRICE = 30; // CHF pour 30min de four
-const LAUNDRY_PRICE = 40; // CHF pour 1h de lessive
 
 // Step 2: Date & Durée avec services supplémentaires
 function Step2DateTime({
@@ -1582,8 +1581,8 @@ function Step2DateTime({
   // Services supplémentaires
   const supplementaryServices = [
     { id: "windows", label: "Fenêtres", icon: "🪟", hasModal: true, priceLabel: "25 CHF/h" },
-    { id: "ironing", label: "Repassage", icon: "👔", hasModal: true, priceLabel: "3.50 CHF/pièce" },
-    { id: "laundry", label: "Lessive & séchage", icon: "🧺", time: "+1h", price: LAUNDRY_PRICE },
+    { id: "ironing", label: "Repassage", icon: "👔", hasModal: true, priceLabel: "Prix bientôt disponible" },
+    { id: "laundry", label: "Lessive & séchage", icon: "🧺", time: "+1h", priceLabel: "Prix bientôt disponible" },
     { id: "oven", label: "Intérieur du four", icon: "🔥", time: "+30min", price: OVEN_PRICE },
     { id: "cupboards", label: "Placards de cuisine", icon: "🗄️", time: "+30min", price: CUPBOARDS_PRICE },
     { id: "fridge", label: "Intérieur du frigidaire", icon: "❄️", time: "+30min", price: FRIDGE_PRICE },

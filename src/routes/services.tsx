@@ -105,7 +105,7 @@ const services = [
     description: "Nous récupérons vos vêtements à domicile, les lavons, séchons et repassons avec soin, puis les livrons chez vous. Plus besoin de courir au pressing !",
     image: "/lavage-menage.png",
     available: false,
-    price: "8 CHF/kg",
+    price: "Prix bientôt disponible",
     duration: "48h de délai",
     href: "/booking/laundry",
     features: [
@@ -162,7 +162,7 @@ const services = [
     description: "Service de repassage professionnel pour tous vos vêtements et linges de maison. Chemises, costumes, draps... tout est traité avec le plus grand soin.",
     image: "/repassage-menage.png",
     available: false,
-    price: "3.50 CHF/pièce",
+    price: "Prix bientôt disponible",
     duration: "48h de délai",
     href: "/booking/laundry",
     features: [

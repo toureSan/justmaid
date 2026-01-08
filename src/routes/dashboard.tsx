@@ -733,9 +733,9 @@ function PricesTab() {
   ];
 
   const extraServices = [
-    { name: "Repassage", price: "3.50 CHF/pièce", description: "Service de repassage professionnel à domicile", icon: "👔" },
+    { name: "Repassage", price: "Prix bientôt disponible", description: "Service de repassage professionnel à domicile", icon: "👔" },
     { name: "Fenêtres", price: "25 CHF/h", description: "Nettoyage intérieur et extérieur des vitres (30 min par fenêtre)", icon: "🪟" },
-    { name: "Lessive & séchage", price: "45 CHF/h", description: "Lavage, séchage et pliage de votre linge", icon: "🧺" },
+    { name: "Lessive & séchage", price: "Prix bientôt disponible", description: "Lavage, séchage et pliage de votre linge", icon: "🧺" },
     { name: "Intérieur du four", price: "30 CHF", description: "Dégraissage complet de votre four (environ 30 min)", icon: "🔥" },
     { name: "Placards de cuisine", price: "30 CHF", description: "Nettoyage intérieur des placards (environ 30 min)", icon: "🗄️" },
     { name: "Intérieur du frigidaire", price: "30 CHF", description: "Nettoyage et désinfection du réfrigérateur (environ 30 min)", icon: "❄️" },
