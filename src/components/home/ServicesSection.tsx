@@ -19,7 +19,7 @@ const services = [
       "Produits à fournir par le client",
       "Réservation flexible",
     ],
-    price: "25 CHF/h",
+    price: "45 CHF/h",
   },
   {
     id: "laundry",

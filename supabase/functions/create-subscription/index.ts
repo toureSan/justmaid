@@ -52,9 +52,18 @@ serve(async (req) => {
       baseHourlyRate,   // Prix horaire de base (45 CHF)
       extras,           // Array d'extras [{name, price}]
       extrasTotal,      // Total des extras en CHF
+      cleaningType,     // Type de ménage: 'domicile' | 'fin_bail' | 'bureau'
       successUrl,
       cancelUrl,
     } = await req.json();
+
+    // Labels des types de ménage
+    const cleaningTypeLabels: Record<string, string> = {
+      domicile: "Ménage à domicile",
+      fin_bail: "Fin de bail",
+      bureau: "Nettoyage de bureau",
+    };
+    const cleaningTypeLabel = cleaningTypeLabels[cleaningType] || "Ménage à domicile";
 
     // Validation
     if (!userId || !customerEmail || !frequency || !durationHours || !address || !preferredTime) {
@@ -98,12 +107,13 @@ serve(async (req) => {
       ? ` + ${extras.map((e: {name: string; price: number}) => e.name).join(', ')}`
       : '';
     const product = await stripe.products.create({
-      name: `Abonnement ménage - ${durationHours}h ${frequency === 'weekly' ? 'par semaine' : frequency === 'biweekly' ? 'toutes les 2 semaines' : 'par mois'}${extrasDescription}`,
-      description: `Ménage récurrent à ${address}${extrasDescription ? ` (${extrasDescription})` : ''}`,
+      name: `${cleaningTypeLabel} - ${durationHours}h ${frequency === 'weekly' ? 'par semaine' : frequency === 'biweekly' ? 'toutes les 2 semaines' : 'par mois'}${extrasDescription}`,
+      description: `${cleaningTypeLabel} récurrent à ${address}${extrasDescription ? ` (${extrasDescription})` : ''}`,
       metadata: {
         user_id: userId,
         frequency,
         duration_hours: durationHours.toString(),
+        cleaning_type: cleaningType || 'domicile',
         extras: extras ? JSON.stringify(extras) : '',
         extras_total: extrasTotalAmount.toString(),
       },
@@ -138,6 +148,7 @@ serve(async (req) => {
           address_details: addressDetails || "",
           preferred_day: preferredDay || "",
           preferred_time: preferredTime,
+          cleaning_type: cleaningType || "domicile",
           extras: extras ? JSON.stringify(extras) : "",
           extras_total: extrasTotalAmount.toString(),
         },
@@ -146,6 +157,7 @@ serve(async (req) => {
         user_id: userId,
         type: "subscription",
         frequency,
+        cleaning_type: cleaningType || "domicile",
       },
     });
 

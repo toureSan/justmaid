@@ -4,7 +4,8 @@ import type {
   BookingInsert, 
   BookingUpdate, 
   BookingStatus,
-  ServiceType 
+  ServiceType,
+  CleaningType
 } from '@/types/database';
 import { sendConfirmationEmail, sendCancellationEmail } from './emailService';
 
@@ -29,8 +30,15 @@ export const FREQUENCY_LABELS: Record<FrequencyType, string> = {
   custom: "Personnalisé",
 };
 
+export const CLEANING_TYPE_LABELS: Record<CleaningType, string> = {
+  domicile: "Ménage à domicile",
+  fin_bail: "Fin de bail",
+  bureau: "Nettoyage de bureau",
+};
+
 export interface CreateBookingData {
   serviceType: ServiceType;
+  cleaningType?: CleaningType;
   address: string;
   addressDetails?: string;
   latitude?: number;
@@ -68,6 +76,11 @@ export async function createBooking(
   // Construire les notes enrichies avec extras, animaux et fréquence
   const buildEnrichedNotes = () => {
     const parts: string[] = [];
+    
+    // Ajouter le type de ménage
+    if (data.cleaningType) {
+      parts.push(`[TYPE] ${CLEANING_TYPE_LABELS[data.cleaningType]}`);
+    }
     
     // Ajouter la fréquence si abonnement
     if (data.frequency && data.frequency !== 'once') {

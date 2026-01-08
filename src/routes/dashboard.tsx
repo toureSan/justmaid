@@ -314,7 +314,7 @@ function HomeTab({
               </div>
               <div>
                 <p className="font-semibold text-gray-900">Ménage à domicile</p>
-                <p className="text-sm text-gray-500">À partir de 25 CHF/h</p>
+                <p className="text-sm text-gray-500">À partir de 45 CHF/h</p>
               </div>
             </Link>
             <div className="relative flex items-center gap-4 rounded-xl border-2 border-gray-100 p-4 opacity-60">
@@ -349,7 +349,7 @@ function HomeTab({
                         <p className="text-sm text-gray-500">{new Date(booking.date).toLocaleDateString("fr-FR")}</p>
                       </div>
                     </div>
-                    <p className="font-semibold text-gray-900">{booking.total_price || (booking.duration || 3) * 25} CHF</p>
+                    <p className="font-semibold text-gray-900">{booking.total_price || (booking.duration || 3) * 45} CHF</p>
                   </div>
                 ))}
             </div>

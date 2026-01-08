@@ -11,6 +11,7 @@ export type Json =
 
 export type BookingStatus = 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
 export type ServiceType = 'cleaning' | 'laundry' | 'ironing' | 'business_cleaning';
+export type CleaningType = 'domicile' | 'fin_bail' | 'bureau';
 export type PaymentStatus = 'pending' | 'processing' | 'succeeded' | 'failed' | 'refunded';
 export type PaymentMethod = 'card' | 'twint' | 'apple_pay' | 'google_pay';
 export type UserRole = 'client' | 'provider' | 'admin';
@@ -283,6 +284,7 @@ export interface Database {
           cancelled_at: string | null;
           extras: { name: string; price: number }[] | null;
           extras_total: number | null;
+          cleaning_type: CleaningType | null;
           created_at: string;
           updated_at: string;
         };
@@ -304,6 +306,7 @@ export interface Database {
           cancelled_at?: string | null;
           extras?: { name: string; price: number }[] | null;
           extras_total?: number | null;
+          cleaning_type?: CleaningType | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -321,6 +324,7 @@ export interface Database {
           cancelled_at?: string | null;
           extras?: { name: string; price: number }[] | null;
           extras_total?: number | null;
+          cleaning_type?: CleaningType | null;
           updated_at?: string;
         };
       };

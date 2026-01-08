@@ -94,6 +94,9 @@ serve(async (req) => {
         if (metadata.extras_total) {
           extrasTotal = parseFloat(metadata.extras_total);
         }
+        
+        // Récupérer le type de ménage
+        const cleaningType = metadata.cleaning_type || "domicile";
 
         const { error: insertError } = await supabase
           .from("subscriptions")
@@ -113,6 +116,7 @@ serve(async (req) => {
             current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
             extras: extras,
             extras_total: extrasTotal,
+            cleaning_type: cleaningType,
           });
 
         if (insertError) {

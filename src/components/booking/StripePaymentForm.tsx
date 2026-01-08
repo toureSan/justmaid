@@ -26,6 +26,7 @@ interface StripePaymentFormProps {
     baseHourlyRate: number;
     extras?: Array<{ name: string; price: number }>;
     extrasTotal?: number;
+    cleaningType?: string;
   };
 }
 
@@ -198,6 +199,7 @@ export function StripePaymentForm({
           baseHourlyRate: subscriptionData.baseHourlyRate,
           extras: subscriptionData.extras || [],
           extrasTotal: subscriptionData.extrasTotal || 0,
+          cleaningType: subscriptionData.cleaningType || "domicile",
           successUrl: `${window.location.origin}/dashboard?tab=subscriptions&success=true`,
           cancelUrl: `${window.location.origin}${window.location.pathname}?cancelled=true`,
         }),

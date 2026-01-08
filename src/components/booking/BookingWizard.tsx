@@ -34,6 +34,15 @@ interface ExtraService {
   details?: string;
 }
 
+// Types de ménage
+type CleaningType = "domicile" | "fin_bail" | "bureau";
+
+const CLEANING_TYPES: { id: CleaningType; label: string; description: string; hourlyRate: number | null; emoji: string }[] = [
+  { id: "domicile", label: "Ménage à domicile", description: "Nettoyage régulier ou ponctuel", hourlyRate: 45, emoji: "🏠" },
+  { id: "fin_bail", label: "Fin de bail", description: "Nettoyage complet pour remise des clés", hourlyRate: 45, emoji: "🔑" },
+  { id: "bureau", label: "Nettoyage de bureau", description: "Sur devis personnalisé", hourlyRate: null, emoji: "🏢" },
+];
+
 // Fréquences disponibles
 type FrequencyType = "once" | "weekly" | "biweekly" | "monthly" | "custom";
 
@@ -46,6 +55,8 @@ const FREQUENCIES: { id: FrequencyType; label: string; description: string; disc
 ];
 
 interface BookingData {
+  // Type de ménage
+  cleaningType: CleaningType;
   // Adresse détaillée
   street: string;
   streetNumber: string;
@@ -82,6 +93,8 @@ interface BookingData {
 }
 
 const initialBookingData: BookingData = {
+  // Type de ménage
+  cleaningType: "domicile",
   // Adresse détaillée
   street: "",
   streetNumber: "",
@@ -317,7 +330,8 @@ export function BookingWizard() {
   const canProceed = () => {
     switch (currentStep) {
       case 1:
-        // Étape adresse : code postal + ville requis
+        // Étape adresse : type ménage (pas bureau) + code postal + ville requis
+        if (bookingData.cleaningType === "bureau") return false;
         return bookingData.postalCode.trim().length === 4 && bookingData.city.trim().length >= 2;
       case 2:
         return bookingData.date && bookingData.time && bookingData.duration && bookingData.hasEquipment;
@@ -389,6 +403,7 @@ export function BookingWizard() {
       // Créer la réservation avec envoi d'email de confirmation
       const { booking, error, emailSent } = await createBookingWithEmail(user.id, {
         serviceType: "cleaning",
+        cleaningType: bookingData.cleaningType,
         address: fullAddress,
         addressDetails: addressDetails,
         latitude: bookingData.coords?.lat,
@@ -432,10 +447,16 @@ export function BookingWizard() {
     }
   };
 
+  const getHourlyRate = () => {
+    const cleaningType = CLEANING_TYPES.find(c => c.id === bookingData.cleaningType);
+    return cleaningType?.hourlyRate || 45;
+  };
+
   const calculatePrice = () => {
     const hours = parseInt(bookingData.duration) || 2;
     const frequencyDiscount = FREQUENCIES.find(f => f.id === bookingData.frequency)?.discount || 0;
-    const basePrice = 45 - frequencyDiscount; // 45 CHF/heure - réduction abonnement
+    const hourlyRate = getHourlyRate();
+    const basePrice = hourlyRate - frequencyDiscount; // Tarif horaire - réduction abonnement
     const baseTotal = hours * basePrice;
     const extrasTotal = bookingData.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0;
     return baseTotal + extrasTotal;
@@ -444,7 +465,8 @@ export function BookingWizard() {
   const getBasePrice = () => {
     const hours = parseInt(bookingData.duration) || 2;
     const frequencyDiscount = FREQUENCIES.find(f => f.id === bookingData.frequency)?.discount || 0;
-    return hours * (45 - frequencyDiscount);
+    const hourlyRate = getHourlyRate();
+    return hours * (hourlyRate - frequencyDiscount);
   };
   
   const getExtrasTotal = () => {
@@ -557,6 +579,7 @@ export function BookingWizard() {
               updateExtras={updateExtras}
               updateHasPets={updateHasPets}
               updateHasEquipment={updateHasEquipment}
+              hourlyRate={getHourlyRate()}
             />
           )}
           {currentStep === 3 && (
@@ -572,10 +595,11 @@ export function BookingWizard() {
               bookingData={bookingData}
               isSubscription={isSubscription()}
               user={user}
+              hourlyRate={getHourlyRate()}
             />
           )}
           {currentStep === 5 && (
-            <Step6Confirmation bookingData={bookingData} calculatePrice={calculatePrice} />
+            <Step6Confirmation bookingData={bookingData} calculatePrice={calculatePrice} hourlyRate={getHourlyRate()} />
           )}
 
           {/* Navigation Buttons */}
@@ -646,7 +670,7 @@ export function BookingWizard() {
               <span className="font-medium">{getBasePrice()} CHF</span>
             </div>
             <p className="text-xs text-muted-foreground pl-5">
-              {bookingData.duration || 2}h × {45 - getFrequencyDiscount()} CHF/h
+              {bookingData.duration || 2}h × {getHourlyRate() - getFrequencyDiscount()} CHF/h
               {isSubscription() && <span className="text-green-600 ml-1">(abonnement)</span>}
             </p>
             
@@ -997,8 +1021,240 @@ function Step1Address({
     setShowNotAvailable(!city.available);
   };
 
+  // État local pour le formulaire de demande de devis bureau
+  const [showQuoteForm, setShowQuoteForm] = React.useState(false);
+  const [quoteFormData, setQuoteFormData] = React.useState({
+    companyName: "",
+    contactName: "",
+    email: "",
+    phone: "",
+    address: "",
+    surfaceArea: "",
+    frequency: "",
+    message: "",
+  });
+  const [quoteSent, setQuoteSent] = React.useState(false);
+
+  const handleQuoteSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Envoyer le devis par email
+    try {
+      const response = await fetch("https://nykmhyrsgsxkinsojosh.supabase.co/functions/v1/send-booking-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: "contact@justmaid.ch",
+          subject: `Demande de devis - Nettoyage de bureau - ${quoteFormData.companyName}`,
+          template: "quote_request",
+          data: {
+            ...quoteFormData,
+            type: "Nettoyage de bureau",
+          },
+        }),
+      });
+      if (response.ok) {
+        setQuoteSent(true);
+      }
+    } catch (error) {
+      console.error("Erreur envoi devis:", error);
+    }
+  };
+
   return (
-    <div className="space-y-12">
+    <div className="space-y-8">
+      {/* Sélection du type de ménage */}
+      <div>
+        <h2 className="text-2xl font-bold text-foreground sm:text-3xl">
+          Quel type de ménage ? 🧹
+        </h2>
+        <p className="mt-2 text-muted-foreground">
+          Sélectionnez le service qui correspond à vos besoins
+        </p>
+        
+        <div className="mt-6 grid gap-3">
+          {CLEANING_TYPES.map((type) => {
+            const isSelected = bookingData.cleaningType === type.id;
+            const isBureau = type.id === "bureau";
+            
+            return (
+              <button
+                key={type.id}
+                type="button"
+                onClick={() => {
+                  updateBookingData("cleaningType", type.id);
+                  if (isBureau) {
+                    setShowQuoteForm(true);
+                  } else {
+                    setShowQuoteForm(false);
+                  }
+                }}
+                className={`relative flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left ${
+                  isSelected
+                    ? "border-primary bg-primary/5 shadow-md"
+                    : "border-gray-200 hover:border-primary/50 hover:bg-gray-50"
+                }`}
+              >
+                <span className="text-3xl">{type.emoji}</span>
+                <div className="flex-1">
+                  <p className={`font-semibold ${isSelected ? "text-primary" : "text-foreground"}`}>
+                    {type.label}
+                  </p>
+                  <p className="text-sm text-muted-foreground">{type.description}</p>
+                </div>
+                <div className="text-right">
+                  {type.hourlyRate ? (
+                    <span className="font-bold text-primary">{type.hourlyRate} CHF/h</span>
+                  ) : (
+                    <span className="px-3 py-1 bg-amber-100 text-amber-700 text-sm font-medium rounded-full">
+                      Sur devis
+                    </span>
+                  )}
+                </div>
+                {isSelected && (
+                  <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                    <svg className="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Formulaire de demande de devis pour bureau */}
+      {showQuoteForm && bookingData.cleaningType === "bureau" && (
+        <div className="rounded-2xl border-2 border-primary bg-primary/5 p-6">
+          {quoteSent ? (
+            <div className="text-center py-8">
+              <span className="text-5xl mb-4 block">✅</span>
+              <h3 className="text-xl font-bold text-foreground mb-2">Demande envoyée !</h3>
+              <p className="text-muted-foreground">
+                Nous vous recontacterons sous 24h avec un devis personnalisé.
+              </p>
+            </div>
+          ) : (
+            <>
+              <h3 className="text-lg font-bold text-foreground mb-4">
+                🏢 Demande de devis - Nettoyage de bureau
+              </h3>
+              <p className="text-sm text-muted-foreground mb-6">
+                Remplissez ce formulaire et nous vous enverrons un devis personnalisé sous 24h.
+              </p>
+              <form onSubmit={handleQuoteSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="companyName">Nom de l'entreprise *</Label>
+                    <Input
+                      id="companyName"
+                      required
+                      value={quoteFormData.companyName}
+                      onChange={(e) => setQuoteFormData(prev => ({ ...prev, companyName: e.target.value }))}
+                      placeholder="Votre entreprise"
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="contactName">Nom du contact *</Label>
+                    <Input
+                      id="contactName"
+                      required
+                      value={quoteFormData.contactName}
+                      onChange={(e) => setQuoteFormData(prev => ({ ...prev, contactName: e.target.value }))}
+                      placeholder="Prénom Nom"
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="quoteEmail">Email *</Label>
+                    <Input
+                      id="quoteEmail"
+                      type="email"
+                      required
+                      value={quoteFormData.email}
+                      onChange={(e) => setQuoteFormData(prev => ({ ...prev, email: e.target.value }))}
+                      placeholder="contact@entreprise.ch"
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="quotePhone">Téléphone *</Label>
+                    <Input
+                      id="quotePhone"
+                      type="tel"
+                      required
+                      value={quoteFormData.phone}
+                      onChange={(e) => setQuoteFormData(prev => ({ ...prev, phone: e.target.value }))}
+                      placeholder="022 123 45 67"
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="quoteAddress">Adresse des locaux *</Label>
+                  <Input
+                    id="quoteAddress"
+                    required
+                    value={quoteFormData.address}
+                    onChange={(e) => setQuoteFormData(prev => ({ ...prev, address: e.target.value }))}
+                    placeholder="Rue, NPA Ville"
+                    className="mt-1"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="surfaceArea">Surface approximative</Label>
+                    <Input
+                      id="surfaceArea"
+                      value={quoteFormData.surfaceArea}
+                      onChange={(e) => setQuoteFormData(prev => ({ ...prev, surfaceArea: e.target.value }))}
+                      placeholder="ex: 200 m²"
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="quoteFrequency">Fréquence souhaitée</Label>
+                    <select
+                      id="quoteFrequency"
+                      value={quoteFormData.frequency}
+                      onChange={(e) => setQuoteFormData(prev => ({ ...prev, frequency: e.target.value }))}
+                      className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                    >
+                      <option value="">Sélectionnez...</option>
+                      <option value="daily">Quotidien</option>
+                      <option value="weekly">Hebdomadaire</option>
+                      <option value="biweekly">Toutes les 2 semaines</option>
+                      <option value="monthly">Mensuel</option>
+                      <option value="once">Ponctuel</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="quoteMessage">Message (optionnel)</Label>
+                  <Textarea
+                    id="quoteMessage"
+                    value={quoteFormData.message}
+                    onChange={(e) => setQuoteFormData(prev => ({ ...prev, message: e.target.value }))}
+                    placeholder="Décrivez vos besoins spécifiques..."
+                    className="mt-1"
+                    rows={3}
+                  />
+                </div>
+                <Button type="submit" className="w-full h-12">
+                  Envoyer ma demande de devis
+                </Button>
+              </form>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Suite du formulaire seulement si pas bureau */}
+      {bookingData.cleaningType !== "bureau" && (
+        <>
       <div>
         <h2 className="text-2xl font-bold text-foreground sm:text-3xl">
           Où avez-vous besoin de nous ? 📍
@@ -1145,12 +1401,13 @@ function Step1Address({
           </p>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }
 
 // Prix constants
-const HOURLY_RATE = 45; // CHF par heure de ménage
 const IRONING_RATE = 3.5; // CHF par pièce de repassage
 const WINDOWS_RATE = 25; // CHF par heure de nettoyage fenêtres
 const CUPBOARDS_PRICE = 30; // CHF pour 30min de placards
@@ -1165,12 +1422,14 @@ function Step2DateTime({
   updateExtras,
   updateHasPets,
   updateHasEquipment,
+  hourlyRate,
 }: {
   bookingData: BookingData;
   updateBookingData: (field: keyof BookingData, value: string | string[]) => void;
   updateExtras: (extras: ExtraService[]) => void;
   updateHasPets: (hasPets: boolean) => void;
   updateHasEquipment: (hasEquipment: boolean) => void;
+  hourlyRate: number;
 }) {
   // Modals state
   const [showTimeCalculator, setShowTimeCalculator] = React.useState(false);
@@ -1233,7 +1492,7 @@ function Step2DateTime({
   const duration = Math.max(3, parseInt(bookingData.duration) || 3);
   
   // Prix du ménage de base
-  const basePrice = duration * HOURLY_RATE;
+  const basePrice = duration * hourlyRate;
   
   // Prix total des suppléments
   const extrasTotal = extraServices.reduce((sum, s) => sum + s.price, 0);
@@ -1409,7 +1668,7 @@ function Step2DateTime({
           </button>
         </p>
         <p className="text-xs text-muted-foreground text-center mt-1">
-          Minimum 3 heures • {HOURLY_RATE} CHF/heure
+          Minimum 3 heures • {hourlyRate} CHF/heure
         </p>
       </div>
 
@@ -1458,12 +1717,12 @@ function Step2DateTime({
                 </span>
                 {freq.discount > 0 && freq.id !== "once" && (
                   <span className="text-[10px] sm:text-xs text-green-600 mt-1">
-                    {HOURLY_RATE - freq.discount} CHF/h
+                    {hourlyRate - freq.discount} CHF/h
                   </span>
                 )}
                 {freq.id === "once" && (
                   <span className="text-[10px] sm:text-xs text-muted-foreground mt-1">
-                    {HOURLY_RATE} CHF/h
+                    {hourlyRate} CHF/h
                   </span>
                 )}
                 {isSelected && (
@@ -1814,7 +2073,7 @@ function Step2DateTime({
             </div>
             
             <div className="mt-4 p-3 bg-primary/5 rounded-xl">
-              <p className="text-sm">Recommandation: <strong>{calculateRecommendedHours()}h</strong> ({calculateRecommendedHours() * HOURLY_RATE} CHF)</p>
+              <p className="text-sm">Recommandation: <strong>{calculateRecommendedHours()}h</strong> ({calculateRecommendedHours() * hourlyRate} CHF)</p>
               <p className="text-xs text-gray-500 mt-1">Salon, cuisine et espaces communs inclus</p>
             </div>
             
@@ -2723,12 +2982,14 @@ function Step5Payment({
   bookingData,
   isSubscription,
   user,
+  hourlyRate,
 }: {
   onPaymentSuccess: () => void;
   calculatePrice: () => number;
   bookingData: BookingData;
   isSubscription: boolean;
   user: UserAuth | null;
+  hourlyRate: number;
 }) {
   const [paymentStatus, setPaymentStatus] = React.useState<"pending" | "success" | "error">("pending");
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
@@ -2757,9 +3018,10 @@ function Step5Payment({
       : undefined,
     preferredDay: bookingData.date ? new Date(bookingData.date).toLocaleDateString("en-US", { weekday: "long" }).toLowerCase() : undefined,
     preferredTime: bookingData.time || "09:00",
-    baseHourlyRate: 45,
+    baseHourlyRate: hourlyRate,
     extras: bookingData.extras?.map(e => ({ name: e.label, price: e.price })) || [],
     extrasTotal: extrasTotal,
+    cleaningType: bookingData.cleaningType,
   } : undefined;
 
   if (paymentStatus === "success") {
@@ -2811,21 +3073,21 @@ function Step5Payment({
           </div>
         </div>
       ) : (
-        <div className="rounded-xl border-2 border-green-200 bg-green-50 p-4">
-          <div className="flex items-start gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
-              <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} className="h-4 w-4 text-green-600" />
-            </div>
-            <div>
-              <p className="font-medium text-green-800">Pré-autorisation sécurisée</p>
-              <p className="text-sm text-green-700">
-                Un montant de <strong>{calculatePrice()} CHF</strong> sera pré-autorisé sur votre carte. 
-                Vous ne serez débité qu'après la réalisation du ménage. 
-                Si vous annulez avant l'intervention, aucun montant ne sera prélevé.
-              </p>
-            </div>
+      <div className="rounded-xl border-2 border-green-200 bg-green-50 p-4">
+        <div className="flex items-start gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
+            <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} className="h-4 w-4 text-green-600" />
+          </div>
+          <div>
+            <p className="font-medium text-green-800">Pré-autorisation sécurisée</p>
+            <p className="text-sm text-green-700">
+              Un montant de <strong>{calculatePrice()} CHF</strong> sera pré-autorisé sur votre carte. 
+              Vous ne serez débité qu'après la réalisation du ménage. 
+              Si vous annulez avant l'intervention, aucun montant ne sera prélevé.
+            </p>
           </div>
         </div>
+      </div>
       )}
 
       {/* Stripe Payment Form */}
@@ -2854,9 +3116,11 @@ function Step5Payment({
 function Step6Confirmation({
   bookingData,
   calculatePrice,
+  hourlyRate,
 }: {
   bookingData: BookingData;
   calculatePrice: () => number;
+  hourlyRate: number;
 }) {
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "";
@@ -2890,6 +3154,24 @@ function Step6Confirmation({
       </div>
 
       <div className="space-y-4 rounded-xl bg-muted/50 p-6">
+        {/* Type de ménage */}
+        <div className="flex items-start gap-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+            <span className="text-lg">
+              {CLEANING_TYPES.find(t => t.id === bookingData.cleaningType)?.emoji || "🧹"}
+            </span>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Type de service</p>
+            <p className="font-medium text-foreground">
+              {CLEANING_TYPES.find(t => t.id === bookingData.cleaningType)?.label || "Ménage à domicile"}
+            </p>
+            <p className="text-sm text-primary font-semibold">
+              {hourlyRate} CHF/heure
+            </p>
+          </div>
+        </div>
+
         {/* Adresse */}
         <div className="flex items-start gap-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
@@ -3006,7 +3288,7 @@ function Step6Confirmation({
           </div>
           <div className="text-right">
             <p className="text-sm text-muted-foreground">
-              {bookingData.duration}h × 25 CHF/h
+              {bookingData.duration}h × {hourlyRate} CHF/h
             </p>
             <Badge className="mt-1 bg-green-100 text-green-700">
               Paiement après intervention

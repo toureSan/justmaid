@@ -13,7 +13,7 @@ const defaultServices: Service[] = [
     slug: 'cleaning',
     description: 'Faites appel à nos femmes de ménage qualifiées pour un intérieur impeccable.',
     short_description: 'Nettoyage régulier ou ponctuel. Sols, vitres, cuisine, salle de bain...',
-    base_price: 25,
+    base_price: 45,
     price_unit: 'CHF/h',
     image_url: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600',
     emoji: '🧹',

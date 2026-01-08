@@ -48,7 +48,7 @@ const services = [
     description: "Faites appel à nos professionnels du ménage pour transformer votre intérieur. Que ce soit pour un nettoyage régulier ou un grand ménage ponctuel, notre équipe s'occupe de tout.",
     image: "/equipe-menage1.png",
     available: true,
-    price: "25 CHF/h",
+    price: "45 CHF/h",
     duration: "2 à 5 heures",
     href: "/booking/cleaning",
     features: [
