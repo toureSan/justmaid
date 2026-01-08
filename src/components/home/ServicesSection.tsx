@@ -35,7 +35,7 @@ const services = [
       "Séchage & repassage",
       "Livraison sous 48h",
     ],
-    price: "8 CHF/kg",
+    price: "",
   },
   {
     id: "ironing",
@@ -51,7 +51,7 @@ const services = [
       "Qualité pressing",
       "Livraison incluse",
     ],
-    price: "2 CHF/pièce",
+    price: "",
   },
 ];
 
@@ -123,7 +123,7 @@ function ServiceCard({ service }: ServiceCardProps) {
         {/* Price tag */}
         <div className="absolute bottom-5 left-5">
           <p className="text-xl sm:text-2xl font-bold text-white">
-            À partir de {service.price}
+            {service.price ? `À partir de ${service.price}` : "Prix bientôt disponible"}
           </p>
         </div>
       </div>

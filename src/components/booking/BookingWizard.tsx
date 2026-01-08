@@ -152,6 +152,17 @@ export function BookingWizard() {
   // Mobile price details modal
   const [showMobilePriceDetails, setShowMobilePriceDetails] = React.useState(false);
 
+  // Fonction pour réinitialiser le formulaire
+  const resetBooking = React.useCallback(() => {
+    setBookingData(initialBookingData);
+    setCurrentStep(1);
+    // Nettoyer localStorage
+    localStorage.removeItem("bookingWizardData");
+    localStorage.removeItem("bookingWizardStep");
+    localStorage.removeItem("bookingInProgress");
+    localStorage.removeItem("bookingDraft");
+  }, []);
+
   // Charger l'utilisateur au montage (Supabase ou localStorage)
   React.useEffect(() => {
     const loadUser = async () => {
@@ -491,9 +502,26 @@ export function BookingWizard() {
         />
       )}
 
-      {/* Afficher l'utilisateur connecté - version compacte avec lien dashboard */}
-      {isAuthenticated && user && (
-        <div className="mb-4 flex items-center justify-end gap-2 text-sm">
+      {/* Barre d'outils : utilisateur connecté + bouton réinitialiser */}
+      <div className="mb-4 flex items-center justify-between gap-2 text-sm">
+        {/* Bouton Nouvelle réservation (si des données existent) */}
+        {(bookingData.date || bookingData.postalCode || currentStep > 1) && (
+          <button
+            onClick={resetBooking}
+            className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors text-xs"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Nouvelle réservation
+          </button>
+        )}
+        
+        {/* Spacer si pas de bouton reset */}
+        {!(bookingData.date || bookingData.postalCode || currentStep > 1) && <div />}
+        
+        {/* Utilisateur connecté */}
+        {isAuthenticated && user ? (
           <button
             onClick={() => navigate({ to: "/dashboard", search: { tab: "home", success: undefined } })}
             className="flex items-center gap-2 rounded-full bg-white border border-gray-200 px-3 py-1.5 hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer shadow-sm"
@@ -510,8 +538,10 @@ export function BookingWizard() {
             <span className="text-gray-700 font-medium">{user.name}</span>
             <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} className="h-4 w-4 text-green-500" />
           </button>
-        </div>
-      )}
+        ) : (
+          <div />
+        )}
+      </div>
 
       {/* Mobile Step Indicator */}
       <div className="lg:hidden mb-6">
@@ -1035,28 +1065,44 @@ function Step1Address({
   });
   const [quoteSent, setQuoteSent] = React.useState(false);
 
+  const [isSubmittingQuote, setIsSubmittingQuote] = React.useState(false);
+  const [quoteError, setQuoteError] = React.useState<string | null>(null);
+
   const handleQuoteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Envoyer le devis par email
+    setIsSubmittingQuote(true);
+    setQuoteError(null);
+    
     try {
-      const response = await fetch("https://nykmhyrsgsxkinsojosh.supabase.co/functions/v1/send-booking-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          to: "contact@justmaid.ch",
-          subject: `Demande de devis - Nettoyage de bureau - ${quoteFormData.companyName}`,
-          template: "quote_request",
-          data: {
-            ...quoteFormData,
-            type: "Nettoyage de bureau",
-          },
-        }),
-      });
-      if (response.ok) {
-        setQuoteSent(true);
+      // Insérer la demande de devis dans Supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (getSupabase() as any)
+        .from('quote_requests')
+        .insert({
+          company_name: quoteFormData.companyName,
+          contact_name: quoteFormData.contactName,
+          email: quoteFormData.email,
+          phone: quoteFormData.phone,
+          address: quoteFormData.address,
+          surface_area: quoteFormData.surfaceArea || null,
+          frequency: quoteFormData.frequency || null,
+          message: quoteFormData.message || null,
+          status: 'pending',
+        });
+
+      if (error) {
+        console.error("Erreur insertion devis:", error);
+        setQuoteError("Une erreur est survenue. Veuillez réessayer.");
+        setIsSubmittingQuote(false);
+        return;
       }
+
+      setQuoteSent(true);
+      setIsSubmittingQuote(false);
     } catch (error) {
       console.error("Erreur envoi devis:", error);
+      setQuoteError("Une erreur est survenue. Veuillez réessayer.");
+      setIsSubmittingQuote(false);
     }
   };
 
@@ -1243,8 +1289,13 @@ function Step1Address({
                     rows={3}
                   />
                 </div>
-                <Button type="submit" className="w-full h-12">
-                  Envoyer ma demande de devis
+                {quoteError && (
+                  <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
+                    {quoteError}
+                  </div>
+                )}
+                <Button type="submit" className="w-full h-12" disabled={isSubmittingQuote}>
+                  {isSubmittingQuote ? "Envoi en cours..." : "Envoyer ma demande de devis"}
                 </Button>
               </form>
             </>

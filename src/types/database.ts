@@ -328,6 +328,48 @@ export interface Database {
           updated_at?: string;
         };
       };
+      quote_requests: {
+        Row: {
+          id: string;
+          company_name: string;
+          contact_name: string;
+          email: string;
+          phone: string;
+          address: string;
+          surface_area: string | null;
+          frequency: string | null;
+          message: string | null;
+          status: 'pending' | 'contacted' | 'quoted' | 'accepted' | 'rejected';
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_name: string;
+          contact_name: string;
+          email: string;
+          phone: string;
+          address: string;
+          surface_area?: string | null;
+          frequency?: string | null;
+          message?: string | null;
+          status?: 'pending' | 'contacted' | 'quoted' | 'accepted' | 'rejected';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          company_name?: string;
+          contact_name?: string;
+          email?: string;
+          phone?: string;
+          address?: string;
+          surface_area?: string | null;
+          frequency?: string | null;
+          message?: string | null;
+          status?: 'pending' | 'contacted' | 'quoted' | 'accepted' | 'rejected';
+          updated_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -364,3 +406,7 @@ export type Review = Database['public']['Tables']['reviews']['Row'];
 export type Subscription = Database['public']['Tables']['subscriptions']['Row'];
 export type SubscriptionInsert = Database['public']['Tables']['subscriptions']['Insert'];
 export type SubscriptionUpdate = Database['public']['Tables']['subscriptions']['Update'];
+
+export type QuoteRequest = Database['public']['Tables']['quote_requests']['Row'];
+export type QuoteRequestInsert = Database['public']['Tables']['quote_requests']['Insert'];
+export type QuoteRequestUpdate = Database['public']['Tables']['quote_requests']['Update'];
