@@ -4,44 +4,82 @@
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 
-  <!-- Homepage -->
+  <!-- Homepage - Priority MAX -->
   <url>
     <loc>https://justmaid.ch/</loc>
-    <lastmod>2026-01-03</lastmod>
+    <lastmod>2026-01-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
 
-  <!-- Services -->
+  <!-- Services - Page pilier -->
   <url>
     <loc>https://justmaid.ch/services</loc>
-    <lastmod>2026-01-03</lastmod>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-01-09</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
-  <!-- How it works -->
+  <!-- How it works - Page importante -->
   <url>
     <loc>https://justmaid.ch/how-it-works</loc>
-    <lastmod>2026-01-03</lastmod>
+    <lastmod>2026-01-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
-  <!-- Help / FAQ -->
+  <!-- Booking Cleaning - Conversion page -->
+  <url>
+    <loc>https://justmaid.ch/booking/cleaning</loc>
+    <lastmod>2026-01-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- FAQ / Aide - Important for sitelinks -->
   <url>
     <loc>https://justmaid.ch/aide</loc>
-    <lastmod>2026-01-03</lastmod>
+    <lastmod>2026-01-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- À propos - Trust page -->
+  <url>
+    <loc>https://justmaid.ch/a-propos</loc>
+    <lastmod>2026-01-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
-  <!-- Booking (for discovery, noindex on page) -->
+  <!-- Devenir intervenant - Recrutement -->
   <url>
-    <loc>https://justmaid.ch/booking/cleaning</loc>
-    <lastmod>2026-01-03</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
+    <loc>https://justmaid.ch/devenir-intervenant</loc>
+    <lastmod>2026-01-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Pages légales -->
+  <url>
+    <loc>https://justmaid.ch/cgv</loc>
+    <lastmod>2026-01-09</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <url>
+    <loc>https://justmaid.ch/confidentialite</loc>
+    <lastmod>2026-01-09</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <url>
+    <loc>https://justmaid.ch/mentions-legales</loc>
+    <lastmod>2026-01-09</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
   </url>
 
 </urlset>

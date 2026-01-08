@@ -168,6 +168,72 @@ export const Route = createRootRoute({
       },
     ],
     scripts: [
+      // JSON-LD Organization (for brand sitelinks)
+      {
+        type: 'application/ld+json',
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "@id": `${SITE_URL}/#organization`,
+          "name": "Justmaid",
+          "url": SITE_URL,
+          "logo": {
+            "@type": "ImageObject",
+            "url": `${SITE_URL}/logo512.png`,
+            "width": 512,
+            "height": 512
+          },
+          "image": `${SITE_URL}/menage-equipe6.png`,
+          "description": DEFAULT_DESCRIPTION,
+          "email": "contact@justmaid.ch",
+          "telephone": "+41 22 792 67 23",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Rte de Mon-Idée",
+            "addressLocality": "Thônex",
+            "postalCode": "1226",
+            "addressRegion": "GE",
+            "addressCountry": "CH"
+          },
+          "sameAs": [
+            "https://www.facebook.com/justmaid",
+            "https://www.instagram.com/justmaid",
+            "https://www.linkedin.com/company/justmaid",
+            "https://www.tiktok.com/@justmaid"
+          ],
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+41 22 792 67 23",
+            "contactType": "customer service",
+            "availableLanguage": ["French", "English"],
+            "areaServed": "CH"
+          }
+        }),
+      },
+      // JSON-LD WebSite + SearchAction (for sitelinks search box)
+      {
+        type: 'application/ld+json',
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "@id": `${SITE_URL}/#website`,
+          "url": SITE_URL,
+          "name": "Justmaid",
+          "description": DEFAULT_DESCRIPTION,
+          "publisher": {
+            "@id": `${SITE_URL}/#organization`
+          },
+          "inLanguage": "fr-CH",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": `${SITE_URL}/aide?q={search_term_string}`
+            },
+            "query-input": "required name=search_term_string"
+          }
+        }),
+      },
       // JSON-LD Structured Data for Local Business
       {
         type: 'application/ld+json',
