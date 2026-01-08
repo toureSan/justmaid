@@ -9,9 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TarifsRouteImport } from './routes/tarifs'
 import { Route as ServicesRouteImport } from './routes/services'
+import { Route as NyonRouteImport } from './routes/nyon'
+import { Route as NettoyageBureauRouteImport } from './routes/nettoyage-bureau'
 import { Route as MentionsLegalesRouteImport } from './routes/mentions-legales'
+import { Route as MenageFinDeBailRouteImport } from './routes/menage-fin-de-bail'
+import { Route as MenageDomicileRouteImport } from './routes/menage-domicile'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as GeneveRouteImport } from './routes/geneve'
 import { Route as DevenirIntervenantRouteImport } from './routes/devenir-intervenant'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ConfidentialiteRouteImport } from './routes/confidentialite'
@@ -26,9 +32,24 @@ import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 
+const TarifsRoute = TarifsRouteImport.update({
+  id: '/tarifs',
+  path: '/tarifs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ServicesRoute = ServicesRouteImport.update({
   id: '/services',
   path: '/services',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NyonRoute = NyonRouteImport.update({
+  id: '/nyon',
+  path: '/nyon',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NettoyageBureauRoute = NettoyageBureauRouteImport.update({
+  id: '/nettoyage-bureau',
+  path: '/nettoyage-bureau',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MentionsLegalesRoute = MentionsLegalesRouteImport.update({
@@ -36,9 +57,24 @@ const MentionsLegalesRoute = MentionsLegalesRouteImport.update({
   path: '/mentions-legales',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MenageFinDeBailRoute = MenageFinDeBailRouteImport.update({
+  id: '/menage-fin-de-bail',
+  path: '/menage-fin-de-bail',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MenageDomicileRoute = MenageDomicileRouteImport.update({
+  id: '/menage-domicile',
+  path: '/menage-domicile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HowItWorksRoute = HowItWorksRouteImport.update({
   id: '/how-it-works',
   path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GeneveRoute = GeneveRouteImport.update({
+  id: '/geneve',
+  path: '/geneve',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DevenirIntervenantRoute = DevenirIntervenantRouteImport.update({
@@ -115,9 +151,15 @@ export interface FileRoutesByFullPath {
   '/confidentialite': typeof ConfidentialiteRoute
   '/dashboard': typeof DashboardRoute
   '/devenir-intervenant': typeof DevenirIntervenantRoute
+  '/geneve': typeof GeneveRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/menage-domicile': typeof MenageDomicileRoute
+  '/menage-fin-de-bail': typeof MenageFinDeBailRoute
   '/mentions-legales': typeof MentionsLegalesRoute
+  '/nettoyage-bureau': typeof NettoyageBureauRoute
+  '/nyon': typeof NyonRoute
   '/services': typeof ServicesRoute
+  '/tarifs': typeof TarifsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
@@ -133,9 +175,15 @@ export interface FileRoutesByTo {
   '/confidentialite': typeof ConfidentialiteRoute
   '/dashboard': typeof DashboardRoute
   '/devenir-intervenant': typeof DevenirIntervenantRoute
+  '/geneve': typeof GeneveRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/menage-domicile': typeof MenageDomicileRoute
+  '/menage-fin-de-bail': typeof MenageFinDeBailRoute
   '/mentions-legales': typeof MentionsLegalesRoute
+  '/nettoyage-bureau': typeof NettoyageBureauRoute
+  '/nyon': typeof NyonRoute
   '/services': typeof ServicesRoute
+  '/tarifs': typeof TarifsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
@@ -152,9 +200,15 @@ export interface FileRoutesById {
   '/confidentialite': typeof ConfidentialiteRoute
   '/dashboard': typeof DashboardRoute
   '/devenir-intervenant': typeof DevenirIntervenantRoute
+  '/geneve': typeof GeneveRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/menage-domicile': typeof MenageDomicileRoute
+  '/menage-fin-de-bail': typeof MenageFinDeBailRoute
   '/mentions-legales': typeof MentionsLegalesRoute
+  '/nettoyage-bureau': typeof NettoyageBureauRoute
+  '/nyon': typeof NyonRoute
   '/services': typeof ServicesRoute
+  '/tarifs': typeof TarifsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
@@ -172,9 +226,15 @@ export interface FileRouteTypes {
     | '/confidentialite'
     | '/dashboard'
     | '/devenir-intervenant'
+    | '/geneve'
     | '/how-it-works'
+    | '/menage-domicile'
+    | '/menage-fin-de-bail'
     | '/mentions-legales'
+    | '/nettoyage-bureau'
+    | '/nyon'
     | '/services'
+    | '/tarifs'
     | '/auth/callback'
     | '/auth/forgot-password'
     | '/auth/login'
@@ -190,9 +250,15 @@ export interface FileRouteTypes {
     | '/confidentialite'
     | '/dashboard'
     | '/devenir-intervenant'
+    | '/geneve'
     | '/how-it-works'
+    | '/menage-domicile'
+    | '/menage-fin-de-bail'
     | '/mentions-legales'
+    | '/nettoyage-bureau'
+    | '/nyon'
     | '/services'
+    | '/tarifs'
     | '/auth/callback'
     | '/auth/forgot-password'
     | '/auth/login'
@@ -208,9 +274,15 @@ export interface FileRouteTypes {
     | '/confidentialite'
     | '/dashboard'
     | '/devenir-intervenant'
+    | '/geneve'
     | '/how-it-works'
+    | '/menage-domicile'
+    | '/menage-fin-de-bail'
     | '/mentions-legales'
+    | '/nettoyage-bureau'
+    | '/nyon'
     | '/services'
+    | '/tarifs'
     | '/auth/callback'
     | '/auth/forgot-password'
     | '/auth/login'
@@ -227,9 +299,15 @@ export interface RootRouteChildren {
   ConfidentialiteRoute: typeof ConfidentialiteRoute
   DashboardRoute: typeof DashboardRoute
   DevenirIntervenantRoute: typeof DevenirIntervenantRoute
+  GeneveRoute: typeof GeneveRoute
   HowItWorksRoute: typeof HowItWorksRoute
+  MenageDomicileRoute: typeof MenageDomicileRoute
+  MenageFinDeBailRoute: typeof MenageFinDeBailRoute
   MentionsLegalesRoute: typeof MentionsLegalesRoute
+  NettoyageBureauRoute: typeof NettoyageBureauRoute
+  NyonRoute: typeof NyonRoute
   ServicesRoute: typeof ServicesRoute
+  TarifsRoute: typeof TarifsRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthLoginRoute: typeof AuthLoginRoute
@@ -240,11 +318,32 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tarifs': {
+      id: '/tarifs'
+      path: '/tarifs'
+      fullPath: '/tarifs'
+      preLoaderRoute: typeof TarifsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/services': {
       id: '/services'
       path: '/services'
       fullPath: '/services'
       preLoaderRoute: typeof ServicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nyon': {
+      id: '/nyon'
+      path: '/nyon'
+      fullPath: '/nyon'
+      preLoaderRoute: typeof NyonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nettoyage-bureau': {
+      id: '/nettoyage-bureau'
+      path: '/nettoyage-bureau'
+      fullPath: '/nettoyage-bureau'
+      preLoaderRoute: typeof NettoyageBureauRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mentions-legales': {
@@ -254,11 +353,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MentionsLegalesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/menage-fin-de-bail': {
+      id: '/menage-fin-de-bail'
+      path: '/menage-fin-de-bail'
+      fullPath: '/menage-fin-de-bail'
+      preLoaderRoute: typeof MenageFinDeBailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/menage-domicile': {
+      id: '/menage-domicile'
+      path: '/menage-domicile'
+      fullPath: '/menage-domicile'
+      preLoaderRoute: typeof MenageDomicileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/how-it-works': {
       id: '/how-it-works'
       path: '/how-it-works'
       fullPath: '/how-it-works'
       preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/geneve': {
+      id: '/geneve'
+      path: '/geneve'
+      fullPath: '/geneve'
+      preLoaderRoute: typeof GeneveRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/devenir-intervenant': {
@@ -363,9 +483,15 @@ const rootRouteChildren: RootRouteChildren = {
   ConfidentialiteRoute: ConfidentialiteRoute,
   DashboardRoute: DashboardRoute,
   DevenirIntervenantRoute: DevenirIntervenantRoute,
+  GeneveRoute: GeneveRoute,
   HowItWorksRoute: HowItWorksRoute,
+  MenageDomicileRoute: MenageDomicileRoute,
+  MenageFinDeBailRoute: MenageFinDeBailRoute,
   MentionsLegalesRoute: MentionsLegalesRoute,
+  NettoyageBureauRoute: NettoyageBureauRoute,
+  NyonRoute: NyonRoute,
   ServicesRoute: ServicesRoute,
+  TarifsRoute: TarifsRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,

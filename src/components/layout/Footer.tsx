@@ -83,7 +83,7 @@ export function Footer() {
               <ul className="space-y-2">
                 <li>
                   <Link
-                    to="/booking/cleaning"
+                    to="/menage-domicile"
                     className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     Ménage à domicile
@@ -91,24 +91,51 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    to="/booking/laundry"
+                    to="/menage-fin-de-bail"
                     className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
-                    Pressing & Blanchisserie
+                    Ménage fin de bail
                   </Link>
                 </li>
                 <li>
-                  <span className="text-sm text-muted-foreground">
-                    Repassage
-                  </span>
+                  <Link
+                    to="/nettoyage-bureau"
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    Nettoyage bureaux
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/tarifs"
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    Tarifs
+                  </Link>
                 </li>
               </ul>
             </div>
 
-            {/* Entreprise */}
+            {/* Régions */}
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-foreground">Entreprise</h3>
+              <h3 className="text-sm font-semibold text-foreground">Régions</h3>
               <ul className="space-y-2">
+                <li>
+                  <Link
+                    to="/geneve"
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    Genève
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/nyon"
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    Nyon & La Côte
+                  </Link>
+                </li>
                 <li>
                   <Link
                     to="/a-propos"
@@ -130,7 +157,7 @@ export function Footer() {
                     to="/aide"
                     className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
-                    Contact
+                    Contact & FAQ
                   </Link>
                 </li>
               </ul>
