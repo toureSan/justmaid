@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowRight01Icon, ArrowLeft02Icon, ArrowRight02Icon } from "@hugeicons/core-free-icons";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
@@ -8,9 +9,9 @@ import * as React from "react";
 const services = [
   {
     id: "cleaning",
-    title: "Ménage à domicile",
-    emoji: "🧹",
-    description: "Faites appel à nos femmes de ménage qualifiées pour un intérieur impeccable. Disponible dans la journée.",
+    title: "Ménage à domicile 🧹",
+    description:
+      "Faites appel à nos femmes de ménage qualifiées pour un intérieur impeccable. Disponible dans la journée.",
     image: "/equipe-menage1.png",
     href: "/menage-domicile",
     available: true,
@@ -21,13 +22,13 @@ const services = [
       "Produits à fournir par le client",
       "Réservation flexible",
     ],
-    price: "45 CHF/h",
+    price: "À partir de 45 CHF/h",
   },
   {
     id: "fin-bail",
-    title: "Ménage fin de bail",
-    emoji: "🔑",
-    description: "Récupérez votre garantie locative avec notre nettoyage complet aux standards suisses.",
+    title: "Ménage fin de bail 🔑",
+    description:
+      "Récupérez votre garantie locative avec notre nettoyage complet aux standards suisses.",
     image: "/equipe-menage3.png",
     href: "/menage-fin-de-bail",
     available: true,
@@ -38,13 +39,13 @@ const services = [
       "Garantie récupérée",
       "Devis gratuit",
     ],
-    price: "45 CHF/h",
+    price: "À partir de 45 CHF/h",
   },
   {
     id: "bureaux",
-    title: "Nettoyage de bureaux",
-    emoji: "🏢",
-    description: "Entretien professionnel de vos locaux commerciaux. Devis personnalisé.",
+    title: "Nettoyage de bureaux 🏢",
+    description:
+      "Entretien professionnel de vos locaux commerciaux. Devis personnalisé.",
     image: "/menage-equipe6.png",
     href: "/nettoyage-bureau",
     available: true,
@@ -59,9 +60,9 @@ const services = [
   },
   {
     id: "laundry",
-    title: "Pressing & Blanchisserie",
-    emoji: "👔",
-    description: "Nous récupérons vos vêtements, les lavons, séchons et repassons. Livraison à domicile.",
+    title: "Pressing & Blanchisserie 👔",
+    description:
+      "Nous récupérons vos vêtements, les lavons, séchons et repassons. Livraison à domicile.",
     image: "/lavage-menage.png",
     href: "/booking/laundry",
     available: false,
@@ -73,12 +74,13 @@ const services = [
       "Livraison sous 48h",
     ],
     price: "",
+    comingSoon: true,
   },
   {
     id: "ironing",
-    title: "Repassage",
-    emoji: "✨",
-    description: "Service de repassage professionnel pour tous vos vêtements et linges de maison.",
+    title: "Repassage ✨",
+    description:
+      "Service de repassage professionnel pour tous vos vêtements et linges de maison.",
     image: "/repassage-menage.png",
     href: "/booking/laundry",
     available: false,
@@ -90,6 +92,7 @@ const services = [
       "Livraison incluse",
     ],
     price: "",
+    comingSoon: true,
   },
 ];
 
@@ -99,7 +102,7 @@ export function ServicesSection() {
   
   const scroll = (direction: 'left' | 'right') => {
     if (sliderRef.current) {
-      const scrollAmount = 400; // Largeur d'une carte + gap
+      const scrollAmount = 400;
       sliderRef.current.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth'
@@ -108,21 +111,21 @@ export function ServicesSection() {
   };
   
   return (
-    <section className="py-12 sm:py-16 lg:py-24 bg-background">
+    <section className="py-16 sm:py-24">
       <div ref={sectionRef} className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className={`mb-8 sm:mb-12 flex items-end justify-between scroll-animate scroll-fade-up ${isVisible ? 'animate-in' : ''}`}>
-          <div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground font-bricolage-grotesque">
+        <div className={`mb-12 flex items-end justify-between scroll-animate scroll-fade-up ${isVisible ? 'animate-in' : ''}`}>
+          <div className="mx-auto max-w-2xl text-center lg:mx-0 lg:text-left">
+            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
               Nos services professionnels 💼
             </h2>
-            <p className="mt-4 text-lg text-muted-foreground max-w-2xl">
+            <p className="mt-4 text-lg text-muted-foreground">
               Des services de qualité pour simplifier votre quotidien
             </p>
           </div>
           
           {/* Navigation Arrows */}
-          <div className="hidden sm:flex items-center gap-2">
+          <div className="hidden lg:flex items-center gap-2">
             <button 
               onClick={() => scroll('left')}
               className="flex items-center justify-center w-12 h-12 rounded-full border-2 border-border hover:border-primary hover:bg-primary/5 transition-colors"
@@ -149,8 +152,8 @@ export function ServicesSection() {
           {services.map((service, index) => (
             <div 
               key={service.id}
-              className={`flex-shrink-0 w-[380px] snap-start scroll-animate scroll-fade-up ${isVisible ? 'animate-in' : ''}`}
-              style={{ animationDelay: `${(index + 1) * 0.1}s` }}
+              className={`shrink-0 w-[400px] snap-start scroll-animate scroll-fade-up ${isVisible ? 'animate-in' : ''}`}
+              style={{ animationDelay: `${index * 100}ms` }}
             >
               <ServiceCard service={service} />
             </div>
@@ -158,7 +161,7 @@ export function ServicesSection() {
         </div>
         
         {/* Mobile scroll indicator */}
-        <div className="flex justify-center mt-4 sm:hidden">
+        <div className="flex justify-center mt-4 lg:hidden">
           <p className="text-sm text-muted-foreground">← Glissez pour voir plus →</p>
         </div>
       </div>
@@ -172,35 +175,35 @@ interface ServiceCardProps {
 
 function ServiceCard({ service }: ServiceCardProps) {
   return (
-    <div className="group h-full flex flex-col bg-white rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
-      {/* Large Image */}
-      <div className="relative overflow-hidden h-[280px]">
+    <div className="group relative h-full flex flex-col overflow-hidden rounded-2xl border border-border/50 bg-card transition-all duration-300 hover:border-primary/30 hover:shadow-lg">
+      {/* Image */}
+      <div className="relative h-80 overflow-hidden">
         <img
           src={service.image}
           alt={service.title}
           className={`h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105 ${
-            !service.available ? "grayscale-[30%]" : ""
+            !service.available ? "grayscale-30" : ""
           }`}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
         
-        {/* Badge */}
-        <div className="absolute top-4 right-4">
-          {service.onQuote ? (
-            <span className="bg-blue-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg">
-              Sur devis
-            </span>
-          ) : service.available ? (
-            <span className="bg-green-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
-              <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-              Disponible
-            </span>
-          ) : (
-            <span className="bg-primary/90 text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-lg">
-              Bientôt disponible
-            </span>
-          )}
-        </div>
+        {service.onQuote && (
+          <Badge className="absolute right-4 top-4 bg-blue-500 text-white">
+            Sur devis
+          </Badge>
+        )}
+        
+        {service.comingSoon && (
+          <Badge className="absolute right-4 top-4 bg-white/90 text-primary">
+            Bientôt disponible
+          </Badge>
+        )}
+        
+        {service.available && !service.onQuote && (
+          <Badge className="absolute right-4 top-4 bg-green-500 text-white">
+            Disponible
+          </Badge>
+        )}
         
         {/* Price tag */}
         <div className="absolute bottom-4 left-4">
@@ -211,31 +214,29 @@ function ServiceCard({ service }: ServiceCardProps) {
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col p-5">
-        <div className="mb-3">
-          <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
-            {service.title} <span>{service.emoji}</span>
-          </h3>
-          <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+      <div className="flex-1 flex flex-col space-y-4 p-6">
+        <div>
+          <h3 className="text-2xl font-bold text-foreground">{service.title}</h3>
+          <p className="mt-2 text-base text-muted-foreground">
             {service.description}
           </p>
         </div>
 
         {/* Features */}
-        <ul className="space-y-2 flex-1 mb-4">
+        <ul className="space-y-2.5 flex-1">
           {service.features.map((feature) => (
             <li
               key={feature}
-              className="flex items-center gap-2 text-sm text-muted-foreground"
+              className="flex items-center gap-2.5 text-base text-muted-foreground"
             >
-              <span className="h-2 w-2 rounded-full bg-justmaid-turquoise shrink-0" />
+              <span className="h-2 w-2 rounded-full bg-primary" />
               {feature}
             </li>
           ))}
         </ul>
 
-        {/* CTA */}
-        <div className="mt-auto">
+        {/* CTA - Always at bottom */}
+        <div className="pt-4">
           {service.available ? (
             <Link to={service.href}>
               <Button className="w-full rounded-full h-12 text-base">
