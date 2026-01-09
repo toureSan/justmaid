@@ -93,11 +93,11 @@ const categories = [
       },
       {
         question: "Comment obtenir une facture ?",
-        answer: "Les factures sont automatiquement envoyées par email après chaque intervention. Vous pouvez également les télécharger depuis votre espace client dans la section 'Historique'.",
+        answer: "Les factures sont automatiquement envoyées par email après chaque intervention.",
       },
       {
         question: "Proposez-vous des abonnements ?",
-        answer: "Oui ! Nous proposerons bientôt des formules d'abonnement avec des tarifs préférentiels pour les ménages réguliers (hebdomadaires ou bimensuels).",
+        answer: "Oui ! Nous proposons des formules d'abonnement avec des tarifs préférentiels pour les ménages réguliers (hebdomadaires ou bimensuels).",
       },
     ],
   },
@@ -113,7 +113,7 @@ const categories = [
       },
       {
         question: "L'intervenant apporte-t-il les produits ?",
-        answer: "Par défaut, nos intervenants utilisent leurs propres produits écologiques. Vous pouvez demander à utiliser vos produits lors de la réservation si vous préférez.",
+        answer: "Nos intervenants n'apportent pas de produits. Vous devez mettre à disposition vos produits ménagers et équipements (aspirateur, serpillière, etc.). Cela vous permet de choisir les produits que vous préférez pour votre intérieur.",
       },
       {
         question: "Puis-je demander le même intervenant ?",
