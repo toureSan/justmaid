@@ -11,7 +11,7 @@ const services = [
     id: "cleaning",
     title: "Ménage à domicile 🧹",
     description:
-      "Faites appel à nos femmes de ménage qualifiées pour un intérieur impeccable. Disponible dans la journée.",
+      "Faites appel à nos femmes et hommes de ménage qualifiés pour un intérieur impeccable. Disponible dans la journée.",
     image: "/equipe-menage1.png",
     href: "/menage-domicile",
     available: true,

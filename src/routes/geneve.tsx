@@ -13,10 +13,10 @@ import {
 export const Route = createFileRoute("/geneve")({
   head: () => ({
     meta: [
-      { title: "Femme de ménage Genève | Service de ménage dès 45 CHF/h | Justmaid" },
-      { name: "description", content: "Trouvez une femme de ménage à Genève. Service professionnel, personnel vérifié et assuré. Intervention dans tous les quartiers de Genève. Réservation en ligne, dès 45 CHF/h." },
-      { name: "keywords", content: "femme de ménage genève, aide ménagère genève, ménage genève, nettoyage appartement genève, service ménage genève" },
-      { property: "og:title", content: "Femme de ménage Genève | Justmaid" },
+      { title: "Femme & Homme de ménage Genève | Service de ménage dès 45 CHF/h | Justmaid" },
+      { name: "description", content: "Trouvez une femme ou un homme de ménage à Genève. Service professionnel, personnel vérifié et assuré. Intervention dans tous les quartiers de Genève. Réservation en ligne, dès 45 CHF/h." },
+      { name: "keywords", content: "femme de ménage genève, homme de ménage genève, aide ménagère genève, ménage genève, nettoyage appartement genève, service ménage genève" },
+      { property: "og:title", content: "Femme & Homme de ménage Genève | Justmaid" },
       { property: "og:description", content: "Service de ménage professionnel à Genève. Personnel vérifié, dès 45 CHF/h." },
       { property: "og:url", content: "https://justmaid.ch/geneve" },
     ],
@@ -106,7 +106,7 @@ function GenevePage() {
               📍 Canton de Genève
             </span>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground font-bricolage-grotesque leading-tight mb-6">
-              Femme de ménage<br />
+              Femme & Homme de ménage<br />
               <span className="text-blue-600">à Genève</span>
             </h1>
             <p className="text-lg text-muted-foreground mb-8 max-w-xl">

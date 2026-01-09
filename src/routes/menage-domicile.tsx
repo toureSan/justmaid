@@ -15,7 +15,7 @@ export const Route = createFileRoute("/menage-domicile")({
     meta: [
       { title: "Ménage à domicile Genève & Nyon | Dès 45 CHF/h | Justmaid" },
       { name: "description", content: "Service de ménage à domicile professionnel à Genève et Nyon. Femmes et hommes de ménage qualifiés, vérifiés et assurés. Réservation en ligne, intervention dès demain. 45 CHF/heure." },
-      { name: "keywords", content: "ménage à domicile genève, femme de ménage nyon, aide ménagère suisse, nettoyage appartement, ménage maison genève" },
+      { name: "keywords", content: "ménage à domicile genève, femme de ménage nyon, homme de ménage nyon, aide ménagère suisse, nettoyage appartement, ménage maison genève" },
       { property: "og:title", content: "Ménage à domicile Genève & Nyon | Justmaid" },
       { property: "og:description", content: "Service de ménage professionnel à domicile. Personnel qualifié et vérifié. Dès 45 CHF/h." },
       { property: "og:url", content: "https://justmaid.ch/menage-domicile" },
@@ -202,7 +202,7 @@ function MenageDomicilePage() {
             <div className="relative">
               <img 
                 src="/femme-menage.png" 
-                alt="Femme de ménage Justmaid en action" 
+                alt="Personnel de ménage Justmaid en action" 
                 className="rounded-3xl shadow-xl w-full"
               />
             </div>

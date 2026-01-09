@@ -32,7 +32,7 @@ export const Route = createRootRoute({
       // SEO Keywords
       {
         name: 'keywords',
-        content: 'femme de ménage genève, aide ménagère nyon, ménage à domicile suisse, nettoyage appartement genève, service ménage lausanne, pressing domicile, repassage à domicile, entreprise nettoyage genève',
+        content: 'femme de ménage genève, homme de ménage genève, aide ménagère nyon, ménage à domicile suisse, nettoyage appartement genève, service ménage lausanne, pressing domicile, repassage à domicile, entreprise nettoyage genève',
       },
       // Robots
       {

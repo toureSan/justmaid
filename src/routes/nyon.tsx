@@ -13,10 +13,10 @@ import {
 export const Route = createFileRoute("/nyon")({
   head: () => ({
     meta: [
-      { title: "Femme de ménage Nyon | Service de ménage dès 45 CHF/h | Justmaid" },
-      { name: "description", content: "Femme de ménage à Nyon et environs. Service professionnel de ménage à domicile. Personnel qualifié, vérifié et assuré. Réservation en ligne simple. Dès 45 CHF/h." },
-      { name: "keywords", content: "femme de ménage nyon, aide ménagère nyon, ménage nyon, nettoyage appartement nyon, service ménage la côte" },
-      { property: "og:title", content: "Femme de ménage Nyon | Justmaid" },
+      { title: "Femme & Homme de ménage Nyon | Service de ménage dès 45 CHF/h | Justmaid" },
+      { name: "description", content: "Femme et homme de ménage à Nyon et environs. Service professionnel de ménage à domicile. Personnel qualifié, vérifié et assuré. Réservation en ligne simple. Dès 45 CHF/h." },
+      { name: "keywords", content: "femme de ménage nyon, homme de ménage nyon, aide ménagère nyon, ménage nyon, nettoyage appartement nyon, service ménage la côte" },
+      { property: "og:title", content: "Femme & Homme de ménage Nyon | Justmaid" },
       { property: "og:description", content: "Service de ménage professionnel à Nyon. Personnel vérifié, dès 45 CHF/h." },
       { property: "og:url", content: "https://justmaid.ch/nyon" },
     ],
@@ -106,7 +106,7 @@ function NyonPage() {
               📍 La Côte vaudoise
             </span>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground font-bricolage-grotesque leading-tight mb-6">
-              Femme de ménage<br />
+              Femme & Homme de ménage<br />
               <span className="text-green-600">à Nyon</span>
             </h1>
             <p className="text-lg text-muted-foreground mb-8 max-w-xl">
@@ -214,7 +214,7 @@ function NyonPage() {
             <div className="relative">
               <img 
                 src="/femme-menage.png" 
-                alt="Femme de ménage Justmaid à Nyon" 
+                alt="Personnel de ménage Justmaid à Nyon" 
                 className="rounded-3xl shadow-xl w-full"
               />
             </div>

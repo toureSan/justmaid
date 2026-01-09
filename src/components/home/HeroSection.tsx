@@ -85,7 +85,7 @@ export function HeroSection() {
               <div className="flex -space-x-3">
                 <img
                   src="/femme-2-menage.png"
-                  alt="Femme de ménage souriante"
+                  alt="Personnel de ménage souriant"
                   className="h-10 w-10 rounded-full border-2 border-white object-cover"
                 />
                 <img
@@ -269,7 +269,7 @@ function QuickBookingCard() {
           <div className="flex items-start gap-4">
             <img
               src="/femme-2-menage.png"
-              alt="Femme de ménage disponible"
+              alt="Personnel de ménage disponible"
               className="h-14 w-14 rounded-full object-cover ring-2 ring-primary"
             />
             <div className="flex-1">

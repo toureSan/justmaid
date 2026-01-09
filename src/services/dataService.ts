@@ -11,7 +11,7 @@ const defaultServices: Service[] = [
     id: '1',
     name: 'Ménage à domicile',
     slug: 'cleaning',
-    description: 'Faites appel à nos femmes de ménage qualifiées pour un intérieur impeccable.',
+    description: 'Faites appel à nos femmes et hommes de ménage qualifiés pour un intérieur impeccable.',
     short_description: 'Nettoyage régulier ou ponctuel. Sols, vitres, cuisine, salle de bain...',
     base_price: 45,
     price_unit: 'CHF/h',
