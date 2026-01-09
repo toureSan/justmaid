@@ -179,19 +179,35 @@ function NyonPage() {
               </h2>
               <div className="space-y-4">
                 {[
-                  { title: "Ménage à domicile", desc: "Nettoyage régulier ou ponctuel de votre appartement ou maison", link: "/menage-domicile" },
-                  { title: "Ménage fin de bail", desc: "Récupérez votre garantie locative avec notre nettoyage complet", link: "/menage-fin-de-bail" },
-                  { title: "Nettoyage de bureaux", desc: "Entretien professionnel de vos locaux commerciaux", link: "/nettoyage-bureau" },
+                  { title: "Ménage à domicile", desc: "Nettoyage régulier ou ponctuel de votre appartement ou maison", link: "/menage-domicile", available: true },
+                  { title: "Ménage fin de bail", desc: "Récupérez votre garantie locative avec notre nettoyage complet", link: "/menage-fin-de-bail", available: true },
+                  { title: "Nettoyage de bureaux", desc: "Entretien professionnel de vos locaux commerciaux", link: "/nettoyage-bureau", available: true },
+                  { title: "Pressing & Blanchisserie", desc: "Lavage, séchage et livraison de vos vêtements", link: "/booking/laundry", available: false },
+                  { title: "Repassage", desc: "Service de repassage professionnel à domicile", link: "/booking/laundry", available: false },
                 ].map((service, idx) => (
-                  <Link key={idx} to={service.link} className="block p-4 bg-white rounded-xl border border-border hover:border-green-500 hover:shadow-md transition-all">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-semibold text-foreground">{service.title}</h3>
-                        <p className="text-sm text-muted-foreground">{service.desc}</p>
+                  service.available ? (
+                    <Link key={idx} to={service.link} className="block p-4 bg-white rounded-xl border border-border hover:border-green-500 hover:shadow-md transition-all">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-semibold text-foreground">{service.title}</h3>
+                          <p className="text-sm text-muted-foreground">{service.desc}</p>
+                        </div>
+                        <HugeiconsIcon icon={ArrowRight01Icon} className="h-5 w-5 text-green-600" />
                       </div>
-                      <HugeiconsIcon icon={ArrowRight01Icon} className="h-5 w-5 text-green-600" />
+                    </Link>
+                  ) : (
+                    <div key={idx} className="block p-4 bg-gray-50 rounded-xl border border-border opacity-75">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-semibold text-foreground flex items-center gap-2">
+                            {service.title}
+                            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Bientôt</span>
+                          </h3>
+                          <p className="text-sm text-muted-foreground">{service.desc}</p>
+                        </div>
+                      </div>
                     </div>
-                  </Link>
+                  )
                 ))}
               </div>
             </div>
