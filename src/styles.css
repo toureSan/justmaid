@@ -349,13 +349,17 @@
 
 .article-content {
   color: oklch(0.45 0.02 260);
-  line-height: 1.75;
+  line-height: 1.8;
+  font-size: 1.125rem;
+  max-width: 100%;
 }
 
 /* Paragraphs */
 .article-content p {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
   color: oklch(0.45 0.02 260);
+  line-height: 1.9;
+  text-align: justify;
 }
 
 /* Headings */
@@ -475,10 +479,12 @@
 /* Images */
 .article-content img {
   width: 100%;
+  max-width: 1000px;
   height: auto;
-  margin: 2rem 0;
+  margin: 3rem auto;
+  display: block;
   border-radius: 1rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.15);
 }
 
 /* Blockquotes */

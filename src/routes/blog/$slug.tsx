@@ -67,7 +67,7 @@ function BlogArticlePage() {
     <>
       {/* Breadcrumb */}
       <div className="border-b border-border bg-muted/30">
-        <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 lg:px-8">
           <nav className="flex items-center gap-2 text-sm text-muted-foreground">
             <Link to="/" className="hover:text-foreground">
               Accueil
@@ -91,7 +91,7 @@ function BlogArticlePage() {
       </div>
 
       {/* Article Header */}
-      <article className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+      <article className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Category Badge */}
         <div className="mb-6">
           <Badge
@@ -168,7 +168,7 @@ function BlogArticlePage() {
 
         {/* Content */}
         <div
-          className="article-content prose prose-lg max-w-none"
+          className="article-content"
           dangerouslySetInnerHTML={{ __html: article.content }}
         />
 
