@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { BlogCard } from "@/components/blog";
 import { Clock04Icon, CalendarIcon, ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/blog/$slug")({
@@ -64,136 +64,163 @@ function BlogArticlePage() {
   }, [article]);
 
   // Convert Markdown to HTML
-  const contentHtml = React.useMemo(() => {
+  const contentHtml = useMemo(() => {
     let html = article.content;
 
+    // Normalize line endings
+    html = html.replace(/\r\n/g, '\n');
+
     // Images ![alt](url)
-    html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="w-full max-w-4xl mx-auto my-8 rounded-xl shadow-lg" />');
+    html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" />');
+
+    // HR first (before headers)
+    html = html.replace(/^---$/gim, '<hr>');
 
     // Headers (from most specific to least)
-    html = html.replace(/^#### (.*$)/gim, '<h4 class="text-xl font-bold mt-8 mb-4">$1</h4>');
-    html = html.replace(/^### (.*$)/gim, '<h3 class="text-2xl font-bold mt-10 mb-4">$1</h3>');
-    html = html.replace(/^## (.*$)/gim, '<h2 class="text-3xl font-bold mt-12 mb-6">$1</h2>');
-    html = html.replace(/^# (.*$)/gim, '<h1 class="text-4xl font-bold mt-8 mb-6">$1</h1>');
+    html = html.replace(/^#### (.+)$/gim, '<h4>$1</h4>');
+    html = html.replace(/^### (.+)$/gim, '<h3>$1</h3>');
+    html = html.replace(/^## (.+)$/gim, '<h2>$1</h2>');
+    html = html.replace(/^# (.+)$/gim, '<h1>$1</h1>');
 
     // Bold and italic
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
 
     // Links
-    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary hover:underline">$1</a>');
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
 
     // Blockquotes
-    html = html.replace(/^> (.*$)/gim, '<blockquote class="border-l-4 border-primary bg-muted/30 py-3 pl-6 my-6 italic">$1</blockquote>');
+    html = html.replace(/^> (.+)$/gim, '<blockquote>$1</blockquote>');
 
-    // Lists - unordered
+    // Process line by line for lists, tables and paragraphs
     const lines = html.split('\n');
-    const processedLines: string[] = [];
+    const result: string[] = [];
     let inList = false;
+    let inTable = false;
+    let tableHeaderDone = false;
+    let paragraphBuffer: string[] = [];
+
+    const flushParagraph = () => {
+      if (paragraphBuffer.length > 0) {
+        const text = paragraphBuffer.join(' ').trim();
+        if (text) {
+          result.push(`<p>${text}</p>`);
+        }
+        paragraphBuffer = [];
+      }
+    };
+
+    const isTableRow = (line: string) => {
+      return line.includes('|') && line.trim().startsWith('|');
+    };
+
+    const isTableSeparator = (line: string) => {
+      return line.match(/^\|[\s\-:|]+\|$/);
+    };
+
+    const parseTableRow = (line: string, isHeader: boolean) => {
+      const cells = line.split('|').filter(c => c.trim());
+      const tag = isHeader ? 'th' : 'td';
+      const cellsHtml = cells.map(cell => `<${tag}>${cell.trim()}</${tag}>`).join('');
+      return `<tr>${cellsHtml}</tr>`;
+    };
 
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
+      const line = lines[i].trim();
       
-      if (line.trim().match(/^- /)) {
-        if (!inList) {
-          processedLines.push('<ul class="list-disc list-inside space-y-2 my-6 ml-6">');
-          inList = true;
-        }
-        processedLines.push(`<li>${line.trim().substring(2)}</li>`);
-      } else {
+      // Empty line - flush everything
+      if (!line) {
+        flushParagraph();
         if (inList) {
-          processedLines.push('</ul>');
+          result.push('</ul>');
           inList = false;
         }
-        processedLines.push(line);
+        if (inTable) {
+          result.push('</tbody></table>');
+          inTable = false;
+          tableHeaderDone = false;
+        }
+        continue;
       }
-    }
-    
-    if (inList) {
-      processedLines.push('</ul>');
-    }
-    
-    html = processedLines.join('\n');
 
-    // Tables
-    const tableLines = html.split('\n');
-    const finalLines: string[] = [];
-    let inTable = false;
-    let isFirstRow = true;
-
-    for (let i = 0; i < tableLines.length; i++) {
-      const line = tableLines[i];
-      
-      if (line.includes('|') && !inTable) {
-        inTable = true;
-        isFirstRow = true;
-        finalLines.push('<table class="min-w-full my-8 border-collapse border border-border rounded-lg overflow-hidden">');
-        
-        const cells = line.split('|').filter(c => c.trim());
-        finalLines.push('<thead class="bg-muted">');
-        finalLines.push('<tr>');
-        cells.forEach(cell => {
-          finalLines.push(`<th class="px-4 py-3 text-left font-semibold border-b border-border">${cell.trim()}</th>`);
-        });
-        finalLines.push('</tr>');
-        finalLines.push('</thead>');
-        finalLines.push('<tbody>');
+      // Table handling
+      if (isTableRow(line)) {
+        flushParagraph();
+        if (inList) {
+          result.push('</ul>');
+          inList = false;
+        }
         
         // Skip separator line
-        i++;
+        if (isTableSeparator(line)) {
+          continue;
+        }
+
+        if (!inTable) {
+          // Start table with header
+          result.push('<table>');
+          result.push('<thead>');
+          result.push(parseTableRow(line, true));
+          result.push('</thead>');
+          result.push('<tbody>');
+          inTable = true;
+          tableHeaderDone = true;
+        } else {
+          // Body row
+          result.push(parseTableRow(line, false));
+        }
         continue;
       }
-      
-      if (line.includes('|') && inTable && !isFirstRow) {
-        const cells = line.split('|').filter(c => c.trim());
-        finalLines.push('<tr class="hover:bg-muted/30">');
-        cells.forEach(cell => {
-          finalLines.push(`<td class="px-4 py-3 border-b border-border">${cell.trim()}</td>`);
-        });
-        finalLines.push('</tr>');
-        continue;
-      }
-      
-      if (!line.includes('|') && inTable) {
-        finalLines.push('</tbody>');
-        finalLines.push('</table>');
+
+      // Close table if we hit non-table content
+      if (inTable && !isTableRow(line)) {
+        result.push('</tbody></table>');
         inTable = false;
+        tableHeaderDone = false;
       }
-      
-      if (!inTable) {
-        finalLines.push(line);
+
+      // HTML tags - pass through
+      if (line.match(/^<(h[1-6]|img|hr|blockquote)/i)) {
+        flushParagraph();
+        if (inList) {
+          result.push('</ul>');
+          inList = false;
+        }
+        result.push(line);
+        continue;
       }
-      
-      isFirstRow = false;
+
+      // List items
+      if (line.match(/^- /)) {
+        flushParagraph();
+        if (!inList) {
+          result.push('<ul>');
+          inList = true;
+        }
+        result.push(`<li>${line.substring(2)}</li>`);
+        continue;
+      }
+
+      // Close list if we hit non-list content
+      if (inList && !line.match(/^- /)) {
+        result.push('</ul>');
+        inList = false;
+      }
+
+      // Regular text - add to paragraph buffer
+      paragraphBuffer.push(line);
     }
-    
+
+    // Flush any remaining content
+    flushParagraph();
+    if (inList) {
+      result.push('</ul>');
+    }
     if (inTable) {
-      finalLines.push('</tbody>');
-      finalLines.push('</table>');
+      result.push('</tbody></table>');
     }
-    
-    html = finalLines.join('\n');
 
-    // Paragraphs - split by double newline
-    html = html.split('\n\n').map(block => {
-      block = block.trim();
-      if (!block) return '';
-      // Don't wrap HTML tags
-      if (block.match(/^<(h[1-6]|ul|ol|table|blockquote|img|hr|div)/i)) {
-        return block;
-      }
-      // Single line breaks within paragraphs
-      const lines = block.split('\n').filter(l => l.trim() && !l.match(/^<(h[1-6]|ul|ol|table|blockquote|img|li|tr|th|td)/i));
-      if (lines.length > 0) {
-        return `<p>${lines.join('<br>')}</p>`;
-      }
-      return block;
-    }).join('\n\n');
-
-    // HR
-    html = html.replace(/^---$/gim, '<hr class="my-8 border-border">');
-
-    return html;
+    return result.join('\n');
   }, [article.content]);
 
   return (
@@ -301,7 +328,7 @@ function BlogArticlePage() {
 
         {/* Content */}
         <div
-          className="article-content"
+          className="article-content prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-muted-foreground prose-p:leading-relaxed prose-p:my-4 prose-strong:text-foreground prose-a:text-primary prose-ul:my-4 prose-li:text-muted-foreground prose-h2:mt-12 prose-h2:mb-6 prose-h3:mt-8 prose-h3:mb-4"
           dangerouslySetInnerHTML={{ __html: contentHtml }}
         />
 
