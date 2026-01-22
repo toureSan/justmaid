@@ -18,19 +18,19 @@ export const Route = createFileRoute("/how-it-works")({
   head: () => ({
     meta: [
       {
-        title: "Comment ça marche | Réservez votre ménage en 3 étapes | Justmaid",
+        title: "Comment ça marche ? | 3 étapes simples | Justmaid",
       },
       {
         name: "description",
-        content: "Réservez votre aide ménagère en 3 étapes simples : 1. Choisissez date et durée 2. Un professionnel vérifié se déplace 3. Profitez d'un intérieur impeccable. Paiement après intervention.",
+        content: "Réservez en 3 étapes : 1. Choisissez date et durée 2. Un pro vérifié intervient 3. Profitez ! Paiement sécurisé après intervention. Simple et sans engagement.",
       },
       {
         property: "og:title",
-        content: "Comment ça marche | Réservez votre ménage en 3 étapes | Justmaid",
+        content: "Comment ça marche ? | 3 étapes simples | Justmaid",
       },
       {
         property: "og:description",
-        content: "Réservez votre aide ménagère en 3 étapes simples. Professionnels vérifiés, paiement après intervention.",
+        content: "Réservez en 3 étapes simples. Paiement sécurisé après intervention.",
       },
     ],
     links: [

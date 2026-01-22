@@ -9,8 +9,8 @@ import appCss from '../styles.css?url'
 // Site configuration for SEO
 const SITE_URL = 'https://justmaid.ch';
 const SITE_NAME = 'Justmaid';
-const DEFAULT_TITLE = 'Justmaid - Femme & Homme de ménage à Genève & Nyon | Réservation en ligne';
-const DEFAULT_DESCRIPTION = 'Réservez une femme de ménage ou un homme de ménage qualifié à Genève et Nyon. Service disponible dès demain. Professionnels vérifiés, assurés et notés 4.9/5. Tarifs transparents dès 45 CHF/h.';
+const DEFAULT_TITLE = 'Justmaid | N°1 du ménage à Genève & Nyon | Réservez en ligne';
+const DEFAULT_DESCRIPTION = 'Service de ménage professionnel en Suisse romande. Réservez votre aide ménagère en 2 minutes ! Personnel vérifié et assuré. Note 4.9/5. Dès 45 CHF/h. Sans engagement.';
 
 export const Route = createRootRoute({
   head: () => ({
@@ -196,10 +196,7 @@ export const Route = createRootRoute({
             "addressCountry": "CH"
           },
           "sameAs": [
-            "https://www.facebook.com/justmaid",
-            "https://www.instagram.com/justmaid",
-            "https://www.linkedin.com/company/justmaid",
-            "https://www.tiktok.com/@justmaid"
+            "https://www.instagram.com/justmaid.ch"
           ],
           "contactPoint": {
             "@type": "ContactPoint",
@@ -288,9 +285,7 @@ export const Route = createRootRoute({
             "worstRating": "1"
           },
           "sameAs": [
-            "https://www.facebook.com/justmaid",
-            "https://www.instagram.com/justmaid",
-            "https://www.linkedin.com/company/justmaid"
+            "https://www.instagram.com/justmaid.ch"
           ]
         }),
       },

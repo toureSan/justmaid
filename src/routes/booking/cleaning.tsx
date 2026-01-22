@@ -8,23 +8,23 @@ export const Route = createFileRoute("/booking/cleaning")({
   head: () => ({
     meta: [
       {
-        title: "Réserver un ménage à domicile | Genève & Nyon | Justmaid",
+        title: "Réservez aujourd'hui | Ménage en 2 minutes | Justmaid",
       },
       {
         name: "description",
-        content: "Réservez votre ménage à domicile en quelques clics. Choisissez date, durée et services. Professionnels vérifiés à Genève et Nyon. Dès 45 CHF/h.",
+        content: "Réservez votre ménage avec Justmaid. C'est facile, rapide et sans engagement ! Choisissez date et durée, un professionnel vérifié intervient chez vous.",
       },
       {
         property: "og:title",
-        content: "Réserver un ménage à domicile | Genève & Nyon | Justmaid",
+        content: "Réservez aujourd'hui | Ménage en 2 minutes | Justmaid",
       },
       {
         property: "og:description",
-        content: "Réservez votre ménage à domicile en quelques clics. Professionnels vérifiés à Genève et Nyon.",
+        content: "Réservez votre ménage avec Justmaid. C'est facile, rapide et sans engagement !",
       },
       {
         name: "robots",
-        content: "noindex, nofollow",
+        content: "index, follow",
       },
     ],
     links: [

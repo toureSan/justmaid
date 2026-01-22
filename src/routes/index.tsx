@@ -16,19 +16,19 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       {
-        title: "Justmaid - Femme & Homme de ménage à Genève & Nyon | Réservez en 2 minutes",
+        title: "Justmaid | N°1 du ménage à Genève & Nyon | Réservez en ligne",
       },
       {
         name: "description",
-        content: "Réservez une aide ménagère qualifiée à Genève et Nyon. Service disponible dès demain, professionnels vérifiés et assurés. Note moyenne 4.9/5. Tarif transparent dès 45 CHF/h.",
+        content: "Service de ménage professionnel en Suisse romande. Réservez votre aide ménagère en 2 minutes ! Personnel vérifié et assuré. Note 4.9/5. Dès 45 CHF/h. Sans engagement.",
       },
       {
         property: "og:title",
-        content: "Justmaid - Femme & Homme de ménage à Genève & Nyon | Réservez en 2 minutes",
+        content: "Justmaid | N°1 du ménage à Genève & Nyon",
       },
       {
         property: "og:description",
-        content: "Réservez une aide ménagère qualifiée à Genève et Nyon. Service disponible dès demain, professionnels vérifiés et assurés.",
+        content: "Service de ménage professionnel. Réservez en 2 minutes ! Personnel vérifié, note 4.9/5.",
       },
     ],
     links: [

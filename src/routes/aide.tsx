@@ -24,25 +24,25 @@ export const Route = createFileRoute("/aide")({
   head: () => ({
     meta: [
       {
-        title: "Aide & FAQ | Questions fréquentes | Justmaid",
+        title: "Aide & FAQ | Centre d'aide | Justmaid",
       },
       {
         name: "description",
-        content: "Trouvez les réponses à vos questions sur Justmaid : réservation, paiement, annulation, intervention. Contactez notre équipe par email ou téléphone.",
+        content: "Réponses à vos questions sur le fonctionnement du service Justmaid. Réservation, paiement, annulation, produits ménagers. Notre équipe est là pour vous aider !",
       },
       {
         property: "og:title",
-        content: "Aide & FAQ | Questions fréquentes | Justmaid",
+        content: "Aide & FAQ | Centre d'aide | Justmaid",
       },
       {
         property: "og:description",
-        content: "Trouvez les réponses à vos questions sur Justmaid. Contactez notre équipe.",
+        content: "Réponses à vos questions sur Justmaid. Notre équipe est là pour vous aider !",
       },
     ],
     links: [
       {
         rel: "canonical",
-        href: "https://Justmaid.ch/aide",
+        href: "https://justmaid.ch/aide",
       },
     ],
   }),

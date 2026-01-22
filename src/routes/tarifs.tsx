@@ -10,8 +10,8 @@ import {
 export const Route = createFileRoute("/tarifs")({
   head: () => ({
     meta: [
-      { title: "Tarifs ménage Genève & Nyon | Dès 45 CHF/h | Justmaid" },
-      { name: "description", content: "Découvrez nos tarifs de ménage transparents. Ménage à domicile dès 45 CHF/h, fin de bail 45 CHF/h. Réductions pour abonnements. Pas de frais cachés. Devis gratuit." },
+      { title: "Tarifs fixes et transparents | Dès 45 CHF/h | Justmaid" },
+      { name: "description", content: "Nos tarifs sont clairs : ménage dès 45 CHF/h, fin de bail 45 CHF/h. -2 CHF/h avec abonnement. Pas de frais cachés, pas de surprise. Devis gratuit en 2 minutes !" },
       { name: "keywords", content: "tarif femme de ménage genève, tarif homme de ménage genève, prix ménage suisse, coût aide ménagère, tarif nettoyage appartement, prix ménage nyon" },
       { property: "og:title", content: "Tarifs ménage Genève & Nyon | Justmaid" },
       { property: "og:description", content: "Tarifs transparents dès 45 CHF/h. Réductions abonnements. Devis gratuit." },

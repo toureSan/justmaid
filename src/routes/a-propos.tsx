@@ -12,6 +12,31 @@ import {
 
 export const Route = createFileRoute("/a-propos")({
   component: AProposPage,
+  head: () => ({
+    meta: [
+      {
+        title: "Qui sommes-nous ? | Notre histoire | Justmaid",
+      },
+      {
+        name: "description",
+        content: "Découvrez notre vision et notre histoire ! Justmaid simplifie le quotidien des familles suisses avec des services de ménage de qualité, accessibles et fiables.",
+      },
+      {
+        property: "og:title",
+        content: "Qui sommes-nous ? | Notre histoire | Justmaid",
+      },
+      {
+        property: "og:description",
+        content: "Découvrez notre vision et notre histoire ! Justmaid simplifie le quotidien des familles suisses.",
+      },
+    ],
+    links: [
+      {
+        rel: "canonical",
+        href: "https://justmaid.ch/a-propos",
+      },
+    ],
+  }),
 });
 
 function AProposPage() {

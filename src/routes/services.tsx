@@ -15,19 +15,19 @@ export const Route = createFileRoute("/services")({
   head: () => ({
     meta: [
       {
-        title: "Nos services de ménage | Nettoyage, Pressing, Repassage | Justmaid",
+        title: "Nos services | Ménage, Fin de bail, Bureaux | Justmaid",
       },
       {
         name: "description",
-        content: "Découvrez nos services de ménage à domicile à Genève et Nyon : nettoyage régulier, ménage d'entreprise, pressing et repassage. Professionnels qualifiés, tarifs transparents.",
+        content: "Tous nos services de nettoyage : ménage à domicile, fin de bail, nettoyage de bureaux. Professionnels vérifiés à Genève et Nyon. Réservez en ligne !",
       },
       {
         property: "og:title",
-        content: "Nos services de ménage | Nettoyage, Pressing, Repassage | Justmaid",
+        content: "Nos services | Ménage, Fin de bail, Bureaux | Justmaid",
       },
       {
         property: "og:description",
-        content: "Découvrez nos services de ménage à domicile à Genève et Nyon. Professionnels qualifiés, tarifs transparents.",
+        content: "Tous nos services de nettoyage. Professionnels vérifiés à Genève et Nyon.",
       },
     ],
     links: [
