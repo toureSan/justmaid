@@ -411,7 +411,7 @@ export type QuoteRequest = Database['public']['Tables']['quote_requests']['Row']
 export type QuoteRequestInsert = Database['public']['Tables']['quote_requests']['Insert'];
 export type QuoteRequestUpdate = Database['public']['Tables']['quote_requests']['Update'];
 
-// Types pour le blog
+// Types pour le blogs
 export type BlogCategory = {
   id: string;
   name: string;
