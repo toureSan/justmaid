@@ -25,8 +25,10 @@ import { Route as CgvRouteImport } from './routes/cgv'
 import { Route as AideRouteImport } from './routes/aide'
 import { Route as AProposRouteImport } from './routes/a-propos'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BlogIndexRouteImport } from './routes/blog/index'
 import { Route as BookingLaundryRouteImport } from './routes/booking/laundry'
 import { Route as BookingCleaningRouteImport } from './routes/booking/cleaning'
+import { Route as BlogSlugRouteImport } from './routes/blog/$slug'
 import { Route as AuthRegisterRouteImport } from './routes/auth/register'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
@@ -112,6 +114,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BookingLaundryRoute = BookingLaundryRouteImport.update({
   id: '/booking/laundry',
   path: '/booking/laundry',
@@ -120,6 +127,11 @@ const BookingLaundryRoute = BookingLaundryRouteImport.update({
 const BookingCleaningRoute = BookingCleaningRouteImport.update({
   id: '/booking/cleaning',
   path: '/booking/cleaning',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRegisterRoute = AuthRegisterRouteImport.update({
@@ -164,8 +176,10 @@ export interface FileRoutesByFullPath {
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/booking/cleaning': typeof BookingCleaningRoute
   '/booking/laundry': typeof BookingLaundryRoute
+  '/blog': typeof BlogIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -188,8 +202,10 @@ export interface FileRoutesByTo {
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/booking/cleaning': typeof BookingCleaningRoute
   '/booking/laundry': typeof BookingLaundryRoute
+  '/blog': typeof BlogIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -213,8 +229,10 @@ export interface FileRoutesById {
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/booking/cleaning': typeof BookingCleaningRoute
   '/booking/laundry': typeof BookingLaundryRoute
+  '/blog/': typeof BlogIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -239,8 +257,10 @@ export interface FileRouteTypes {
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
+    | '/blog/$slug'
     | '/booking/cleaning'
     | '/booking/laundry'
+    | '/blog'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -263,8 +283,10 @@ export interface FileRouteTypes {
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
+    | '/blog/$slug'
     | '/booking/cleaning'
     | '/booking/laundry'
+    | '/blog'
   id:
     | '__root__'
     | '/'
@@ -287,8 +309,10 @@ export interface FileRouteTypes {
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
+    | '/blog/$slug'
     | '/booking/cleaning'
     | '/booking/laundry'
+    | '/blog/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -312,8 +336,10 @@ export interface RootRouteChildren {
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
+  BlogSlugRoute: typeof BlogSlugRoute
   BookingCleaningRoute: typeof BookingCleaningRoute
   BookingLaundryRoute: typeof BookingLaundryRoute
+  BlogIndexRoute: typeof BlogIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -430,6 +456,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/booking/laundry': {
       id: '/booking/laundry'
       path: '/booking/laundry'
@@ -442,6 +475,13 @@ declare module '@tanstack/react-router' {
       path: '/booking/cleaning'
       fullPath: '/booking/cleaning'
       preLoaderRoute: typeof BookingCleaningRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/register': {
@@ -496,8 +536,10 @@ const rootRouteChildren: RootRouteChildren = {
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
+  BlogSlugRoute: BlogSlugRoute,
   BookingCleaningRoute: BookingCleaningRoute,
   BookingLaundryRoute: BookingLaundryRoute,
+  BlogIndexRoute: BlogIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

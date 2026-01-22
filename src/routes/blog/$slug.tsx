@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Layout } from "@/components/layout";
 import { getBlogArticleBySlug, getSimilarArticles } from "@/services/blogService";
 import { Badge } from "@/components/ui/badge";
 import { BlogCard } from "@/components/blog";
@@ -25,7 +24,7 @@ function BlogArticlePage() {
 
   if (!article) {
     return (
-      <Layout>
+      <>
         <div className="flex min-h-[60vh] items-center justify-center">
           <div className="text-center">
             <h1 className="mb-4 text-4xl font-bold">Article non trouvé</h1>
@@ -41,7 +40,7 @@ function BlogArticlePage() {
             </a>
           </div>
         </div>
-      </Layout>
+      </>
     );
   }
 
@@ -65,7 +64,7 @@ function BlogArticlePage() {
   }, [article]);
 
   return (
-    <Layout>
+    <>
       {/* Breadcrumb */}
       <div className="border-b border-border bg-muted/30">
         <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6 lg:px-8">
@@ -169,8 +168,8 @@ function BlogArticlePage() {
 
         {/* Content */}
         <div
-          className="prose prose-lg max-w-none prose-headings:font-bold prose-headings:text-foreground prose-p:text-muted-foreground prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-strong:text-foreground prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-primary/5 prose-blockquote:py-1 prose-blockquote:pl-6 prose-blockquote:not-italic prose-blockquote:text-foreground prose-ul:text-muted-foreground prose-ol:text-muted-foreground"
-          dangerouslySetInnerHTML={{ __html: formatMarkdown(article.content) }}
+          className="article-content prose prose-lg max-w-none"
+          dangerouslySetInnerHTML={{ __html: article.content }}
         />
 
         {/* Tags */}
@@ -220,47 +219,6 @@ function BlogArticlePage() {
           </div>
         </section>
       )}
-    </Layout>
+    </>
   );
-}
-
-// Helper pour formater le markdown en HTML basique
-function formatMarkdown(content: string): string {
-  let html = content;
-
-  // Titres
-  html = html.replace(/^### (.*$)/gim, "<h3>$1</h3>");
-  html = html.replace(/^## (.*$)/gim, "<h2>$1</h2>");
-  html = html.replace(/^# (.*$)/gim, "<h1>$1</h1>");
-
-  // Gras et italique
-  html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-  html = html.replace(/\*(.*?)\*/g, "<em>$1</em>");
-
-  // Liens
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
-
-  // Listes à puces
-  html = html.replace(/^\- (.*$)/gim, "<li>$1</li>");
-  html = html.replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>");
-
-  // Blockquotes
-  html = html.replace(/^> (.*$)/gim, "<blockquote>$1</blockquote>");
-
-  // Paragraphes
-  html = html.replace(/\n\n/g, "</p><p>");
-  html = "<p>" + html + "</p>";
-
-  // Nettoyer les paragraphes vides dans les listes et titres
-  html = html.replace(/<p><ul>/g, "<ul>");
-  html = html.replace(/<\/ul><\/p>/g, "</ul>");
-  html = html.replace(/<p><h/g, "<h");
-  html = html.replace(/<\/h([1-6])><\/p>/g, "</h$1>");
-  html = html.replace(/<p><blockquote>/g, "<blockquote>");
-  html = html.replace(/<\/blockquote><\/p>/g, "</blockquote>");
-
-  // Nettoyer les paragraphes vides
-  html = html.replace(/<p>\s*<\/p>/g, "");
-
-  return html;
 }

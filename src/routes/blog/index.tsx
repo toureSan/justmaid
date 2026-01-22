@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Layout } from "@/components/layout";
 import { BlogHero, BlogCategories, BlogCard } from "@/components/blog";
 import { getBlogArticles, getBlogCategories } from "@/services/blogService";
 import { useState, useEffect } from "react";
@@ -48,7 +47,7 @@ function BlogPage() {
   }, [category, categories]);
 
   return (
-    <Layout>
+    <>
       {/* Hero Section */}
       <BlogHero />
 
@@ -92,6 +91,6 @@ function BlogPage() {
           </a>
         </div>
       </div>
-    </Layout>
+    </>
   );
 }
