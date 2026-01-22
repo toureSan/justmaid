@@ -34,7 +34,7 @@ export function Footer() {
                   href="https://instagram.com/justmaid.ch" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-muted hover:bg-gradient-to-br hover:from-purple-500 hover:to-pink-500 hover:text-white transition-colors"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-muted hover:bg-linear-to-br hover:from-purple-500 hover:to-pink-500 hover:text-white transition-colors"
                   aria-label="Instagram"
                 >
                   <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
