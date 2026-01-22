@@ -410,3 +410,33 @@ export type SubscriptionUpdate = Database['public']['Tables']['subscriptions']['
 export type QuoteRequest = Database['public']['Tables']['quote_requests']['Row'];
 export type QuoteRequestInsert = Database['public']['Tables']['quote_requests']['Insert'];
 export type QuoteRequestUpdate = Database['public']['Tables']['quote_requests']['Update'];
+
+// Types pour le blog
+export type BlogCategory = {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  icon?: string;
+  color?: string;
+};
+
+export type BlogArticle = {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  category: BlogCategory;
+  author: {
+    name: string;
+    avatar?: string;
+  };
+  featured_image?: string;
+  published_at: string;
+  reading_time: number; // en minutes
+  tags: string[];
+  meta_title?: string;
+  meta_description?: string;
+  views?: number;
+};

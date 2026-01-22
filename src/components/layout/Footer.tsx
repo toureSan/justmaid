@@ -116,32 +116,24 @@ export function Footer() {
               </ul>
             </div>
 
-            {/* Régions */}
+            {/* Entreprise */}
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-foreground">Régions</h3>
+              <h3 className="text-sm font-semibold text-foreground">Entreprise</h3>
               <ul className="space-y-2">
-                <li>
-                  <Link
-                    to="/geneve"
-                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    Genève
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/nyon"
-                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    Nyon & La Côte
-                  </Link>
-                </li>
                 <li>
                   <Link
                     to="/a-propos"
                     className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     À propos
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/blog"
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    Blog
                   </Link>
                 </li>
                 <li>
@@ -158,6 +150,14 @@ export function Footer() {
                     className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     Contact & FAQ
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/geneve"
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    Nos régions
                   </Link>
                 </li>
               </ul>

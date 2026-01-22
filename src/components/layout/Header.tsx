@@ -251,6 +251,12 @@ export function Header() {
               Nos services
             </Link>
             <Link
+              to="/blog"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Blog
+            </Link>
+            <Link
               to="/how-it-works"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
@@ -373,6 +379,13 @@ export function Header() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Nos services
+              </Link>
+              <Link
+                to="/blog"
+                className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Blog
               </Link>
               <Link
                 to="/how-it-works"
