@@ -3,7 +3,7 @@ import { Layout } from "@/components/layout";
 import { getBlogArticleBySlug, getSimilarArticles } from "@/services/blogService";
 import { Badge } from "@/components/ui/badge";
 import { BlogCard } from "@/components/blog";
-import { Clock04Icon, CalendarIcon, Eye01Icon, ArrowLeft01Icon } from "@hugeicons/core-free-icons";
+import { Clock04Icon, CalendarIcon, ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useEffect } from "react";
 import { Link } from "@tanstack/react-router";
@@ -150,7 +150,7 @@ function BlogArticlePage() {
           {/* Views */}
           {article.views && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <HugeiconsIcon icon={Eye01Icon} className="h-4 w-4" />
+              <span>👁️</span>
               <span>{article.views} vues</span>
             </div>
           )}
