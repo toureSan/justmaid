@@ -4,7 +4,7 @@ interface BlogHeroProps {
 }
 
 export function BlogHero({
-  title = "Blog Justmaid",
+  title = "Blog",
   description = "Découvrez nos conseils, astuces et actualités pour un intérieur toujours impeccable",
 }: BlogHeroProps) {
   return (

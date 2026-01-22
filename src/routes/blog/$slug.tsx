@@ -53,7 +53,7 @@ function BlogArticlePage() {
 
   // SEO Meta tags
   useEffect(() => {
-    document.title = article.meta_title || `${article.title} - Blog Justmaid`;
+    document.title = article.meta_title || `${article.title} - Blog`;
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute(

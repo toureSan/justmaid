@@ -33,8 +33,8 @@ function BlogPage() {
       ? categories.find((cat) => cat.slug === category)?.name
       : null;
     const title = categoryName
-      ? `${categoryName} - Blog Justmaid`
-      : "Blog Justmaid - Conseils et Astuces Ménage";
+      ? `${categoryName} - Blog`
+      : "Just Blog - Conseils et Astuces Ménage";
     const description = categoryName
       ? `Tous nos articles sur ${categoryName.toLowerCase()}`
       : "Découvrez nos conseils, astuces et actualités pour un intérieur toujours impeccable. Services de ménage professionnels en Suisse romande.";
