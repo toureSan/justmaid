@@ -1,0 +1,34 @@
+[
+  {
+    "id": "1",
+    "name": "Conseils ménage",
+    "slug": "conseils-menage",
+    "description": "Nos meilleurs conseils pour un ménage efficace",
+    "icon": "✨",
+    "color": "#2FCCC0"
+  },
+  {
+    "id": "2",
+    "name": "Astuces rangement",
+    "slug": "astuces-rangement",
+    "description": "Optimisez l'espace de votre maison",
+    "icon": "📦",
+    "color": "#8B5CF6"
+  },
+  {
+    "id": "3",
+    "name": "Produits écologiques",
+    "slug": "produits-ecologiques",
+    "description": "Découvrez les alternatives écologiques",
+    "icon": "🌿",
+    "color": "#10B981"
+  },
+  {
+    "id": "4",
+    "name": "Organisation",
+    "slug": "organisation",
+    "description": "Optimisez votre temps et votre espace",
+    "icon": "📋",
+    "color": "#F59E0B"
+  }
+]
