@@ -1020,6 +1020,13 @@ function Step1Address({
   const [matchedCities, setMatchedCities] = React.useState<{ name: string; canton: string; available: boolean }[]>([]);
   const [showNotAvailable, setShowNotAvailable] = React.useState(false);
 
+  // Synchroniser searchQuery avec bookingData.postalCode (quand chargé depuis le draft)
+  React.useEffect(() => {
+    if (bookingData.postalCode && bookingData.postalCode !== searchQuery) {
+      setSearchQuery(bookingData.postalCode);
+    }
+  }, [bookingData.postalCode]);
+
   // Rechercher les villes par code postal
   React.useEffect(() => {
     if (searchQuery.length === 4) {
