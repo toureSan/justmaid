@@ -306,13 +306,6 @@ function BlogArticlePage() {
             <span>{article.reading_time} min de lecture</span>
           </div>
 
-          {/* Views */}
-          {article.views && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>👁️</span>
-              <span>{article.views} vues</span>
-            </div>
-          )}
         </div>
 
         {/* Featured Image */}

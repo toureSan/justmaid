@@ -249,10 +249,7 @@ export function BookingWizard() {
         postalCode: parsed.postalCode || "",
         city: parsed.city || "",
       }));
-      // Si on vient de la homepage avec code postal et ville, passer à l'étape 2 (Date)
-      if (parsed.fromHome && parsed.postalCode && parsed.city) {
-        setCurrentStep(2);
-      }
+      // On reste à l'étape 1 pour que l'utilisateur puisse compléter son adresse
       // Nettoyer le draft
       localStorage.removeItem("bookingDraft");
       return; // Ne pas continuer si on a restauré depuis bookingDraft
