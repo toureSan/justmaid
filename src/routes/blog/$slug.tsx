@@ -63,6 +63,139 @@ function BlogArticlePage() {
     }
   }, [article]);
 
+  // Convert Markdown to HTML
+  const contentHtml = React.useMemo(() => {
+    let html = article.content;
+
+    // Images ![alt](url)
+    html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="w-full max-w-4xl mx-auto my-8 rounded-xl shadow-lg" />');
+
+    // Headers (from most specific to least)
+    html = html.replace(/^#### (.*$)/gim, '<h4 class="text-xl font-bold mt-8 mb-4">$1</h4>');
+    html = html.replace(/^### (.*$)/gim, '<h3 class="text-2xl font-bold mt-10 mb-4">$1</h3>');
+    html = html.replace(/^## (.*$)/gim, '<h2 class="text-3xl font-bold mt-12 mb-6">$1</h2>');
+    html = html.replace(/^# (.*$)/gim, '<h1 class="text-4xl font-bold mt-8 mb-6">$1</h1>');
+
+    // Bold and italic
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+    // Links
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary hover:underline">$1</a>');
+
+    // Blockquotes
+    html = html.replace(/^> (.*$)/gim, '<blockquote class="border-l-4 border-primary bg-muted/30 py-3 pl-6 my-6 italic">$1</blockquote>');
+
+    // Lists - unordered
+    const lines = html.split('\n');
+    const processedLines: string[] = [];
+    let inList = false;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      
+      if (line.trim().match(/^- /)) {
+        if (!inList) {
+          processedLines.push('<ul class="list-disc list-inside space-y-2 my-6 ml-6">');
+          inList = true;
+        }
+        processedLines.push(`<li>${line.trim().substring(2)}</li>`);
+      } else {
+        if (inList) {
+          processedLines.push('</ul>');
+          inList = false;
+        }
+        processedLines.push(line);
+      }
+    }
+    
+    if (inList) {
+      processedLines.push('</ul>');
+    }
+    
+    html = processedLines.join('\n');
+
+    // Tables
+    const tableLines = html.split('\n');
+    const finalLines: string[] = [];
+    let inTable = false;
+    let isFirstRow = true;
+
+    for (let i = 0; i < tableLines.length; i++) {
+      const line = tableLines[i];
+      
+      if (line.includes('|') && !inTable) {
+        inTable = true;
+        isFirstRow = true;
+        finalLines.push('<table class="min-w-full my-8 border-collapse border border-border rounded-lg overflow-hidden">');
+        
+        const cells = line.split('|').filter(c => c.trim());
+        finalLines.push('<thead class="bg-muted">');
+        finalLines.push('<tr>');
+        cells.forEach(cell => {
+          finalLines.push(`<th class="px-4 py-3 text-left font-semibold border-b border-border">${cell.trim()}</th>`);
+        });
+        finalLines.push('</tr>');
+        finalLines.push('</thead>');
+        finalLines.push('<tbody>');
+        
+        // Skip separator line
+        i++;
+        continue;
+      }
+      
+      if (line.includes('|') && inTable && !isFirstRow) {
+        const cells = line.split('|').filter(c => c.trim());
+        finalLines.push('<tr class="hover:bg-muted/30">');
+        cells.forEach(cell => {
+          finalLines.push(`<td class="px-4 py-3 border-b border-border">${cell.trim()}</td>`);
+        });
+        finalLines.push('</tr>');
+        continue;
+      }
+      
+      if (!line.includes('|') && inTable) {
+        finalLines.push('</tbody>');
+        finalLines.push('</table>');
+        inTable = false;
+      }
+      
+      if (!inTable) {
+        finalLines.push(line);
+      }
+      
+      isFirstRow = false;
+    }
+    
+    if (inTable) {
+      finalLines.push('</tbody>');
+      finalLines.push('</table>');
+    }
+    
+    html = finalLines.join('\n');
+
+    // Paragraphs - split by double newline
+    html = html.split('\n\n').map(block => {
+      block = block.trim();
+      if (!block) return '';
+      // Don't wrap HTML tags
+      if (block.match(/^<(h[1-6]|ul|ol|table|blockquote|img|hr|div)/i)) {
+        return block;
+      }
+      // Single line breaks within paragraphs
+      const lines = block.split('\n').filter(l => l.trim() && !l.match(/^<(h[1-6]|ul|ol|table|blockquote|img|li|tr|th|td)/i));
+      if (lines.length > 0) {
+        return `<p>${lines.join('<br>')}</p>`;
+      }
+      return block;
+    }).join('\n\n');
+
+    // HR
+    html = html.replace(/^---$/gim, '<hr class="my-8 border-border">');
+
+    return html;
+  }, [article.content]);
+
   return (
     <>
       {/* Breadcrumb */}
@@ -169,7 +302,7 @@ function BlogArticlePage() {
         {/* Content */}
         <div
           className="article-content"
-          dangerouslySetInnerHTML={{ __html: article.content }}
+          dangerouslySetInnerHTML={{ __html: contentHtml }}
         />
 
         {/* Tags */}
