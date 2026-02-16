@@ -1,11 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getBlogArticleBySlug, getSimilarArticles } from "@/services/blogService";
+import {
+  getBlogArticleBySlug,
+  getBlogArticleBySlugAsync,
+  getSimilarArticles,
+  getSimilarArticlesAsync,
+} from "@/services/blogService";
 import { Badge } from "@/components/ui/badge";
 import { BlogCard } from "@/components/blog";
-import { Clock04Icon, CalendarIcon, ArrowLeft01Icon } from "@hugeicons/core-free-icons";
+import {
+  Clock04Icon,
+  CalendarIcon,
+  ArrowLeft01Icon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
+import type { BlogArticle } from "@/types/database";
 
 export const Route = createFileRoute("/blog/$slug")({
   component: BlogArticlePage,
@@ -13,14 +23,63 @@ export const Route = createFileRoute("/blog/$slug")({
 
 function BlogArticlePage() {
   const { slug } = Route.useParams();
-  const article = getBlogArticleBySlug(slug);
 
-  // Rediriger si l'article n'existe pas
+  // Try static first for instant display
+  const [article, setArticle] = useState<BlogArticle | undefined>(() =>
+    getBlogArticleBySlug(slug),
+  );
+  const [similarArticles, setSimilarArticles] = useState<BlogArticle[]>(() =>
+    article ? getSimilarArticles(article.id) : [],
+  );
+  const [isLoading, setIsLoading] = useState(!article);
+
+  // Load from Supabase if not found in static
   useEffect(() => {
+    let cancelled = false;
+
     if (!article) {
-      window.location.href = "/blog";
+      setIsLoading(true);
+      getBlogArticleBySlugAsync(slug).then((found) => {
+        if (cancelled) return;
+        if (found) {
+          setArticle(found);
+          getSimilarArticlesAsync(found.id, found.category.id).then(
+            (similar) => {
+              if (!cancelled) {
+                setSimilarArticles(similar);
+                setIsLoading(false);
+              }
+            },
+          );
+        } else {
+          setIsLoading(false);
+          window.location.href = "/blog";
+        }
+      });
+    } else {
+      // For static articles, also try to load more similar articles from Supabase
+      getSimilarArticlesAsync(article.id, article.category.id).then(
+        (similar) => {
+          if (!cancelled) setSimilarArticles(similar);
+        },
+      );
     }
-  }, [article]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <p className="text-muted-foreground">Chargement de l'article...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!article) {
     return (
@@ -44,12 +103,14 @@ function BlogArticlePage() {
     );
   }
 
-  const similarArticles = getSimilarArticles(article.id);
-  const formattedDate = new Date(article.published_at).toLocaleDateString("fr-FR", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const formattedDate = new Date(article.published_at).toLocaleDateString(
+    "fr-FR",
+    {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    },
+  );
 
   // SEO Meta tags
   useEffect(() => {
@@ -58,87 +119,96 @@ function BlogArticlePage() {
     if (metaDescription) {
       metaDescription.setAttribute(
         "content",
-        article.meta_description || article.excerpt
+        article.meta_description || article.excerpt,
       );
     }
   }, [article]);
 
-  // Convert Markdown to HTML
+  // Convert Markdown to HTML (only if no pre-rendered HTML available)
   const contentHtml = useMemo(() => {
+    // Use pre-rendered HTML from RankPill if available
+    if (article.content_html) {
+      return article.content_html;
+    }
+
+    // Otherwise, parse markdown manually (for static articles)
     let html = article.content;
 
     // Normalize line endings
-    html = html.replace(/\r\n/g, '\n');
+    html = html.replace(/\r\n/g, "\n");
 
     // Images ![alt](url)
-    html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" />');
+    html = html.replace(
+      /!\[([^\]]*)\]\(([^)]+)\)/g,
+      '<img src="$2" alt="$1" />',
+    );
 
     // HR first (before headers)
-    html = html.replace(/^---$/gim, '<hr>');
+    html = html.replace(/^---$/gim, "<hr>");
 
     // Headers (from most specific to least)
-    html = html.replace(/^#### (.+)$/gim, '<h4>$1</h4>');
-    html = html.replace(/^### (.+)$/gim, '<h3>$1</h3>');
-    html = html.replace(/^## (.+)$/gim, '<h2>$1</h2>');
-    html = html.replace(/^# (.+)$/gim, '<h1>$1</h1>');
+    html = html.replace(/^#### (.+)$/gim, "<h4>$1</h4>");
+    html = html.replace(/^### (.+)$/gim, "<h3>$1</h3>");
+    html = html.replace(/^## (.+)$/gim, "<h2>$1</h2>");
+    html = html.replace(/^# (.+)$/gim, "<h1>$1</h1>");
 
     // Bold and italic
-    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    html = html.replace(/\*(.+?)\*/g, "<em>$1</em>");
 
     // Links
     html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
 
     // Blockquotes
-    html = html.replace(/^> (.+)$/gim, '<blockquote>$1</blockquote>');
+    html = html.replace(/^> (.+)$/gim, "<blockquote>$1</blockquote>");
 
     // Process line by line for lists, tables and paragraphs
-    const lines = html.split('\n');
+    const lines = html.split("\n");
     const result: string[] = [];
     let inList = false;
     let inTable = false;
-    let tableHeaderDone = false;
-    let paragraphBuffer: string[] = [];
+    const paragraphBuffer: string[] = [];
 
     const flushParagraph = () => {
       if (paragraphBuffer.length > 0) {
-        const text = paragraphBuffer.join(' ').trim();
+        const text = paragraphBuffer.join(" ").trim();
         if (text) {
           result.push(`<p>${text}</p>`);
         }
-        paragraphBuffer = [];
+        paragraphBuffer.length = 0;
       }
     };
 
     const isTableRow = (line: string) => {
-      return line.includes('|') && line.trim().startsWith('|');
+      return line.includes("|") && line.trim().startsWith("|");
     };
 
     const isTableSeparator = (line: string) => {
-      return line.match(/^\|[\s\-:|]+\|$/);
+      return !!line.match(/^\|[\s\-:|]+\|$/);
     };
 
     const parseTableRow = (line: string, isHeader: boolean) => {
-      const cells = line.split('|').filter(c => c.trim());
-      const tag = isHeader ? 'th' : 'td';
-      const cellsHtml = cells.map(cell => `<${tag}>${cell.trim()}</${tag}>`).join('');
+      const cells = line.split("|").filter((c) => c.trim());
+      const tag = isHeader ? "th" : "td";
+      const cellsHtml = cells
+        .map((cell) => `<${tag}>${cell.trim()}</${tag}>`)
+        .join("");
       return `<tr>${cellsHtml}</tr>`;
     };
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
-      
+
       // Empty line - flush everything
       if (!line) {
         flushParagraph();
         if (inList) {
-          result.push('</ul>');
+          result.push("</ul>");
           inList = false;
         }
         if (inTable) {
-          result.push('</tbody></table>');
+          result.push("</tbody></table>");
           inTable = false;
-          tableHeaderDone = false;
         }
         continue;
       }
@@ -147,10 +217,10 @@ function BlogArticlePage() {
       if (isTableRow(line)) {
         flushParagraph();
         if (inList) {
-          result.push('</ul>');
+          result.push("</ul>");
           inList = false;
         }
-        
+
         // Skip separator line
         if (isTableSeparator(line)) {
           continue;
@@ -158,13 +228,12 @@ function BlogArticlePage() {
 
         if (!inTable) {
           // Start table with header
-          result.push('<table>');
-          result.push('<thead>');
+          result.push("<table>");
+          result.push("<thead>");
           result.push(parseTableRow(line, true));
-          result.push('</thead>');
-          result.push('<tbody>');
+          result.push("</thead>");
+          result.push("<tbody>");
           inTable = true;
-          tableHeaderDone = true;
         } else {
           // Body row
           result.push(parseTableRow(line, false));
@@ -174,16 +243,15 @@ function BlogArticlePage() {
 
       // Close table if we hit non-table content
       if (inTable && !isTableRow(line)) {
-        result.push('</tbody></table>');
+        result.push("</tbody></table>");
         inTable = false;
-        tableHeaderDone = false;
       }
 
       // HTML tags - pass through
       if (line.match(/^<(h[1-6]|img|hr|blockquote)/i)) {
         flushParagraph();
         if (inList) {
-          result.push('</ul>');
+          result.push("</ul>");
           inList = false;
         }
         result.push(line);
@@ -194,7 +262,7 @@ function BlogArticlePage() {
       if (line.match(/^- /)) {
         flushParagraph();
         if (!inList) {
-          result.push('<ul>');
+          result.push("<ul>");
           inList = true;
         }
         result.push(`<li>${line.substring(2)}</li>`);
@@ -203,7 +271,7 @@ function BlogArticlePage() {
 
       // Close list if we hit non-list content
       if (inList && !line.match(/^- /)) {
-        result.push('</ul>');
+        result.push("</ul>");
         inList = false;
       }
 
@@ -214,14 +282,14 @@ function BlogArticlePage() {
     // Flush any remaining content
     flushParagraph();
     if (inList) {
-      result.push('</ul>');
+      result.push("</ul>");
     }
     if (inTable) {
-      result.push('</tbody></table>');
+      result.push("</tbody></table>");
     }
 
-    return result.join('\n');
-  }, [article.content]);
+    return result.join("\n");
+  }, [article.content, article.content_html]);
 
   return (
     <>
@@ -289,7 +357,9 @@ function BlogArticlePage() {
               </div>
             )}
             <div>
-              <p className="text-sm font-medium text-foreground">{article.author.name}</p>
+              <p className="text-sm font-medium text-foreground">
+                {article.author.name}
+              </p>
               <p className="text-xs text-muted-foreground">Auteur</p>
             </div>
           </div>
@@ -305,7 +375,6 @@ function BlogArticlePage() {
             <HugeiconsIcon icon={Clock04Icon} className="h-4 w-4" />
             <span>{article.reading_time} min de lecture</span>
           </div>
-
         </div>
 
         {/* Featured Image */}
@@ -328,7 +397,9 @@ function BlogArticlePage() {
         {/* Tags */}
         {article.tags && article.tags.length > 0 && (
           <div className="mt-12 flex flex-wrap items-center gap-3 border-t border-border pt-8">
-            <span className="text-sm font-semibold text-foreground">Tags :</span>
+            <span className="text-sm font-semibold text-foreground">
+              Tags :
+            </span>
             {article.tags.map((tag) => (
               <span
                 key={tag}

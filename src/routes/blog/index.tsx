@@ -1,7 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { BlogHero, BlogCategories, BlogCard } from "@/components/blog";
-import { getBlogArticles, getBlogCategories } from "@/services/blogService";
+import {
+  getBlogArticles,
+  getBlogArticlesAsync,
+  getBlogCategories,
+} from "@/services/blogService";
 import { useState, useEffect } from "react";
+import type { BlogArticle } from "@/types/database";
 
 // Types pour la recherche
 type BlogSearchParams = {
@@ -20,11 +25,30 @@ export const Route = createFileRoute("/blog/")({
 function BlogPage() {
   const { category } = Route.useSearch();
   const categories = getBlogCategories();
-  const [articles, setArticles] = useState(() => getBlogArticles(category));
+  const [articles, setArticles] = useState<BlogArticle[]>(() =>
+    getBlogArticles(category),
+  );
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Mettre à jour les articles quand la catégorie change
+  // Load articles from both static + Supabase
   useEffect(() => {
+    let cancelled = false;
+
+    // Show static articles immediately
     setArticles(getBlogArticles(category));
+
+    // Then load from Supabase in background
+    setIsLoading(true);
+    getBlogArticlesAsync(category).then((allArticles) => {
+      if (!cancelled) {
+        setArticles(allArticles);
+        setIsLoading(false);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [category]);
 
   // SEO Meta tags
@@ -70,7 +94,8 @@ function BlogPage() {
               Aucun article dans cette catégorie
             </h3>
             <p className="text-muted-foreground">
-              Revenez bientôt, nous publions régulièrement de nouveaux contenus !
+              Revenez bientôt, nous publions régulièrement de nouveaux contenus
+              !
             </p>
           </div>
         )}

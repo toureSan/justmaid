@@ -427,6 +427,7 @@ export type BlogArticle = {
   slug: string;
   excerpt: string;
   content: string;
+  content_html?: string; // HTML pré-rendu (depuis RankPill)
   category: BlogCategory;
   author: {
     name: string;
