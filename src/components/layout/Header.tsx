@@ -12,6 +12,7 @@ import {
   Logout02Icon,
   SecurityLockIcon,
   ArrowLeft01Icon,
+  DashboardBrowsingIcon,
 } from "@hugeicons/core-free-icons";
 import * as React from "react";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
@@ -22,6 +23,7 @@ interface LocalUser {
   email: string;
   fullName: string;
   avatarUrl?: string | null;
+  role?: string;
 }
 
 export function Header() {
@@ -42,23 +44,38 @@ export function Header() {
         const supabase = getSupabase();
         const { data: { user: supaUser } } = await supabase.auth.getUser();
         if (supaUser) {
+          // Récupérer le rôle depuis profiles
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', supaUser.id)
+            .single();
+
           setUser({
             id: supaUser.id,
             email: supaUser.email || "",
             fullName: supaUser.user_metadata?.full_name || supaUser.user_metadata?.name || supaUser.email?.split("@")[0] || "Utilisateur",
             avatarUrl: supaUser.user_metadata?.avatar_url || supaUser.user_metadata?.picture,
+            role: profile?.role || 'client',
           });
           setIsAuthenticated(true);
         }
         
         // Écouter les changements d'auth
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
           if (session?.user) {
+            const { data: updatedProfile } = await supabase
+              .from('profiles')
+              .select('role')
+              .eq('id', session.user.id)
+              .single();
+
             setUser({
               id: session.user.id,
               email: session.user.email || "",
               fullName: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Utilisateur",
               avatarUrl: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture,
+              role: updatedProfile?.role || 'client',
             });
             setIsAuthenticated(true);
           } else {
@@ -498,6 +515,27 @@ export function Header() {
                   ))}
                 </div>
               </div>
+
+              {/* Admin Link */}
+              {user?.role === 'admin' && (
+                <div className="mt-6">
+                  <p className="mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Administration
+                  </p>
+                  <button
+                    onClick={() => {
+                      setSidebarOpen(false);
+                      navigate({ to: "/admin" });
+                    }}
+                    className="flex w-full items-center gap-4 rounded-xl px-4 py-3 text-foreground transition-colors hover:bg-muted"
+                  >
+                    <div className="flex h-5 w-5 items-center justify-center rounded bg-gradient-to-br from-blue-600 to-emerald-600">
+                      <HugeiconsIcon icon={DashboardBrowsingIcon} strokeWidth={1.5} className="h-3.5 w-3.5 text-white" />
+                    </div>
+                    <span className="font-medium">Dashboard Admin</span>
+                  </button>
+                </div>
+              )}
 
               {/* Logout */}
               <div className="mt-6 border-t border-border pt-4">

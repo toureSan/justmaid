@@ -26,6 +26,7 @@ import { Route as AideRouteImport } from './routes/aide'
 import { Route as AProposRouteImport } from './routes/a-propos'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlogIndexRouteImport } from './routes/blog/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as BookingLaundryRouteImport } from './routes/booking/laundry'
 import { Route as BookingCleaningRouteImport } from './routes/booking/cleaning'
 import { Route as BlogSlugRouteImport } from './routes/blog/$slug'
@@ -33,6 +34,7 @@ import { Route as AuthRegisterRouteImport } from './routes/auth/register'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
+import { Route as AdminLoginRouteImport } from './routes/admin/login'
 
 const TarifsRoute = TarifsRouteImport.update({
   id: '/tarifs',
@@ -119,6 +121,11 @@ const BlogIndexRoute = BlogIndexRouteImport.update({
   path: '/blog/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BookingLaundryRoute = BookingLaundryRouteImport.update({
   id: '/booking/laundry',
   path: '/booking/laundry',
@@ -154,6 +161,11 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
   path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin/login',
+  path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -172,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/nyon': typeof NyonRoute
   '/services': typeof ServicesRoute
   '/tarifs': typeof TarifsRoute
+  '/admin/login': typeof AdminLoginRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
@@ -179,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/blog/$slug': typeof BlogSlugRoute
   '/booking/cleaning': typeof BookingCleaningRoute
   '/booking/laundry': typeof BookingLaundryRoute
+  '/admin/': typeof AdminIndexRoute
   '/blog/': typeof BlogIndexRoute
 }
 export interface FileRoutesByTo {
@@ -198,6 +212,7 @@ export interface FileRoutesByTo {
   '/nyon': typeof NyonRoute
   '/services': typeof ServicesRoute
   '/tarifs': typeof TarifsRoute
+  '/admin/login': typeof AdminLoginRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
@@ -205,6 +220,7 @@ export interface FileRoutesByTo {
   '/blog/$slug': typeof BlogSlugRoute
   '/booking/cleaning': typeof BookingCleaningRoute
   '/booking/laundry': typeof BookingLaundryRoute
+  '/admin': typeof AdminIndexRoute
   '/blog': typeof BlogIndexRoute
 }
 export interface FileRoutesById {
@@ -225,6 +241,7 @@ export interface FileRoutesById {
   '/nyon': typeof NyonRoute
   '/services': typeof ServicesRoute
   '/tarifs': typeof TarifsRoute
+  '/admin/login': typeof AdminLoginRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
@@ -232,6 +249,7 @@ export interface FileRoutesById {
   '/blog/$slug': typeof BlogSlugRoute
   '/booking/cleaning': typeof BookingCleaningRoute
   '/booking/laundry': typeof BookingLaundryRoute
+  '/admin/': typeof AdminIndexRoute
   '/blog/': typeof BlogIndexRoute
 }
 export interface FileRouteTypes {
@@ -253,6 +271,7 @@ export interface FileRouteTypes {
     | '/nyon'
     | '/services'
     | '/tarifs'
+    | '/admin/login'
     | '/auth/callback'
     | '/auth/forgot-password'
     | '/auth/login'
@@ -260,6 +279,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/booking/cleaning'
     | '/booking/laundry'
+    | '/admin/'
     | '/blog/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -279,6 +299,7 @@ export interface FileRouteTypes {
     | '/nyon'
     | '/services'
     | '/tarifs'
+    | '/admin/login'
     | '/auth/callback'
     | '/auth/forgot-password'
     | '/auth/login'
@@ -286,6 +307,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/booking/cleaning'
     | '/booking/laundry'
+    | '/admin'
     | '/blog'
   id:
     | '__root__'
@@ -305,6 +327,7 @@ export interface FileRouteTypes {
     | '/nyon'
     | '/services'
     | '/tarifs'
+    | '/admin/login'
     | '/auth/callback'
     | '/auth/forgot-password'
     | '/auth/login'
@@ -312,6 +335,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/booking/cleaning'
     | '/booking/laundry'
+    | '/admin/'
     | '/blog/'
   fileRoutesById: FileRoutesById
 }
@@ -332,6 +356,7 @@ export interface RootRouteChildren {
   NyonRoute: typeof NyonRoute
   ServicesRoute: typeof ServicesRoute
   TarifsRoute: typeof TarifsRoute
+  AdminLoginRoute: typeof AdminLoginRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthLoginRoute: typeof AuthLoginRoute
@@ -339,6 +364,7 @@ export interface RootRouteChildren {
   BlogSlugRoute: typeof BlogSlugRoute
   BookingCleaningRoute: typeof BookingCleaningRoute
   BookingLaundryRoute: typeof BookingLaundryRoute
+  AdminIndexRoute: typeof AdminIndexRoute
   BlogIndexRoute: typeof BlogIndexRoute
 }
 
@@ -463,6 +489,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/booking/laundry': {
       id: '/booking/laundry'
       path: '/booking/laundry'
@@ -512,6 +545,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -532,6 +572,7 @@ const rootRouteChildren: RootRouteChildren = {
   NyonRoute: NyonRoute,
   ServicesRoute: ServicesRoute,
   TarifsRoute: TarifsRoute,
+  AdminLoginRoute: AdminLoginRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
@@ -539,6 +580,7 @@ const rootRouteChildren: RootRouteChildren = {
   BlogSlugRoute: BlogSlugRoute,
   BookingCleaningRoute: BookingCleaningRoute,
   BookingLaundryRoute: BookingLaundryRoute,
+  AdminIndexRoute: AdminIndexRoute,
   BlogIndexRoute: BlogIndexRoute,
 }
 export const routeTree = rootRouteImport

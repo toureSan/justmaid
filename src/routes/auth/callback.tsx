@@ -43,13 +43,19 @@ function AuthCallback() {
           if (isRecovery) {
             return '/dashboard?tab=account'
           }
+          // Si la connexion vient de l'admin login
+          const adminRedirect = localStorage.getItem('admin_login_redirect')
+          if (adminRedirect) {
+            localStorage.removeItem('admin_login_redirect')
+            return '/admin'
+          }
           // Si une réservation était en cours
           const bookingInProgress = localStorage.getItem("bookingInProgress")
           if (bookingInProgress) {
             return '/booking/cleaning'
           }
           // Par défaut, aller au dashboard
-          return '/dashboard?tab=home'
+          return '/dashboard'
         }
 
         if (data.session) {
