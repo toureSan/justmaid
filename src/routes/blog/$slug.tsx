@@ -21,24 +21,147 @@ export const Route = createFileRoute("/blog/$slug")({
   component: BlogArticlePage,
 });
 
+function parseMarkdownToHtml(markdown: string): string {
+  let html = markdown;
+
+  html = html.replace(/\r\n/g, "\n");
+  html = html.replace(
+    /!\[([^\]]*)\]\(([^)]+)\)/g,
+    '<img src="$2" alt="$1" />',
+  );
+  html = html.replace(/^---$/gim, "<hr>");
+  html = html.replace(/^#### (.+)$/gim, "<h4>$1</h4>");
+  html = html.replace(/^### (.+)$/gim, "<h3>$1</h3>");
+  html = html.replace(/^## (.+)$/gim, "<h2>$1</h2>");
+  html = html.replace(/^# (.+)$/gim, "<h1>$1</h1>");
+  html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  html = html.replace(/\*(.+?)\*/g, "<em>$1</em>");
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+  html = html.replace(/^> (.+)$/gim, "<blockquote>$1</blockquote>");
+
+  const lines = html.split("\n");
+  const result: string[] = [];
+  let inList = false;
+  let inTable = false;
+  const paragraphBuffer: string[] = [];
+
+  const flushParagraph = () => {
+    if (paragraphBuffer.length > 0) {
+      const text = paragraphBuffer.join(" ").trim();
+      if (text) {
+        result.push(`<p>${text}</p>`);
+      }
+      paragraphBuffer.length = 0;
+    }
+  };
+
+  const isTableRow = (line: string) =>
+    line.includes("|") && line.trim().startsWith("|");
+
+  const isTableSeparator = (line: string) =>
+    !!line.match(/^\|[\s\-:|]+\|$/);
+
+  const parseTableRow = (line: string, isHeader: boolean) => {
+    const cells = line.split("|").filter((c) => c.trim());
+    const tag = isHeader ? "th" : "td";
+    return `<tr>${cells.map((cell) => `<${tag}>${cell.trim()}</${tag}>`).join("")}</tr>`;
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    if (!line) {
+      flushParagraph();
+      if (inList) {
+        result.push("</ul>");
+        inList = false;
+      }
+      if (inTable) {
+        result.push("</tbody></table>");
+        inTable = false;
+      }
+      continue;
+    }
+
+    if (isTableRow(line)) {
+      flushParagraph();
+      if (inList) {
+        result.push("</ul>");
+        inList = false;
+      }
+      if (isTableSeparator(line)) continue;
+      if (!inTable) {
+        result.push("<table><thead>");
+        result.push(parseTableRow(line, true));
+        result.push("</thead><tbody>");
+        inTable = true;
+      } else {
+        result.push(parseTableRow(line, false));
+      }
+      continue;
+    }
+
+    if (inTable && !isTableRow(line)) {
+      result.push("</tbody></table>");
+      inTable = false;
+    }
+
+    if (line.match(/^<(h[1-6]|img|hr|blockquote)/i)) {
+      flushParagraph();
+      if (inList) {
+        result.push("</ul>");
+        inList = false;
+      }
+      result.push(line);
+      continue;
+    }
+
+    if (line.match(/^- /)) {
+      flushParagraph();
+      if (!inList) {
+        result.push("<ul>");
+        inList = true;
+      }
+      result.push(`<li>${line.substring(2)}</li>`);
+      continue;
+    }
+
+    if (inList && !line.match(/^- /)) {
+      result.push("</ul>");
+      inList = false;
+    }
+
+    paragraphBuffer.push(line);
+  }
+
+  flushParagraph();
+  if (inList) result.push("</ul>");
+  if (inTable) result.push("</tbody></table>");
+
+  return result.join("\n");
+}
+
 function BlogArticlePage() {
   const { slug } = Route.useParams();
 
-  // Try static first for instant display
   const [article, setArticle] = useState<BlogArticle | undefined>(() =>
     getBlogArticleBySlug(slug),
   );
-  const [similarArticles, setSimilarArticles] = useState<BlogArticle[]>(() =>
-    article ? getSimilarArticles(article.id) : [],
-  );
-  const [isLoading, setIsLoading] = useState(!article);
+  const [similarArticles, setSimilarArticles] = useState<BlogArticle[]>(() => {
+    const a = getBlogArticleBySlug(slug);
+    return a ? getSimilarArticles(a.id) : [];
+  });
+  const [isLoading, setIsLoading] = useState(!getBlogArticleBySlug(slug));
 
   // Load from Supabase if not found in static
   useEffect(() => {
     let cancelled = false;
+    const staticArticle = getBlogArticleBySlug(slug);
 
-    if (!article) {
+    if (!staticArticle) {
       setIsLoading(true);
+      setArticle(undefined);
+      setSimilarArticles([]);
       getBlogArticleBySlugAsync(slug).then((found) => {
         if (cancelled) return;
         if (found) {
@@ -57,8 +180,9 @@ function BlogArticlePage() {
         }
       });
     } else {
-      // For static articles, also try to load more similar articles from Supabase
-      getSimilarArticlesAsync(article.id, article.category.id).then(
+      setArticle(staticArticle);
+      setIsLoading(false);
+      getSimilarArticlesAsync(staticArticle.id, staticArticle.category.id).then(
         (similar) => {
           if (!cancelled) setSimilarArticles(similar);
         },
@@ -69,6 +193,37 @@ function BlogArticlePage() {
       cancelled = true;
     };
   }, [slug]);
+
+  // SEO Meta tags
+  useEffect(() => {
+    if (!article) return;
+    document.title = article.meta_title || `${article.title} - Blog`;
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute(
+        "content",
+        article.meta_description || article.excerpt,
+      );
+    }
+  }, [article]);
+
+  // Convert Markdown to HTML
+  const contentHtml = useMemo(() => {
+    if (!article) return "";
+    if (article.content_html) return article.content_html;
+    return parseMarkdownToHtml(article.content);
+  }, [article]);
+
+  const formattedDate = useMemo(() => {
+    if (!article) return "";
+    return new Date(article.published_at).toLocaleDateString("fr-FR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }, [article]);
+
+  // --- Render ---
 
   if (isLoading) {
     return (
@@ -83,213 +238,23 @@ function BlogArticlePage() {
 
   if (!article) {
     return (
-      <>
-        <div className="flex min-h-[60vh] items-center justify-center">
-          <div className="text-center">
-            <h1 className="mb-4 text-4xl font-bold">Article non trouvé</h1>
-            <p className="mb-6 text-muted-foreground">
-              Désolé, cet article n'existe pas ou a été supprimé.
-            </p>
-            <a
-              href="/blog"
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground"
-            >
-              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" />
-              Retour au blog
-            </a>
-          </div>
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="text-center">
+          <h1 className="mb-4 text-4xl font-bold">Article non trouvé</h1>
+          <p className="mb-6 text-muted-foreground">
+            Désolé, cet article n'existe pas ou a été supprimé.
+          </p>
+          <a
+            href="/blog"
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground"
+          >
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" />
+            Retour au blog
+          </a>
         </div>
-      </>
+      </div>
     );
   }
-
-  const formattedDate = new Date(article.published_at).toLocaleDateString(
-    "fr-FR",
-    {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    },
-  );
-
-  // SEO Meta tags
-  useEffect(() => {
-    document.title = article.meta_title || `${article.title} - Blog`;
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute(
-        "content",
-        article.meta_description || article.excerpt,
-      );
-    }
-  }, [article]);
-
-  // Convert Markdown to HTML (only if no pre-rendered HTML available)
-  const contentHtml = useMemo(() => {
-    // Use pre-rendered HTML from RankPill if available
-    if (article.content_html) {
-      return article.content_html;
-    }
-
-    // Otherwise, parse markdown manually (for static articles)
-    let html = article.content;
-
-    // Normalize line endings
-    html = html.replace(/\r\n/g, "\n");
-
-    // Images ![alt](url)
-    html = html.replace(
-      /!\[([^\]]*)\]\(([^)]+)\)/g,
-      '<img src="$2" alt="$1" />',
-    );
-
-    // HR first (before headers)
-    html = html.replace(/^---$/gim, "<hr>");
-
-    // Headers (from most specific to least)
-    html = html.replace(/^#### (.+)$/gim, "<h4>$1</h4>");
-    html = html.replace(/^### (.+)$/gim, "<h3>$1</h3>");
-    html = html.replace(/^## (.+)$/gim, "<h2>$1</h2>");
-    html = html.replace(/^# (.+)$/gim, "<h1>$1</h1>");
-
-    // Bold and italic
-    html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-    html = html.replace(/\*(.+?)\*/g, "<em>$1</em>");
-
-    // Links
-    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
-
-    // Blockquotes
-    html = html.replace(/^> (.+)$/gim, "<blockquote>$1</blockquote>");
-
-    // Process line by line for lists, tables and paragraphs
-    const lines = html.split("\n");
-    const result: string[] = [];
-    let inList = false;
-    let inTable = false;
-    const paragraphBuffer: string[] = [];
-
-    const flushParagraph = () => {
-      if (paragraphBuffer.length > 0) {
-        const text = paragraphBuffer.join(" ").trim();
-        if (text) {
-          result.push(`<p>${text}</p>`);
-        }
-        paragraphBuffer.length = 0;
-      }
-    };
-
-    const isTableRow = (line: string) => {
-      return line.includes("|") && line.trim().startsWith("|");
-    };
-
-    const isTableSeparator = (line: string) => {
-      return !!line.match(/^\|[\s\-:|]+\|$/);
-    };
-
-    const parseTableRow = (line: string, isHeader: boolean) => {
-      const cells = line.split("|").filter((c) => c.trim());
-      const tag = isHeader ? "th" : "td";
-      const cellsHtml = cells
-        .map((cell) => `<${tag}>${cell.trim()}</${tag}>`)
-        .join("");
-      return `<tr>${cellsHtml}</tr>`;
-    };
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-
-      // Empty line - flush everything
-      if (!line) {
-        flushParagraph();
-        if (inList) {
-          result.push("</ul>");
-          inList = false;
-        }
-        if (inTable) {
-          result.push("</tbody></table>");
-          inTable = false;
-        }
-        continue;
-      }
-
-      // Table handling
-      if (isTableRow(line)) {
-        flushParagraph();
-        if (inList) {
-          result.push("</ul>");
-          inList = false;
-        }
-
-        // Skip separator line
-        if (isTableSeparator(line)) {
-          continue;
-        }
-
-        if (!inTable) {
-          // Start table with header
-          result.push("<table>");
-          result.push("<thead>");
-          result.push(parseTableRow(line, true));
-          result.push("</thead>");
-          result.push("<tbody>");
-          inTable = true;
-        } else {
-          // Body row
-          result.push(parseTableRow(line, false));
-        }
-        continue;
-      }
-
-      // Close table if we hit non-table content
-      if (inTable && !isTableRow(line)) {
-        result.push("</tbody></table>");
-        inTable = false;
-      }
-
-      // HTML tags - pass through
-      if (line.match(/^<(h[1-6]|img|hr|blockquote)/i)) {
-        flushParagraph();
-        if (inList) {
-          result.push("</ul>");
-          inList = false;
-        }
-        result.push(line);
-        continue;
-      }
-
-      // List items
-      if (line.match(/^- /)) {
-        flushParagraph();
-        if (!inList) {
-          result.push("<ul>");
-          inList = true;
-        }
-        result.push(`<li>${line.substring(2)}</li>`);
-        continue;
-      }
-
-      // Close list if we hit non-list content
-      if (inList && !line.match(/^- /)) {
-        result.push("</ul>");
-        inList = false;
-      }
-
-      // Regular text - add to paragraph buffer
-      paragraphBuffer.push(line);
-    }
-
-    // Flush any remaining content
-    flushParagraph();
-    if (inList) {
-      result.push("</ul>");
-    }
-    if (inTable) {
-      result.push("</tbody></table>");
-    }
-
-    return result.join("\n");
-  }, [article.content, article.content_html]);
 
   return (
     <>
