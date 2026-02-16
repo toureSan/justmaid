@@ -1,5 +1,5 @@
 # ---- Build stage ----
-FROM node:22-alpine AS builder
+FROM node:24-alpine AS builder
 WORKDIR /app
 
 # Arguments de build pour les variables Vite
@@ -15,13 +15,13 @@ ENV VITE_STRIPE_PUBLISHABLE_KEY=$VITE_STRIPE_PUBLISHABLE_KEY
 ENV VITE_STRIPE_CHECKOUT_API=$VITE_STRIPE_CHECKOUT_API
 
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
 COPY . .
 RUN npm run build
 
 # ---- Run stage ----
-FROM node:22-alpine AS runner
+FROM node:24-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
